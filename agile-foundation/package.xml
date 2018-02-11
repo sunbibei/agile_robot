@@ -1,0 +1,30 @@
+<package>
+  <name>agile_foundation</name>
+  <version>0.0.1</version>
+  <description>The agile_foundation package</description>
+
+  <maintainer email="sunbibei@sina.com">Bibei Sun</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://192.168.1.196/sunbibei/qr-driver/wiki</url>
+  <url type="bugtracker">http://192.168.1.196/sunbibei/qr-driver/issues</url>
+  <url type="repository">http://192.168.1.196/sunbibei/qr-driver</url>
+
+  <author>Bibei Sun</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>tinyxml</build_depend>
+  <build_depend>cmake_modules</build_depend>
+  <build_depend>class_loader</build_depend>
+
+  <run_depend>cmake_modules</run_depend>
+  <run_depend>tinyxml</run_depend>
+  <run_depend>class_loader</run_depend>
+
+  <export>
+
+  </export>
+
+</package>
