@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="debug"               default="True"  />
+  <arg name="use_ros_control"     default="True"  />
+  <arg name="rl_trial"            default="False" />
+  <arg name="rt_frequency"        default="100.0" />
+  <arg name="ctrl_loop_frequency" default="100.0" />
+
+  <!-- Load the URDF/Xacro model of our robot -->
+  <!-- include file="$(find qr_description)/launch/upload_robot.launch" / -->
+  <!-- echo $LD_LIBRARY_PATH | awk -F':' '{split($0,arr,":")}END{for(i=1;i<=NF;i++)printf("%s\n",arr[i])}'|grep 'qr_ws' -->
+  <!-- Load hardware interface -->
+  <node name="agile_driver" pkg="agile_apps" type="agile_apps" output="screen">
+    <param name="configure" value="$(find agile_apps)/config/robot_config.cfg" />
+    <param name="library"   value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_driver_sys_platform.so"/>
+    <param name="gait_cfg"  value="$(find agile_control)/config/gait_config.cfg" />
+    <param name="gait_lib"  value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_control_repository.so" />
+    <param name="use_ros_control"     type="bool"   value="$(arg use_ros_control)"     />
+    <param name="rl_trial"            type="bool"   value="$(arg rl_trial)"            />
+    <param name="debug"               type="bool"   value="$(arg debug)"               />
+    <param name="rt_frequency"        type="double" value="$(arg rt_frequency)"        />
+    <param name="ctrl_loop_frequency" type="double" value="$(arg ctrl_loop_frequency)" />
+  </node>
+
+  <!-- load other controller --> 
+  <!--node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
+    output="screen" args="load pos_based_pos_traj_controller" /-->
+
+  <!-- Convert joint states to /tf tranforms -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+</launch>
+
