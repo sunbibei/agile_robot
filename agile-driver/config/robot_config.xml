@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<qr name="quadruped_robot">
+
+  <!-- Prepare resources for user aims to control the robot -->
+	<!-- All of the hardwares list here, and it will be automatic instance -->
+	<res attr="resources">
+		<fl>
+			<yaw  auto_inst="middleware::Joint" leg="fl" jnt="yaw"  name="fl_yaw" limits_c="1590 2060" limits="-0.307764 0.416252 " />
+			<hip  auto_inst="middleware::Joint" leg="fl" jnt="hip"  name="fl_hip" limits_c="2035 2780" limits="-0.282350 0.872703" />
+			<knee auto_inst="middleware::Joint" leg="fl" jnt="knee" name="fl_knee" limits_c="1622 2330" limits="-1.727743 -0.617174" />
+			<td   auto_inst="middleware::ForceSensor" leg="fl"                     />
+		</fl>
+
+		<hl>
+			<yaw  auto_inst="middleware::Joint" leg="hl" jnt="yaw"  name="hl_yaw"  limits_c="1912 2400" limits="-0.416396 0.341368" />
+			<hip  auto_inst="middleware::Joint" leg="hl" jnt="hip"  name="hl_hip"  limits_c="160 1212" limits="-0.873408 0.243297" />
+			<knee auto_inst="middleware::Joint" leg="hl" jnt="knee" name="hl_knee" limits_c="802 1585" limits="0.649506 1.796890" />
+			<td   auto_inst="middleware::ForceSensor" leg="hl"                     />
+		</hl>
+
+		<fr>
+			<yaw  auto_inst="middleware::Joint" leg="fr" jnt="yaw"  name="fr_yaw"  limits_c="1768 2252" limits="-0.263249 0.170868" />
+			<hip  auto_inst="middleware::Joint" leg="fr" jnt="hip"  name="fr_hip"  limits_c="48 831" limits="-0.141008 0.8254" />
+			<knee auto_inst="middleware::Joint" leg="fr" jnt="knee" name="fr_knee" limits_c="2910 2192" limits="-1.63094 -0.785712" />
+			<td   auto_inst="middleware::ForceSensor" leg="fr"                     />
+		</fr>
+
+		<hr>
+			<yaw  auto_inst="middleware::Joint" leg="hr" jnt="yaw"  name="hr_yaw"  limits_c="1599 2080" limits="-0.321524 0.416299" />
+			<hip  auto_inst="middleware::Joint" leg="hr" jnt="hip"  name="hr_hip"  limits_c="1713 2459" limits="-0.873221 0.271095" />
+			<knee auto_inst="middleware::Joint" leg="hr" jnt="knee" name="hr_knee" limits_c="2040 2808" limits="0.549817 1.727880" />
+			<td   auto_inst="middleware::ForceSensor" leg="hr"                     />
+		</hr>
+		<imu    auto_inst="middleware::ImuSensor" />
+		<power  auto_inst="middleware::Power" >
+			<map_0 leg="fl" node_id="1" sub_node_id="1" />
+			<map_1 leg="hl" node_id="2" sub_node_id="2" />
+			<map_2 leg="fr" node_id="3" sub_node_id="2" />
+			<map_3 leg="hr" node_id="4" sub_node_id="3" />
+		</power>
+	</res>
+
+	<!-- About propagates, it will be automatic instance and addtion to PropagatesManager -->
+	<!-- These objects as follow communication between the real robot directly -->
+	<propa attr="propagates" >
+		<!--pcan_fake auto_inst="middleware::PcanChannelFake"
+			output="/home/bibei/output" repeat="true" input="/home/bibei/input"
+			channel="0x51" baud="500" type="0" port="0" interrupt="0" /-->
+		<pcan auto_inst="middleware::MotorPcan" bus="0x01"
+			channel="0x51" baud="500" type="0"  port="0" interrupt="0" hijack="false" >
+			<!-- gains="Kp Ki Kd" limits = "iMin iMax error_threshold" -->
+			<pid_0  node_id="0x02" leg="fl" jnt="yaw"  gains="-30 -1.00 0.01 -200 200"
+				limits="-3000 3000 1672 1992" criterion="7 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 620 -->
+
+			<pid_1  node_id="0x02" leg="fl" jnt="hip"  gains="50 1.00 0.01 -200 200"
+				limits="-3000 3000 2121 2707" criterion="7 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 650 -->
+
+			<pid_2  node_id="0x02" leg="fl" jnt="knee" gains="30 0.50 0.01 -200 200"
+				limits="-3000 3000 1786 2361" criterion="10 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 500 -->
+
+			<pid_3  node_id="0x03" leg="hl" jnt="yaw"  gains="50 1.00 0.01 -200 200"
+				limits="-3000 3000 1996 2325" criterion="10 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 584 -->
+
+			<pid_4  node_id="0x03" leg="hl" jnt="hip"  gains="-30 -1.00 -0.01 -200 200"
+				limits="-3000 3000 535 1107" criterion="7 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 661 -->
+
+			<pid_5  node_id="0x03" leg="hl" jnt="knee" gains="-50 -1.00 -0.01 -200 200"
+				limits="-3000 3000 873 1476" criterion="8 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 564 -->
+
+			<pid_6  node_id="0x04" leg="fr" jnt="yaw"  gains="50 1.00 0.01 -200 200"
+				limits="-3000 3000 1893 2176" criterion="7 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 550 -->
+
+			<pid_7  node_id="0x04" leg="fr" jnt="hip"  gains="-40 -1.00 -0.01 -200 200"
+				limits="-3000 3000 175 805" criterion="5 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 660 -->
+
+			<pid_8  node_id="0x04" leg="fr" jnt="knee" gains="-45 -1.00 -0.01 -200 200"
+				limits="-3000 3000 2286 2837" criterion="10 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 576 -->
+
+			<pid_9  node_id="0x05" leg="hr" jnt="yaw"  gains="-50 -1.00 -0.01 -200 200"
+				limits="-3000 3000 1680 1997" criterion="7 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 571 -->
+
+			<pid_10 node_id="0x05" leg="hr" jnt="hip"  gains="50 1.00 0.01 -200 200"
+				limits="-3000 3000 1738 2344" criterion="7 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 664 -->
+
+			<pid_11 node_id="0x05" leg="hr" jnt="knee" gains="40 1.00 0.01 -200 200"
+				limits="-3000 3000 2116 2728" criterion="7 10"
+				debug="true" path="/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/Debug/pid"/> <!-- 606 -->
+		</pcan>
+
+		<usb auto_inst="middleware::ImuUsb"   bus="0x02"
+			channel="/dev/ttyUSB0" baud="115200"  node_id="0x06" />
+	</propa>
+
+	<!-- Got the packet message from PropagateManager and update the information of hardware -->
+	<!-- All of the nodes will be managed by HwManager which contains propagates-->
+	<nodes attr="hardwares">
+		<lf>
+			<node auto_inst="middleware::LegNode" leg="fl" node_id="0x02" >
+				<!-- ABS(scale) = \frac{360 \pi \alpha}{180*4096} = \frac{360\pi}{180*4096} -->
+				<!-- offset = - \frac{\pi}{18000}\alpha*\beta = -0.000174528*\beta -->
+				<joint_0     jnt="yaw"  label="qr.res.fl.yaw"  scale="1"  offset="16386" limits_c="1593 2065" />
+				<joint_1     jnt="hip"  label="qr.res.fl.hip"  scale="-1" offset="22974" limits_c="2045 2798" />
+				<joint_2     jnt="knee" label="qr.res.fl.knee" scale="1"  offset="24630" limits_c="1676 2400" />
+				<touchdown              label="qr.res.fl.td" />
+			</node>
+		</lf>
+
+		<hl>
+			<node auto_inst="middleware::LegNode" leg="hl" node_id="0x03" >
+				<joint_0     jnt="yaw"  label="qr.res.hl.yaw"  scale="-1" offset="19296" limits_c="1924 2418" />
+				<joint_1     jnt="hip"  label="qr.res.hl.hip"  scale="-1" offset="5437"  limits_c="460 1188" />
+				<joint_2     jnt="knee" label="qr.res.hl.knee" scale="1"  offset="3424"  limits_c="813 1561" />
+				<touchdown              label="qr.res.hl.td" />
+			</node>
+		</hl>
+
+		<fr>
+			<node auto_inst="middleware::LegNode" leg="fr" node_id="0x04" >
+				<joint_0     jnt="yaw"  label="qr.res.fr.yaw"  scale="1"  offset="18146" limits_c="2200 2907" />
+				<joint_1     jnt="hip"  label="qr.res.fr.hip"  scale="1"  offset="2346"  limits_c="79 871" />
+				<joint_2     jnt="knee" label="qr.res.fr.knee" scale="-1" offset="15590" limits_c="2136 2884"  />
+				<touchdown              label="qr.res.fr.td" />
+			</node>
+		</fr>
+
+		<hr>
+			<node auto_inst="middleware::LegNode" leg="hr" node_id="0x05" >
+				<joint_0     jnt="yaw"  label="qr.res.hr.yaw"  scale="-1" offset="16000" limits_c="1599 2080"  />
+				<joint_1     jnt="hip"  label="qr.res.hr.hip"  scale="1"  offset="20059" limits_c="1713 2459" />
+				<joint_2     jnt="knee" label="qr.res.hr.knee" scale="-1" offset="27830" limits_c="2040 2808"   />
+				<touchdown              label="qr.res.hr.td" />
+			</node>
+		</hr>
+
+		<imu_node   auto_inst="middleware::ImuNode"   node_id="0x06"  label="qr.res.imu"  />
+		<power_node auto_inst="middleware::PowerNode" node_id="0x08"  label="qr.res.power" />
+	</nodes>
+
+	<!-- User Layer -->
+	<wrapper>
+		<!-- The necessary parameters are asked by MiiRobot -->
+		<robot control="false" frequency="50">
+			<joints     labels="qr.res.fl.yaw qr.res.fl.hip qr.res.fl.knee
+												  qr.res.hl.yaw qr.res.hl.hip qr.res.hl.knee
+												  qr.res.fr.yaw qr.res.fr.hip qr.res.fr.knee
+												  qr.res.hr.yaw qr.res.hr.hip qr.res.hr.knee" />
+
+			<touchdowns labels="qr.res.fl.td qr.res.hl.td
+												  qr.res.fr.td qr.res.hr.td" />
+			<imu        labels="qr.res.imu" />
+		</robot>
+		<!-- The necessary parameters are asked by RosWrapper -->
+		<roswrapper>
+			<touchdown_0 label="qr.res.fl.td" name="fl_td" frame_id="fl_foot" />
+			<touchdown_1 label="qr.res.fr.td" name="fr_td" frame_id="fr_foot" />
+			<touchdown_2 label="qr.res.hl.td" name="hl_td" frame_id="hl_foot" />
+			<touchdown_3 label="qr.res.hr.td" name="hr_td" frame_id="hr_foot" />
+			<imu         label="qr.res.imu"   name="imu"   frame_id="body" />
+		</roswrapper>
+	</wrapper>
+
+</qr>

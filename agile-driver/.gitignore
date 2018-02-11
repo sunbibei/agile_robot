@@ -1,0 +1,7 @@
+doc
+.cproject
+.project
+.settings/*
+Debug/*
+/Debug/
+config/all.cfg
