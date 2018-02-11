@@ -3,3 +3,4 @@ doc
 .project
 .settings/*
 Debug/*
+/Debug/

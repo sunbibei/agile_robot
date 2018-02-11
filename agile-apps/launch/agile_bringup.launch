@@ -27,7 +27,7 @@
     output="screen" args="load pos_based_pos_traj_controller" /-->
 
   <!-- Convert joint states to /tf tranforms -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <!-- node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" / -->
 
 </launch>
 

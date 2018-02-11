@@ -147,12 +147,12 @@ set(SRC_PLUGIN_FILES    ${SRC_ROOT}/gazebo_propagate.cc
 # set(SYS_TEST_FILES      ${SRC_TEST_ROOT}/test.cpp)
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME}_driver SHARED
   ${SRC_PLUGIN_FILES}
 )
 
-add_library(model_push SHARED
-  ${SRC_ROOT}/model_push.cc
+add_library(agile_plugin SHARED
+  ${SRC_ROOT}/gz_agile_plugin.cc
 )
 
 ## Add cmake target dependencies of the library
@@ -168,13 +168,14 @@ add_library(model_push SHARED
 # add_dependencies(dragon_gazebo_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}_driver
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
 )
 
-target_link_libraries(model_push
+target_link_libraries(agile_plugin
   ${GAZEBO_LIBRARIES}
+  agile_foundation
 )
 
 #############
@@ -187,8 +188,8 @@ target_link_libraries(model_push
 install(DIRECTORY plugins/include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS ${PROJECT_NAME}
-								model_push
+install(TARGETS ${PROJECT_NAME}_driver
+								agile_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

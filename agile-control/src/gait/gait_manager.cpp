@@ -75,7 +75,7 @@ void GaitManager::tick() {
         actived_gait_ = nullptr;
       }
     } else
-      LOG_EVERY_N(WARNING, 10) << "Waiting to switch from "
+      LOG_WARNING << "Waiting to switch from "
         << running_gait_->name() << " to " << actived_gait_->name();
   } else { // runing_gait_ == active_gait_
     ; // Unreachable code

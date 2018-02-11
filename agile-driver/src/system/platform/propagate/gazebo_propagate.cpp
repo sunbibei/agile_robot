@@ -63,17 +63,37 @@ void GzPropagateP::stop() {
 }
 
 bool GzPropagateP::write(const Packet& _pkg) {
+  return true;
   MsgqPacket _msg;
-  _msg.msg_id = 0x01;
+  _msg.msg_id = 0x01; // means from agile driver
   _msg.pkg    = _pkg;
 
-  return msgq_->write_to_msgq(cmd_msgq_name_, &_msg, sizeof(_msg));
+  bool ret = msgq_->write_to_msgq(cmd_msgq_name_, &_msg, sizeof(_msg));
+
+  if (true && ret)
+    printf("  -> FROM:0x%02X NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+      (int)_msg.msg_id,      (int)_msg.pkg.node_id,
+      (int)_msg.pkg.msg_id,  (int)_msg.pkg.size,
+      (int)_msg.pkg.data[0], (int)_msg.pkg.data[1],
+      (int)_msg.pkg.data[2], (int)_msg.pkg.data[3],
+      (int)_msg.pkg.data[4], (int)_msg.pkg.data[5],
+      (int)_msg.pkg.data[6], (int)_msg.pkg.data[7]);
+  return ret;
 }
 
 bool GzPropagateP::read (Packet& _pkg) {
   MsgqPacket _msg;
   if (!msgq_->read_from_msgq(leg_node_msgq_name_, &_msg, sizeof(_msg)))
     return false;
+
+  if (true)
+    printf("  <- FROM:0x%02X NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+      (int)_msg.msg_id,      (int)_msg.pkg.node_id,
+      (int)_msg.pkg.msg_id,  (int)_msg.pkg.size,
+      (int)_msg.pkg.data[0], (int)_msg.pkg.data[1],
+      (int)_msg.pkg.data[2], (int)_msg.pkg.data[3],
+      (int)_msg.pkg.data[4], (int)_msg.pkg.data[5],
+      (int)_msg.pkg.data[6], (int)_msg.pkg.data[7]);
 
   _pkg = _msg.pkg;
   return true;

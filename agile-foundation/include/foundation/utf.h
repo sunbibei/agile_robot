@@ -206,10 +206,10 @@ enum JntType {
 #define LOG_FATAL     LOG(FATAL)    << "\t"
 #else
 #define LOG_DEBUG     if (_DEBUG_INFO_FLAG) std::cout  << "\t"
-#define LOG_INFO      std::cout    << "\t"
-#define LOG_WARNING   std::cout    << "\t"
-#define LOG_ERROR     std::cout    << "\t"
-#define LOG_FATAL     std::cout    << "\t"
+#define LOG_INFO      std::cout << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__ << " -> "
+#define LOG_WARNING   std::cout << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__ << " -> "
+#define LOG_ERROR     std::cout << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__ << " -> "
+#define LOG_FATAL     std::cout << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__ << " -> "
 #endif
 //} /* namespace middleware */
 

@@ -6,6 +6,12 @@
  */
 
 #include "foundation/internal/sync.h"
+#include <iostream>
+#include <string.h>
+
+#define __LOG(str) \
+  std::cout << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__ \
+            << " -> " << str << std::endl;
 
 namespace internal {
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,10 +26,10 @@ bool __init_key_map() {
   if (-1 == _shm_id) { // Could not found.
     _shm_id = shmget(KEY_MAP_OF_KEY, MAX_SHM_SIZE * sizeof(_PrivateKeyMap), IPC_CREAT | 0666);
     if (-1 == _shm_id) {
-      LOG_ERROR << "Can't initialize the sync shared memory '" << SYNC_IDENTIFY << "'";
+      __LOG("Can't initialize the sync shared memory '" << SYNC_IDENTIFY << "'");
       return false;
     } else {
-      LOG_INFO << "Create the sync shared memory '" << SYNC_IDENTIFY << "'";
+      __LOG("Create the sync shared memory '" << SYNC_IDENTIFY << "'");
       __add_key_map(SYNC_IDENTIFY, KEY_MAP_OF_KEY, _shm_id, IPC_TYPE::SHM);
     }
   } else { // Found

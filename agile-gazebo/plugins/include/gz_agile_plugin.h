@@ -1,20 +1,22 @@
 /*
- * gazebo_propagate.h
+ * model_push.h
  *
- *  Created on: Jan 30, 2018
+ *  Created on: Feb 11, 2018
  *      Author: bibei
  */
 
-#ifndef PLUGINS_INCLUDE_GAZEBO_PROPAGATE_H_
-#define PLUGINS_INCLUDE_GAZEBO_PROPAGATE_H_
+#ifndef PLUGINS_INCLUDE_GZ_AGILE_PLUGIN_H_
+#define PLUGINS_INCLUDE_GZ_AGILE_PLUGIN_H_
 
 #include "system/platform/protocol/qr_protocol.h"
 #include "foundation/utf.h"
 #include "foundation/thread/threadpool.h"
 
-#include <gazebo/physics/physics.hh>
-#include <gazebo/common/Plugin.hh>
+#include <functional>
 #include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/common.hh>
+#include <ignition/math/Vector3.hh>
 
 #include <vector>
 #include <boost/lockfree/queue.hpp>
@@ -23,13 +25,16 @@ class MsgQueue;
 
 namespace agile_gazebo {
 
-class GzPropagateG : public gazebo::ModelPlugin {
+class GzAgilePlugin : public gazebo::ModelPlugin {
+public:
+  GzAgilePlugin();
+  virtual ~GzAgilePlugin();
 
 public:
-  GzPropagateG();
-  virtual ~GzPropagateG();
+  void Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf);
+  // Called by the world update start event
+  void event_update();
 
-///! Simulate the style of class middleware::Propagate
 protected:
   /**
    * @brief This method completes the function that convert the Packet
@@ -46,22 +51,13 @@ protected:
    * @return Return true if read successful, or return false
    */
   virtual bool read(Packet& pkt);
-
-///! inherit from gazebo::ModelPlugin
-public:
-  /// @brief Load function
-  ///
-  /// Called when a Plugin is first created, and after the World has been
-  /// loaded. This function should not be blocking.
-  /// @param[in] _model Pointer to the Model
-  /// @param[in] _sdf   Pointer to the SDF element of the plugin.
-  virtual void Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf) /*= 0*/ override;
-  virtual void Init()  override;
-  virtual void Reset() override;
-
-protected:
-  virtual void event_update();
+  /*!
+   * @brief This method will launch from a thread to write the message to the message queue.
+   */
   void msg_w_update();
+  /*!
+   * @brief This method will launch from a thread to read the message from the message queue.
+   */
   void msg_r_update();
 
 private:
@@ -70,10 +66,12 @@ private:
 
   void __update_robot_stats();
 
-protected:
-  gazebo::physics::WorldPtr    world_;
-  gazebo::physics::ModelPtr    parent_;
-  gazebo::event::ConnectionPtr update_connection_;
+// Pointer to the model
+private:
+  gazebo::physics::WorldPtr world_;
+  gazebo::physics::ModelPtr model;
+  // Pointer to the update event connection
+  gazebo::event::ConnectionPtr updateConnection;
 
   bool                            rw_thread_alive_;
   MsgQueue*                       msgq_;
@@ -88,9 +86,9 @@ protected:
   ///! NODE_ID map to LEG
   std::vector<LegType>             id_2_leg_lut_;
   std::vector<unsigned char>       leg_2_id_lut_;
-  class LinearParams1*              linear_params_[LegType::N_LEGS];
+  class LinearParams*              linear_params_[LegType::N_LEGS];
 };
 
-} /* namespace qr_gazebo */
+}
 
-#endif /* PLUGINS_INCLUDE_GAZEBO_PROPAGATE_H_ */
+#endif /* PLUGINS_INCLUDE_GZ_AGILE_PLUGIN_H_ */

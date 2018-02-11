@@ -25,8 +25,8 @@ public:
   virtual bool start() override;
   virtual void stop()  override;
 
-  virtual bool write(const class Packet&);
-  virtual bool read (class Packet&);
+  virtual bool write(const class Packet&) override;
+  virtual bool read (class Packet&)       override;
 
 protected:
   MsgQueue*       msgq_;

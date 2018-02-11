@@ -893,5 +893,6 @@
         <update_rate>100</update_rate>
       </sensor>
     </joint>
+
   </model>
 </sdf>

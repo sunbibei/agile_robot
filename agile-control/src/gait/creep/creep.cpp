@@ -318,8 +318,8 @@ void Creep::pose_init() {
     timer_->start();
   }
 
-  print_eef_pos(eef_cmds_[LegType::FL], eef_cmds_[LegType::FR],
-        eef_cmds_[LegType::HL], eef_cmds_[LegType::HR]);
+//  print_eef_pos(eef_cmds_[LegType::FL], eef_cmds_[LegType::FR],
+//        eef_cmds_[LegType::HL], eef_cmds_[LegType::HR]);
 }
 
 void Creep::ready() {

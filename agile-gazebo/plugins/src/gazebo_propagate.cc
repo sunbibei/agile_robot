@@ -20,13 +20,13 @@ void __parse_jnt_name(const std::string& _n, LegType& _l, JntType& _j);
 
 using namespace gazebo;
 
-namespace qr_gazebo {
+namespace agile_gazebo {
 
-struct MsgqPacket : public MsgBase {
+struct MsgqPacket1 : public MsgBase {
   Packet pkg;
 };
 
-struct LinearParams {
+struct LinearParams1 {
   double scale;
   double offset;
 };
@@ -34,7 +34,7 @@ struct LinearParams {
 GzPropagateG::GzPropagateG()
   : gazebo::ModelPlugin(),
     world_(nullptr), parent_(nullptr),
-    msgq_(nullptr), rw_thread_alive_(false),
+    rw_thread_alive_(false), msgq_(nullptr),
     swap_r_buffer_(nullptr),
     swap_w_buffer_(nullptr) {
   LOG_INFO << "Create the GzPropagateG... ...";
@@ -115,7 +115,7 @@ void GzPropagateG::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   }
   // initialize linear_params_ from _sdf
   FOR_EACH_LEG(l) {
-    linear_params_[l] = new LinearParams;
+    linear_params_[l] = new LinearParams1;
     FOR_EACH_JNT(j) {
       std::string _tag = LEGTYPE_TOSTRING(l);
       _tag += "_";
@@ -174,7 +174,7 @@ bool GzPropagateG::read(Packet& pkt) {
 }
 
 void GzPropagateG::msg_w_update() {
-  MsgqPacket _pkg;
+  MsgqPacket1 _pkg;
   _pkg.msg_id = 0x02; // means from gazebo plugin
 
   TIMER_INIT
@@ -189,7 +189,7 @@ void GzPropagateG::msg_w_update() {
 }
 
 void GzPropagateG::msg_r_update() {
-  MsgqPacket _pkg;
+  MsgqPacket1 _pkg;
 
   TIMER_INIT
   while (rw_thread_alive_) {
@@ -275,7 +275,10 @@ void GzPropagateG::__write_command_to_sim(const Packet& pkt) {
   }
 }
 
-} /* namespace qr_gazebo */
+// Register this plugin with the simulator
+GZ_REGISTER_MODEL_PLUGIN(GzPropagateG)
+
+} /* namespace agile_gazebo */
 
 inline void __parse_jnt_name(const std::string& _n, LegType& _l, JntType& _j) {
     if (std::string::npos != _n.find("fl")) {
@@ -300,6 +303,3 @@ inline void __parse_jnt_name(const std::string& _n, LegType& _l, JntType& _j) {
         _j = JntType::UNKNOWN_JNT;
     }
 }
-
-// Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(qr_gazebo::GzPropagateG)

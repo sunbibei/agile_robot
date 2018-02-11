@@ -85,7 +85,17 @@ void PropagateManager::updateRead() {
     MUTEX_TRY_LOCK(lock_4_recv_)
     for (auto& c : res_list_) {
       Packet pkt;
-      if (c->read(pkt)) pkts_queue_4_recv_.push_back(pkt);
+      if (c->read(pkt)) {
+        PRESS_THEN_GO
+        printf("  <---------- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+          (int)pkt.node_id,
+          (int)pkt.msg_id,  (int)pkt.size,
+          (int)pkt.data[0], (int)pkt.data[1],
+          (int)pkt.data[2], (int)pkt.data[3],
+          (int)pkt.data[4], (int)pkt.data[5],
+          (int)pkt.data[6], (int)pkt.data[7]);
+        pkts_queue_4_recv_.push_back(pkt);
+      }
     }
     MUTEX_UNLOCK(lock_4_recv_)
 

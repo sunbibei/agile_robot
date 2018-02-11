@@ -26,10 +26,10 @@
         <parent>agile_robot::agile_robot::body</parent>
         <child>agile_robot::kinect::link</child>
       </joint>
-
-      <plugin name="model_push" filename="libmodel_push.so"/>
-      <plugin name="agile_robot_plugin" filename="libqr_next_gazebo.so" >
-        <config name="configures for GzPropagateG" >
+      
+      <plugin name="agile_plugin" filename="libagile_plugin.so" >
+      <!-- plugin name="agile_robot_plugin" filename="libagile_gazebo_driver.so" -->
+        <config name="configures for GzAgilePlugin" >
           <leg_node_msgq_name>leg_node</leg_node_msgq_name>
           <cmd_msgq_name>cmd_msgq</cmd_msgq_name>
 

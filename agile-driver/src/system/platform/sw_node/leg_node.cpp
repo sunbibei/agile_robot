@@ -107,6 +107,15 @@ void LegNode::handleMsg(const Packet& pkt) {
     return;
   }
 
+  if (true)
+    printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+      (int)pkt.node_id,
+      (int)pkt.msg_id,  (int)pkt.size,
+      (int)pkt.data[0], (int)pkt.data[1],
+      (int)pkt.data[2], (int)pkt.data[3],
+      (int)pkt.data[4], (int)pkt.data[5],
+      (int)pkt.data[6], (int)pkt.data[7]);
+
   switch (pkt.msg_id) {
   case MII_MSG_HEARTBEAT_MSG_1:
     if (8 != pkt.size) {

@@ -53,7 +53,7 @@ bool ArmPcan::write(const Packet& pkt) {
       return true;
   }
 
-  LOG_EVERY_N(ERROR, 10) << "Write CAN FAIL!!!";
+  LOG_ERROR << "Write CAN FAIL!!!";
   return false;
 }
 

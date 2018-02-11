@@ -98,6 +98,10 @@ add_library(${PROJECT_NAME}_toolbox
   ${SYS_TOOLBOX_FILES}
 )
 
+add_executable(ipc_clear
+  ${SRC_FOUNDATION}/ipc/ipc_clear.cpp
+)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -117,6 +121,10 @@ target_link_libraries(${PROJECT_NAME}_repository
   ${PROJECT_NAME}_toolbox
 )
 
+target_link_libraries(ipc_clear
+  ${PROJECT_NAME}
+)
+
 # target_link_libraries(${PROJECT_NAME}_repository
 #   ${catkin_LIBRARIES}
 #   ${EIGEN3_LIBRARIES}
@@ -134,6 +142,7 @@ install(TARGETS ${PROJECT_NAME}
                 ${PROJECT_NAME}_registry
                 ${PROJECT_NAME}_repository
                 ${PROJECT_NAME}_toolbox
+                ipc_clear
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
