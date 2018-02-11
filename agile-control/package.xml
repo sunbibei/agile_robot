@@ -1,0 +1,51 @@
+<package>
+    <name>agile_control</name>
+    <version>0.0.1</version>
+    <description>The agile_control meta package</description>
+    
+
+    <maintainer email="sunbibei@sina.com">Bibei Sun</maintainer>
+    <maintainer email="wsr_uestc@163.com">WangShanren</maintainer>
+
+    <url type="website">http://192.168.1.196/sunbibei/qr-apps/wiki</url>
+    <url type="bugtracker">http://192.168.1.196/sunbibei/qr-apps/issues</url>
+    <url type="repository">http://192.168.1.196/sunbibei/qr-apps</url>
+
+    <license>BSD</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>cmake_modules</build_depend>
+    <build_depend>angles</build_depend>
+    <build_depend>controller_interface</build_depend>
+    <build_depend>control_msgs</build_depend>
+    <build_depend>control_toolbox</build_depend>
+    <build_depend>urdf</build_depend>
+    <build_depend>kdl_parser</build_depend>
+    <build_depend>orocos_kdl</build_depend>
+    <build_depend>forward_command_controller</build_depend>
+    <build_depend>dynamic_reconfigure</build_depend>
+    <build_depend>agile_driver</build_depend>
+    <build_depend>agile_foundation</build_depend>
+
+
+    <run_depend>agile_foundation</run_depend>
+    <run_depend>agile_driver</run_depend>
+    <run_depend>cmake_modules</run_depend>
+    <run_depend>kdl_parser</run_depend>
+    <run_depend>orocos_kdl</run_depend>
+    <run_depend>angles</run_depend>
+    <run_depend>controller_interface</run_depend>
+    <run_depend>control_msgs</run_depend>
+    <run_depend>control_toolbox</run_depend>
+    <run_depend>urdf</run_depend>
+    <run_depend>forward_command_controller</run_depend>
+    <run_depend>dynamic_reconfigure</run_depend>
+
+    <!-- <rosdep name="eigen"/> -->
+
+    <export>
+        
+    </export>
+
+</package>
