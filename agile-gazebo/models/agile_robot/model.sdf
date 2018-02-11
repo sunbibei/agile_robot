@@ -1,0 +1,897 @@
+<?xml version="1.0" ?>
+<sdf version='1.6'>
+  <model name='agile_robot'>
+    <link name='body'>
+      <pose frame=''>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose frame=''>-0.294161 -0.000952 0.016932 1.5708 -0 1.5708</pose>
+        <mass>9.96297</mass>
+        <inertia>
+          <ixx>0.506565</ixx>
+          <ixy>-0.000206853</ixy>
+          <ixz>-0.00488101</ixz>
+          <iyy>0.516387</iyy>
+          <iyz>0.00609289</iyz>
+          <izz>0.0749024</izz>
+        </inertia>
+      </inertial>
+
+      <collision name='body_collision'>
+        <pose frame=''>-0.294161 -0.000952 0.016932 1.5708 -0 1.5708</pose>
+        <geometry>
+          <box>
+            <size>0.1 0.206 0.0666</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='body_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/body_unit_m.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Green</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+<!-- =================================================================================== -->
+<!-- |                                         FL LEG                                  | -->
+<!-- =================================================================================== -->
+    <link name='fl_base'>
+      <pose frame=''>0 0.135 -0.045 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.10486 -0.000933 0.017767 1.5708 -0 -3.14159</pose>
+        <mass>0.678337</mass>
+        <inertia>
+          <ixx>0.000458198</ixx>
+          <ixy>-0.000198409</ixy>
+          <ixz>-5.64e-07</ixz>
+          <iyy>0.00512144</iyy>
+          <iyz>-2.605e-06</iyz>
+          <izz>0.00519021</izz>
+        </inertia>
+      </inertial>
+      <collision name='fl_base_collision'>
+        <pose frame=''>-0.10486 -0.000933 0.017767 1.5708 -0 -3.14159</pose>
+        <geometry>
+          <box>
+            <size>0.15 0.09 0.05</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='fl_base_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 -3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/body_part.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Green</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+    <joint name='fl_yaw' type='revolute'>
+      <child>fl_base</child>
+      <parent>body</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.329319</lower>
+          <upper>0.416405</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="fl_yaw_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+    <link name='fl_leg'>
+      <pose frame=''>0 0.135 -0.045 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.008484 -0.001262 -0.141167 1.5708 -0 -3.14159</pose>
+        <mass>0.582404</mass>
+        <inertia>
+          <ixx>0.00414606</ixx>
+          <ixy>0.000104152</ixy>
+          <ixz>-1.286e-06</ixz>
+          <iyy>0.000305157</iyy>
+          <iyz>-1.74e-06</iyz>
+          <izz>0.0042282</izz>
+        </inertia>
+      </inertial>
+
+      <collision name='fl_leg_collision'>
+        <pose frame=''>-0.008484 -0.001262 -0.141167 1.5708 -0 -3.14159</pose>
+        <geometry>
+          <box>
+            <size>0.098 0.12 0.054</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='fl_leg_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 -3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/upper_leg.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+    <joint name='fl_hip' type='revolute'>
+      <child>fl_leg</child>
+      <parent>fl_base</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.262827</lower>
+          <upper>0.8726</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="fl_hip_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+    <link name='fl_shine'>
+      <pose frame=''>0 0.135 -0.32 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-1.1e-05 -0.000363 -0.119983 -3.14159 -0 1.5708</pose>
+        <mass>0.391861</mass>
+        <inertia>
+          <ixx>0.00283818</ixx>
+          <ixy>-5.44075e-10</ixy>
+          <ixz>-5.51794e-06</ixz>
+          <iyy>0.00282555</iyy>
+          <iyz>-7.14202e-06</iyz>
+          <izz>4.36237e-05</izz>
+        </inertia>
+      </inertial>
+
+      <collision name='fl_shine_collision'>
+        <pose frame=''>-1.5e-05 -0.000487 -0.083659 -3.14159 -0 1.5708</pose>
+        <geometry>
+          <box>
+            <size>0.022 0.035995 0.2</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='fl_foot_collision'>
+        <pose frame=''>0 0 -0.226 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.01</radius>
+          </sphere>
+        </geometry>
+      </collision>
+
+      <visual name='fl_shine_visual'>
+        <pose frame=''>0 0 0 -3.14159 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/front_shine.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name='fl_foot_visual'>
+        <pose frame=''>0 0 -0.226 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.01</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Yellow</name>
+          </script>
+        </material>
+      </visual>
+
+      <sensor name='fl_contact' type='contact'>
+        <contact>
+          <collision>fl_foot_collision</collision>
+        </contact>
+      </sensor>
+    </link>
+
+    <joint name='fl_knee' type='revolute'>
+      <child>fl_shine</child>
+      <parent>fl_leg</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1.72775</lower>
+          <upper>-0.595113</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="fl_knee_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+
+<!-- =================================================================================== -->
+<!-- |                                         FL LEG                                  | -->
+<!-- =================================================================================== -->
+    <link name='fr_base'>
+      <pose frame=''>0 -0.135 -0.045 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.10486 -0.000933 0.017767 1.5708 -0 -3.14159</pose>
+        <mass>0.678337</mass>
+        <inertia>
+          <ixx>0.000458198</ixx>
+          <ixy>-0.000198409</ixy>
+          <ixz>-5.64e-07</ixz>
+          <iyy>0.00512144</iyy>
+          <iyz>-2.605e-06</iyz>
+          <izz>0.00519021</izz>
+        </inertia>
+      </inertial>
+
+      <collision name='fr_base_collision'>
+        <pose frame=''>-0.10486 -0.000933 0.017767 1.5708 -0 -3.14159</pose>
+        <geometry>
+          <box>
+            <size>0.15 0.09 0.05</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='fr_base_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 -3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/body_part.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Green</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+    <joint name='fr_yaw' type='revolute'>
+      <child>fr_base</child>
+      <parent>body</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.329319</lower>
+          <upper>0.416405</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="fr_yaw_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+    <link name='fr_leg'>
+      <pose frame=''>0 -0.135 -0.045 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.008484 -0.001262 -0.141167 1.5708 -0 -3.14159</pose>
+        <mass>0.582404</mass>
+        <inertia>
+          <ixx>0.00414606</ixx>
+          <ixy>0.000104152</ixy>
+          <ixz>-1.286e-06</ixz>
+          <iyy>0.000305157</iyy>
+          <iyz>-1.74e-06</iyz>
+          <izz>0.0042282</izz>
+        </inertia>
+      </inertial>
+      <collision name='fr_leg_collision'>
+        <pose frame=''>-0.008484 -0.001262 -0.141167 1.5708 -0 -3.14159</pose>
+        <geometry>
+          <box>
+            <size>0.098 0.12 0.054</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='fr_leg_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 -3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/upper_leg.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name='fr_hip' type='revolute'>
+      <child>fr_leg</child>
+      <parent>fr_base</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.262827</lower>
+          <upper>0.8726</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="fr_hip_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+    <link name='fr_shine'>
+      <pose frame=''>0 -0.135 -0.32 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-1.1e-05 -0.000363 -0.119983 -3.14159 -0 1.5708</pose>
+        <mass>0.391861</mass>
+        <inertia>
+          <ixx>0.00283818</ixx>
+          <ixy>-5.44075e-10</ixy>
+          <ixz>-5.51794e-06</ixz>
+          <iyy>0.00282555</iyy>
+          <iyz>-7.14202e-06</iyz>
+          <izz>4.36237e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='fr_shine_collision'>
+        <pose frame=''>-1.5e-05 -0.000487 -0.083659 -3.14159 -0 1.5708</pose>
+        <geometry>
+          <box>
+            <size>0.022 0.035995 0.2</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='fr_foot_collision'>
+        <pose frame=''>0 0 -0.226 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.01</radius>
+          </sphere>
+        </geometry>
+      </collision>
+
+      <visual name='fr_shine_visual'>
+        <pose frame=''>0 0 0 -3.14159 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/front_shine.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name='fr_foot_visual'>
+        <pose frame=''>0 0 -0.226 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.01</radius>
+          </sphere>
+        </geometry>
+      </visual>
+
+      <sensor name='fr_contact' type='contact'>
+        <contact>
+          <collision>fr_foot_collision</collision>
+        </contact>
+      </sensor>
+    </link>
+
+    <joint name='fr_knee' type='revolute'>
+      <child>fr_shine</child>
+      <parent>fr_leg</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1.72775</lower>
+          <upper>-0.595113</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="fr_knee_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+
+
+<!-- =================================================================================== -->
+<!-- |                                         HL LEG                                  | -->
+<!-- =================================================================================== -->
+    <link name='hl_base'>
+      <pose frame=''>-0.545 0.155 0.02 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.10486 -0.000933 0.017767 1.5708 -0 0</pose>
+        <mass>0.678337</mass>
+        <inertia>
+          <ixx>0.000458198</ixx>
+          <ixy>-0.000198409</ixy>
+          <ixz>-5.64e-07</ixz>
+          <iyy>0.00512144</iyy>
+          <iyz>-2.605e-06</iyz>
+          <izz>0.00519021</izz>
+        </inertia>
+      </inertial>
+      <collision name='hl_base_collision'>
+        <pose frame=''>0.10486 -0.000933 0.017767 1.5708 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.15 0.09 0.05</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='hl_base_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/body_part.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Green</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+    <joint name='hl_yaw' type='revolute'>
+      <child>hl_base</child>
+      <parent>body</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.329319</lower>
+          <upper>0.416405</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="hl_yaw_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+    <link name='hl_leg'>
+      <pose frame=''>-0.545 0.155 0.02 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.008484 -0.001262 -0.141167 1.5708 -0 0</pose>
+        <mass>0.582404</mass>
+        <inertia>
+          <ixx>0.00414606</ixx>
+          <ixy>0.000104152</ixy>
+          <ixz>-1.286e-06</ixz>
+          <iyy>0.000305157</iyy>
+          <iyz>-1.74e-06</iyz>
+          <izz>0.0042282</izz>
+        </inertia>
+      </inertial>
+      <collision name='hl_leg_collision'>
+        <pose frame=''>0.008484 -0.001262 -0.141167 1.5708 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.098 0.12 0.054</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='hl_leg_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/upper_leg.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name='hl_hip' type='revolute'>
+      <child>hl_leg</child>
+      <parent>hl_base</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.8726</lower>
+          <upper>0.262827</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="hl_hip_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+    <link name='hl_shine'>
+      <pose frame=''>-0.545 0.155 -0.255 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.00034 -0.000216 -0.145475 0 -0 1.5708</pose>
+        <mass>0.391861</mass>
+        <inertia>
+          <ixx>0.00373711</ixx>
+          <ixy>-5.91507e-08</ixy>
+          <ixz>1.23202e-05</ixz>
+          <iyy>0.00371052</iyy>
+          <iyz>-1.65499e-05</iyz>
+          <izz>5.28108e-05</izz>
+        </inertia>
+      </inertial>
+
+      <collision name='hl_shine_collision'>
+        <pose frame=''>-0.000456 -0.00029 -0.10418 0 -0 1.5708</pose>
+        <geometry>
+          <box>
+            <size>0.026 0.043998 0.24</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='hl_foot_collision'>
+        <pose frame=''>0 0 -0.266 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.01</radius>
+          </sphere>
+        </geometry>
+      </collision>
+
+      <visual name='hl_shine_visual'>
+        <pose frame=''>0 0 0 0 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/back_shine.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name='hl_foot_visual'>
+        <pose frame=''>0 0 -0.266 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.01</radius>
+          </sphere>
+        </geometry>
+      </visual>
+
+      <sensor name='hl_contact' type='contact'>
+        <contact>
+          <collision>hl_foot_collision</collision>
+        </contact>
+      </sensor>
+    </link>
+
+    <joint name='hl_knee' type='revolute'>
+      <child>hl_shine</child>
+      <parent>hl_leg</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>0.595113</lower>
+          <upper>1.72775</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="hl_knee_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+
+<!-- =================================================================================== -->
+<!-- |                                         HR LEG                                  | -->
+<!-- =================================================================================== -->
+    <link name='hr_base'>
+      <pose frame=''>-0.545 -0.155 0.02 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.10486 -0.000933 0.017767 1.5708 -0 0</pose>
+        <mass>0.678337</mass>
+        <inertia>
+          <ixx>0.000458198</ixx>
+          <ixy>-0.000198409</ixy>
+          <ixz>-5.64e-07</ixz>
+          <iyy>0.00512144</iyy>
+          <iyz>-2.605e-06</iyz>
+          <izz>0.00519021</izz>
+        </inertia>
+      </inertial>
+
+      <collision name='hr_base_collision'>
+        <pose frame=''>0.10486 -0.000933 0.017767 1.5708 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.15 0.09 0.05</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='hr_base_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/body_part.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Green</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+    <joint name='hr_yaw' type='revolute'>
+      <child>hr_base</child>
+      <parent>body</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-0.329319</lower>
+          <upper>0.416405</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="hr_yaw_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+    <link name='hr_leg'>
+      <pose frame=''>-0.545 -0.155 0.02 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>0.008484 -0.001262 -0.141167 1.5708 -0 0</pose>
+        <mass>0.582404</mass>
+        <inertia>
+          <ixx>0.00414606</ixx>
+          <ixy>0.000104152</ixy>
+          <ixz>-1.286e-06</ixz>
+          <iyy>0.000305157</iyy>
+          <iyz>-1.74e-06</iyz>
+          <izz>0.0042282</izz>
+        </inertia>
+      </inertial>
+      <collision name='hr_leg_collision'>
+        <pose frame=''>0.008484 -0.001262 -0.141167 1.5708 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.098 0.12 0.054</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='hr_leg_visual'>
+        <pose frame=''>0 0 0 1.5708 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/upper_leg.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name='hr_hip' type='revolute'>
+      <child>hr_leg</child>
+      <parent>hr_base</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.8726</lower>
+          <upper>0.262827</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="hr_hip_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+
+    <link name='hr_shine'>
+      <pose frame=''>-0.545 -0.155 -0.255 0 -0 0</pose>
+      <inertial>
+        <pose frame=''>-0.00034 -0.000216 -0.145475 0 -0 1.5708</pose>
+        <mass>0.391861</mass>
+        <inertia>
+          <ixx>0.00373711</ixx>
+          <ixy>-5.91507e-08</ixy>
+          <ixz>1.23202e-05</ixz>
+          <iyy>0.00371052</iyy>
+          <iyz>-1.65499e-05</iyz>
+          <izz>5.28108e-05</izz>
+        </inertia>
+      </inertial>
+      <collision name='hr_shine_collision'>
+        <pose frame=''>-0.000456 -0.00029 -0.10418 0 -0 1.5708</pose>
+        <geometry>
+          <box>
+            <size>0.026 0.043998 0.24</size>
+          </box>
+        </geometry>
+      </collision>
+      <collision name='hr_foot_collision'>
+        <pose frame=''>0 0 -0.266 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.01</radius>
+          </sphere>
+        </geometry>
+      </collision>
+      <visual name='hr_shine_visual'>
+        <pose frame=''>0 0 0 0 -0 1.5708</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://agile_robot/meshes/back_shine.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name='hr_foot_visual'>
+        <pose frame=''>0 0 -0.266 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.01</radius>
+          </sphere>
+        </geometry>
+      </visual>
+
+      <sensor name='hr_contact' type='contact'>
+        <contact>
+          <collision>hr_foot_collision</collision>
+        </contact>
+      </sensor>
+    </link>
+
+    <joint name='hr_knee' type='revolute'>
+      <child>hr_shine</child>
+      <parent>hr_leg</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>0.595113</lower>
+          <upper>1.72775</upper>
+          <effort>50</effort>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.01</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+
+      <sensor name="hr_knee_torque" type="force_torque">
+        <update_rate>100</update_rate>
+      </sensor>
+    </joint>
+  </model>
+</sdf>

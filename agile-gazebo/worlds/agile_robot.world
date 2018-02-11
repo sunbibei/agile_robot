@@ -1,0 +1,72 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="default">
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    
+    <model name="agile_robot">
+      <!-- The kinect camera -->
+      <include>
+        <uri>model://kinect</uri>
+        <pose>0.073 0 0.1 0 0 0</pose>
+      </include>
+
+      <include>
+        <pose>0 0 0 0 0 0</pose>
+        <uri>model://agile_robot</uri>
+      </include>
+
+      <joint name="camera_joint" type="fixed">
+        <parent>agile_robot::agile_robot::body</parent>
+        <child>agile_robot::kinect::link</child>
+      </joint>
+
+      <plugin name="model_push" filename="libmodel_push.so"/>
+      <plugin name="agile_robot_plugin" filename="libqr_next_gazebo.so" >
+        <config name="configures for GzPropagateG" >
+          <leg_node_msgq_name>leg_node</leg_node_msgq_name>
+          <cmd_msgq_name>cmd_msgq</cmd_msgq_name>
+
+          <FL_node_id>0x02</FL_node_id>
+          <FL_YAW_linear_scale>1</FL_YAW_linear_scale>
+          <FL_YAW_linear_offset>16290</FL_YAW_linear_offset>
+          <FL_HIP_linear_scale>-1</FL_HIP_linear_scale>
+          <FL_HIP_linear_offset>23079</FL_HIP_linear_offset>
+          <FL_KNEE_linear_scale>1</FL_KNEE_linear_scale>
+          <FL_KNEE_linear_offset>28734</FL_KNEE_linear_offset>
+
+          <HL_node_id>0x03</HL_node_id>
+          <HL_YAW_linear_scale>-1</HL_YAW_linear_scale>
+          <HL_YAW_linear_offset>19445</HL_YAW_linear_offset>
+          <HL_HIP_linear_scale>-1</HL_HIP_linear_scale>
+          <HL_HIP_linear_offset>5802</HL_HIP_linear_offset>
+          <HL_KNEE_linear_scale>1</HL_KNEE_linear_scale>
+          <HL_KNEE_linear_offset>20747</HL_KNEE_linear_offset>
+
+          <FR_node_id>0x04</FR_node_id>
+          <FR_YAW_linear_scale>1</FR_YAW_linear_scale>
+          <FR_YAW_linear_offset>18206</FR_YAW_linear_offset>
+          <FR_HIP_linear_scale>1</FR_HIP_linear_scale>
+          <FR_HIP_linear_offset>5802</FR_HIP_linear_offset>
+          <FR_KNEE_linear_scale>-1</FR_KNEE_linear_scale>
+          <FR_KNEE_linear_offset>11897</FR_KNEE_linear_offset>
+          
+          <HR_node_id>0x05</HR_node_id>
+          <HR_YAW_linear_scale>-1</HR_YAW_linear_scale>
+          <HR_YAW_linear_offset>16387</HR_YAW_linear_offset>
+          <HR_HIP_linear_scale>1</HR_HIP_linear_scale>
+          <HR_HIP_linear_offset>19563</HR_HIP_linear_offset>
+          <HR_KNEE_linear_scale>-1</HR_KNEE_linear_scale>
+          <HR_KNEE_linear_offset>19208</HR_KNEE_linear_offset>
+        </config>
+      </plugin>
+
+    </model>
+  </world>
+</sdf>

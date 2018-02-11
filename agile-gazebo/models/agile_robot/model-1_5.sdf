@@ -1,0 +1,142 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+	<model name="agile_robot">
+		<pose>0 0 0 0 0 0</pose>
+
+		<link name="body">
+      <visual name="body_visual">
+        <geometry>
+          <box>
+            <size>0.1 0.206 0.666</size>
+          </box>
+        </geometry>
+        <pose>0 0 0 1.570796349 1.570796349 1.570796349</pose>
+      </visual>
+
+      <collision name="body_collision">
+        <geometry>
+          <box>
+            <size>0.1 0.206 0.666</size>
+          </box>
+        </geometry>
+        <pose>-.294161 -.000952 .016932 1.570796349 0 1.570796349</pose>
+      </collision>
+
+      <inertial>
+        <inertia>
+          <ixx>.506565255</ixx>
+          <ixy>-.000206853</ixy>
+          <ixz>-.004881012</ixz>
+          <iyy>.516386594</iyy>
+          <iyz>.006092892</iyz>
+          <izz>.074902421</izz>
+        </inertia>
+        <mass>9.9629698</mass>
+      </inertial>
+
+			<sensor name="imu_sensor" type='imu'>
+			  <always_on>1</always_on>
+			  <update_rate>1000</update_rate>
+			  <imu>
+					<angular_velocity>
+					  <x>
+						<noise type="gaussian">
+						 <mean>0</mean>
+						 <stddev>0.0002</stddev>
+						 <bias_mean>7.5e-06</bias_mean>
+						 <bias_stddev>8e-07</bias_stddev>
+						</noise>
+					  </x>
+					  <y>
+						<noise type="gaussian">
+						 <mean>0</mean>
+						 <stddev>0.0002</stddev>
+						 <bias_mean>7.5e-06</bias_mean>
+						 <bias_stddev>8e-07</bias_stddev>
+						</noise>
+					  </y>
+					  <z>
+						<noise type="gaussian">
+						 <mean>0</mean>
+						 <stddev>0.0002</stddev>
+						 <bias_mean>7.5e-06</bias_mean>
+						 <bias_stddev>8e-07</bias_stddev>
+						</noise>
+					  </z>
+					</angular_velocity>
+
+					<linear_acceleration>
+					  <x>
+						<noise type="gaussian">
+						  <mean>0</mean>
+						  <stddev>0.017</stddev>
+						  <bias_mean>0.1</bias_mean>
+						  <bias_stddev>0.001</bias_stddev>
+						</noise>
+					  </x>
+					  <y>
+						<noise type="gaussian">
+						  <mean>0</mean>
+						  <stddev>0.017</stddev>
+						  <bias_mean>0.1</bias_mean>
+						  <bias_stddev>0.001</bias_stddev>
+						</noise>
+					  </y>
+					  <z>
+						<noise type="gaussian">
+						  <mean>0</mean>
+						  <stddev>0.017</stddev>
+						  <bias_mean>0.1</bias_mean>
+						  <bias_stddev>0.001</bias_stddev>
+						</noise>
+					  </z>
+					</linear_acceleration>
+			  </imu>
+			</sensor>
+		</link>
+
+		<link name="fl_base">
+			<pose>-0.10486 -.000933 .017767 1.570796349 0 3.141592698</pose>
+
+      <inertial>
+        <inertia>
+          <ixx>.000458198</ixx>
+          <ixy>-.000198409</ixy>
+          <ixz>-.000000564</ixz>
+          <iyy>.005121443</iyy>
+          <iyz>-.000002605</iyz>
+          <izz>.00519021</izz>
+        </inertia>
+        <mass>0.67833686</mass>
+      </inertial>
+
+			<collision name="fl_base_collision">
+				<pose>0 0 0 -1.57079 0 0</pose>
+				<geometry>
+					<cylinder>
+						<radius>0.05</radius>
+						<length>0.46</length>
+					</cylinder>
+				</geometry>
+			</collision>
+
+			<visual name="fl_base_visual">
+				<pose>0 0 0 -1.57079 0 0</pose>
+				<geometry>
+					<cylinder>
+						<radius>0.05</radius>
+						<length>0.46</length>
+					</cylinder>
+				</geometry>
+				<material>
+					<script>
+						<name>Gazebo/Orange</name>
+					</script>
+				</material>
+			</visual>
+
+		</link>
+
+
+	</model>
+</sdf>
