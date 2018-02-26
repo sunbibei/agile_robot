@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dragon">
+
+	<!--*************************************************************-->
+	<!--*********************  MACRO CONSTS  ************************-->
+	<!--*************************************************************-->
+
+	<xacro:property name="FileStr"       value="package://agile_gazebo/models/agile_robot/meshes" />
+	<xacro:property name="BodySTL"       value="body_unit_m.stl" />
+	<xacro:property name="ShoulderSTL"   value="body_part.stl" />
+	<xacro:property name="LegSTL"        value="upper_leg.stl" />
+	<xacro:property name="FrontShineSTL" value="front_shine.stl" />
+	<xacro:property name="BackShineSTL"  value="back_shine.stl" />
+
+	<xacro:property name="Hip_Con_Lower" value="-0.262827" />
+	<xacro:property name="Hip_Con_Upper" value="0.872600" />
+	<xacro:property name="Damping"       value="0.01" />
+	<xacro:property name="Friction"      value="0" />
+	<xacro:property name="PI"            value="3.141592698" />
+	<xacro:property name="Effort_Limit"            value="50" />
+	<xacro:property name="Velocity_Limit"          value="1" />
+
+	<!--***************************************************************-->
+	<!--*********************  MACRO TEMPLATES  ***********************-->
+	<!--***************************************************************-->
+	<!-- BASE MACRO -->
+	<xacro:macro name="BASE" params="Name Yaw Sgn Jo_Ori_X Jo_Ori_Y Jo_Ori_Z">
+		<link name="${Name}_base">
+			<visual>
+				<geometry>
+					<mesh filename="${FileStr}/${ShoulderSTL}"/>
+				</geometry>
+				<origin xyz="0 0 0" rpy="${PI/2} 0 ${Yaw}" />
+			</visual>
+			<collision>
+				<geometry>
+					<box size=".15 .09 .05"/>
+				</geometry>
+				<origin xyz="${Sgn*.104860} -.000933 .017767" rpy="${PI/2} 0 ${Yaw}" />
+			</collision>
+			<inertial>
+				<mass value=".67833686"/>
+				<inertia ixx=".000458198" ixy="-.000198409" ixz="-.000000564" iyy=".005121443" iyz="-.000002605" izz=".00519021"/>
+				<origin xyz="${Sgn*.104860} -.000933 .017767" rpy="${PI/2} 0 ${Yaw}" />
+			</inertial>
+		</link>
+		<joint name="${Name}_yaw" type="revolute">
+			<parent link="body"/>
+			<child link="${Name}_base"/>
+			<axis xyz="1 0 0"/>
+			<origin xyz="${Jo_Ori_X} ${Jo_Ori_Y} ${Jo_Ori_Z}" rpy="0 0 0"/>
+			<dynamics damping="${Damping}" friction="${Friction}"/>
+			<limit lower="-0.329319" upper="0.416405" effort="${Effort_Limit}" velocity="${Velocity_Limit}"/>
+		</joint>
+	</xacro:macro>
+	<!-- LEG MACRO -->
+	<xacro:macro name="LEG" params="Name Yaw Sgn Limit_L Limit_U">
+		<link name="${Name}_leg">
+			<visual>
+				<geometry>
+					<mesh filename="${FileStr}/${LegSTL}"/>
+				</geometry>
+				<origin xyz="0 0 0" rpy="${PI/2} 0 ${Yaw}" />
+			</visual>
+			<collision>
+				<geometry>
+					<box size=".098 .12 .054"/>
+				</geometry>
+				<origin xyz="${Sgn*.008484} -.001262 -.141167" rpy="${PI/2} 0 ${Yaw}" />
+			</collision>
+			<inertial>
+				<mass value=".58240446"/>
+				<inertia ixx=".004146058" ixy=".000104152" ixz="-.000001286" iyy=".000305157" iyz="-.00000174" izz=".0042282"/>
+				<origin xyz="${Sgn*.008484} -.001262 -.141167" rpy="${PI/2} 0 ${Yaw}" />
+			</inertial>
+		</link>
+		<joint name="${Name}_hip" type="revolute">
+			<parent link="${Name}_base"/>
+			<child link="${Name}_leg"/>
+			<axis xyz="0 1 0"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<dynamics damping="${Damping}" friction="${Friction}"/>
+			<limit lower="${Limit_L}" upper="${Limit_U}" effort="${Effort_Limit}" velocity="${Velocity_Limit}"/>
+		</joint>
+	</xacro:macro>
+	<!-- FRONT SHINE MACRO -->
+	<xacro:macro name="FSHINE" params="Name">
+		<link name="f${Name}_shine">
+			<visual>
+				<geometry>
+					<mesh filename="${FileStr}/${FrontShineSTL}"/>
+				</geometry>
+				<origin xyz="0 0 0" rpy="0 ${PI} ${PI/-2}" />
+			</visual>
+			<collision>
+				<geometry>
+					<box size=".022 .035995 .20"/>
+				</geometry>
+				<origin xyz="-.000015 -.000487 -.083659" rpy="0 ${PI} ${PI/-2}" />
+			</collision>
+			<inertial>
+				<mass value=".29186134"/>
+				<inertia ixx=".001325132" ixy="0" ixz="-.000000355" iyy=".001312476" iyz="-.000006983" izz=".000039606"/>
+				<origin xyz="-.000015 -.000487 -.083659" rpy="0 ${PI} ${PI/-2}" />
+			</inertial>
+		</link>
+		<joint name="f${Name}_knee" type="revolute">
+			<parent link="f${Name}_leg"/>
+			<child link="f${Name}_shine"/>
+			<axis xyz="0 1 0"/>
+			<origin xyz="0 0 -0.275" rpy="0 0 0"/>
+			<dynamics damping="${Damping}" friction="${Friction}"/>
+			<limit lower="-1.727748" upper="-0.595113" effort="${Effort_Limit}" velocity="${Velocity_Limit}"/>
+		</joint>
+	</xacro:macro>
+	<!-- BACK SHINE MACRO -->
+	<xacro:macro name="HSHINE" params="Name">
+		<link name="h${Name}_shine">
+			<visual>
+				<geometry>
+					<mesh filename="${FileStr}/${BackShineSTL}"/>
+				</geometry>
+				<origin xyz="0 0 0" rpy="0 0 ${PI/2}" />
+			</visual>
+			<collision>
+				<geometry>
+					<box size=".026 .043998 .24"/>
+				</geometry>
+				<origin xyz="-.000456 -.000290 -.104180" rpy="0 0 ${PI/2}" />
+			</collision>
+			<inertial>
+				<mass value=".29186134"/>
+				<inertia ixx=".001782767" ixy="-.000000069" ixz=".000008825" iyy=".001756178" iyz="-.000011054" izz=".000048789"/>
+				<origin xyz="-.000456 -.000290 -.104180" rpy="0 0 ${PI/2}" />
+			</inertial>
+		</link>
+		<joint name="h${Name}_knee" type="revolute">
+			<parent link="h${Name}_leg"/>
+			<child link="h${Name}_shine"/>
+			<axis xyz="0 1 0"/>
+			<origin xyz="0 0 -.275" rpy="0 0 0"/>
+			<dynamics damping="${Damping}" friction="${Friction}"/>
+			<limit lower="0.595113" upper="1.727748" effort="${Effort_Limit}" velocity="${Velocity_Limit}"/>
+		</joint>
+	</xacro:macro>
+	<!-- FOOT MACRO -->
+	<xacro:macro name="FOOT" params="Name Jo_Ori_Z">
+		<link name="${Name}_foot">
+			<visual>
+				<geometry>
+					<sphere radius=".01"/>
+				</geometry>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+			</visual>
+			<collision>
+				<geometry>
+					<sphere radius=".01"/>
+				</geometry>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+			</collision>
+			<inertial>
+				<mass value=".1"/>
+				<inertia ixx=".000004" ixy="0" ixz="0" iyy=".000004" iyz="0" izz=".000004"/>
+				<origin xyz="0 0 0" rpy="0 0 0" />
+			</inertial>
+		</link>
+		<joint name="${Name}_foot_fix" type="fixed">
+			<parent link="${Name}_shine"/>
+			<child link="${Name}_foot"/>
+			<origin xyz="0 0 ${Jo_Ori_Z}" rpy="0 0 0"/>
+		</joint>
+	</xacro:macro>
+
+	<!--***************************************************************-->
+	<!--*********  VIRTUAL LINK, BODY LINK and VIRTUAL JOINT  *********-->
+	<!--***************************************************************-->
+
+
+	<link name="body">
+		<visual>
+			<geometry>
+				<mesh filename="${FileStr}/${BodySTL}"/>
+			</geometry>
+			<origin xyz="0.2725 0 0" rpy="${PI/2} 0 ${PI/2}"/>
+		</visual>
+		<collision>
+			<geometry>
+				<box size=".1 .206 .666"/>
+			</geometry>
+			<origin xyz="-.294161 -.000952 .016932" rpy="${PI/2} 0 ${PI/2}"/>
+		</collision>
+		<inertial>
+			<mass value="9.9629698"/>
+			<inertia ixx=".506565255" ixy="-.000206853" ixz="-.004881012" iyy=".516386594" iyz=".006092892" izz=".074902421"/>
+			<origin xyz="-.294161 -.000952 .016932" rpy="${PI/2} 0 ${PI/2}"/>
+		</inertial>
+	</link>
+	
+<!--***************************************************************-->
+<!--********  LINKS and JOINTS defined by MACRO TEMPLATES  ********-->
+<!--***************************************************************-->
+<xacro:BASE Name="fl"  Yaw="${PI}" Sgn="-1" Jo_Ori_X=".2725"  Jo_Ori_Y=".135"  Jo_Ori_Z="-.045" />
+<xacro:BASE Name="fr"  Yaw="${PI}" Sgn="-1" Jo_Ori_X=".2725"  Jo_Ori_Y="-.135" Jo_Ori_Z="-.045" />
+<xacro:BASE Name="hl"  Yaw="0"     Sgn="1"  Jo_Ori_X="-.2725" Jo_Ori_Y=".155"  Jo_Ori_Z=".02"   />
+<xacro:BASE Name="hr"  Yaw="0"     Sgn="1"  Jo_Ori_X="-.2725" Jo_Ori_Y="-.155" Jo_Ori_Z=".02"   />
+
+<xacro:LEG   Name="fl" Yaw="${PI}" Sgn="-1" Limit_L="${Hip_Con_Lower}"  Limit_U="${Hip_Con_Upper}"/>
+<xacro:LEG   Name="fr" Yaw="${PI}" Sgn="-1" Limit_L="${Hip_Con_Lower}"  Limit_U="${Hip_Con_Upper}"/>
+<xacro:LEG   Name="hl" Yaw="0"     Sgn="1"  Limit_L="${-Hip_Con_Upper}" Limit_U="${-Hip_Con_Lower}"/>
+<xacro:LEG   Name="hr" Yaw="0"     Sgn="1"  Limit_L="${-Hip_Con_Upper}" Limit_U="${-Hip_Con_Lower}"/>
+
+<xacro:FSHINE Name="l" />
+<xacro:FSHINE Name="r" />
+<xacro:HSHINE Name="l" />
+<xacro:HSHINE Name="r" />
+
+<xacro:FOOT Name="fl"  Jo_Ori_Z="-.226"/>
+<xacro:FOOT Name="fr"  Jo_Ori_Z="-.226"/>
+<xacro:FOOT Name="hl"  Jo_Ori_Z="-.266"/>
+<xacro:FOOT Name="hr"  Jo_Ori_Z="-.266"/>
+
+</robot>

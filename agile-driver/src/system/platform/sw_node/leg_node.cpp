@@ -21,6 +21,8 @@
 
 namespace middleware {
 
+FILE* _msg_fd = nullptr;
+
 const size_t JNT_P_CMD_DSIZE   = 6;
 const size_t JNT_PV0_CMD_DSIZE = 8;
 const size_t JNT_PV1_CMD_DSIZE = 4;
@@ -76,11 +78,13 @@ bool LegNode::auto_init() {
       motors_by_type_[jnt->joint_type()] = jnt->joint_motor_;
 
     auto param  = new __PrivateLinearParams;
-    double alpha, beta = 0;
+    double alpha = 0, beta = 0;
     cfg->get_value_fatal(tag, "scale",  alpha);
     cfg->get_value_fatal(tag, "offset", beta);
     param->scale  = alpha * 0.001533981;
     param->offset = alpha * beta * -0.000174528;
+    // LOG_DEBUG << jnt->joint_name() << ": " << param->scale << ", " << param->offset;
+
     jnt_params_[jnt->joint_type()] = param;
     jnt_cmds_[jnt->joint_type()]   = jnt->joint_command_const_pointer();
     if (jnt->joint_motor_)
@@ -89,6 +93,8 @@ bool LegNode::auto_init() {
     tag = Label::make_label(getLabel(), "joint_" + std::to_string(++count));
     if (3 == count) break;
   }
+  // PRESS_THEN_GO
+  _msg_fd = fopen("/home/bibei/Workspaces/agile_ws/src/agile_robot/agile-apps/config/ag", "w+");
 
   tag = Label::make_label(getLabel(), "touchdown");
   if ((cfg->get_value(tag, "label", tmp_str))
@@ -107,7 +113,8 @@ void LegNode::handleMsg(const Packet& pkt) {
     return;
   }
 
-  if (true)
+  if (false) {
+    std::cout << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":";
     printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
       (int)pkt.node_id,
       (int)pkt.msg_id,  (int)pkt.size,
@@ -115,6 +122,7 @@ void LegNode::handleMsg(const Packet& pkt) {
       (int)pkt.data[2], (int)pkt.data[3],
       (int)pkt.data[4], (int)pkt.data[5],
       (int)pkt.data[6], (int)pkt.data[7]);
+  }
 
   switch (pkt.msg_id) {
   case MII_MSG_HEARTBEAT_MSG_1:
@@ -150,13 +158,16 @@ void LegNode::handleMsg(const Packet& pkt) {
 }
 
 void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
-  /*printf("0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n", 
-      __p[0], __p[1], __p[2], __p[3], __p[4], __p[5], __p[6], __p[7]);*/
+//  if (true && LegType::FL == leg_)
+//    printf("0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//        __p[0], __p[1], __p[2], __p[3], __p[4], __p[5], __p[6], __p[7]);
   int offset  = 0;
   short count = 0;
   double pos  = 0.0;
+  short counts[JntType::N_JNTS] = {0};
   for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
     memcpy(&count, __p + offset, sizeof(count));
+    counts[type] = count;
     // angle = \frac{360 \pi \alpha}{180*4096} C - \frac{\pi}{18000}\alpha*\beta
     // so, the ABS(scale) = \frac{360 \pi \alpha}{180*4096} = \frac{360\pi}{180*4096}
     // offset = - \frac{\pi}{18000}\alpha*\beta = -0.000174528*\beta
@@ -166,6 +177,9 @@ void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
     offset += sizeof(count); // each count will stand two bytes.
   }
 
+  if (true && LegType::FL == leg_)
+    fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg_),
+        counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
   // if (LegType::HL == leg_) printf("%d: 0x%02X, 0x%02X", leg_, __p[offset], __p[offset + 1]);
   td_->updateForceCount((__p[offset] | (__p[offset + 1] << 8)));
 }
@@ -225,7 +239,8 @@ bool LegNode::__fill_pos_cmd(MiiVector<Packet>& pkts) {
       //   printf("LegNode: [%d] - (%d): %+01.04f\n", leg_, type, jnt_cmds_[type][0]);
       count = (*jnt_cmds_[type] - jnt_params_[type]->offset) / jnt_params_[type]->scale;
       memcpy(cmd.data + offset, &count, sizeof(count));
-      // printf("LegNode: [%s] - (%s):\t%05d\n", LEGTYPE_TOSTRING(leg_), JNTTYPE_TOSTRING(type), count);
+//      if (LegType::FL == leg_)
+//        printf("LegNode: [%s] - (%s):\t%05d\n", LEGTYPE_TOSTRING(leg_), JNTTYPE_TOSTRING(type), count);
       jnts_by_type_[type]->new_command_ = false;
     } else {
       cmd.data[offset]     = INVALID_BYTE;

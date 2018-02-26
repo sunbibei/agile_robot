@@ -14,11 +14,11 @@
       <!-- The kinect camera -->
       <include>
         <uri>model://kinect</uri>
-        <pose>0.073 0 0.1 0 0 0</pose>
+        <pose>0.073 0 4.7 0 0 0</pose>
       </include>
 
       <include>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0 4.6 0 0 0</pose>
         <uri>model://agile_robot</uri>
       </include>
 
@@ -53,7 +53,7 @@
           <FR_YAW_linear_scale>1</FR_YAW_linear_scale>
           <FR_YAW_linear_offset>18206</FR_YAW_linear_offset>
           <FR_HIP_linear_scale>1</FR_HIP_linear_scale>
-          <FR_HIP_linear_offset>5802</FR_HIP_linear_offset>
+          <FR_HIP_linear_offset>11260</FR_HIP_linear_offset>
           <FR_KNEE_linear_scale>-1</FR_KNEE_linear_scale>
           <FR_KNEE_linear_offset>11897</FR_KNEE_linear_offset>
           

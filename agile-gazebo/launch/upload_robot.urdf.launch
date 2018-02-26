@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch> 
+  <!-- Load the URDF/Xacro model of our robot -->
+  <param name="robot_description"
+  command="$(find xacro)/xacro.py '$(find agile_gazebo)/models/agile_robot/model.urdf.xacro'"/>
+  
+</launch>

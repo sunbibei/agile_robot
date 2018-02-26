@@ -300,7 +300,7 @@ void Creep::post_tick() {
     leg_ifaces_[leg]->move();
   }
 
-  // print_jnt_pos(JNTS_TARGET);
+  // print_jnt_pos(/*JNTS_TARGET*/);
   // print_eef_pos();
 
 //  Eigen::Vector3d margins = stability_margin(swing_leg_);

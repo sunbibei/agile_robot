@@ -176,6 +176,7 @@ target_link_libraries(${PROJECT_NAME}_driver
 target_link_libraries(agile_plugin
   ${GAZEBO_LIBRARIES}
   agile_foundation
+  agile_foundation_repository
 )
 
 #############

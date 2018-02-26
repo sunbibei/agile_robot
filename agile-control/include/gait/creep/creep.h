@@ -13,8 +13,8 @@
 
 #include <Eigen/Dense>
 
-#define TEST_TIME
-#define CONTINUE_GAIT
+// #define TEST_TIME
+// #define CONTINUE_GAIT
 
 ///! Forward declaration
 class TimeControl;

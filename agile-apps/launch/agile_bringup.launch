@@ -7,7 +7,7 @@
   <arg name="ctrl_loop_frequency" default="100.0" />
 
   <!-- Load the URDF/Xacro model of our robot -->
-  <!-- include file="$(find qr_description)/launch/upload_robot.launch" / -->
+  <include file="$(find agile_gazebo)/launch/upload_robot.urdf.launch" />
   <!-- echo $LD_LIBRARY_PATH | awk -F':' '{split($0,arr,":")}END{for(i=1;i<=NF;i++)printf("%s\n",arr[i])}'|grep 'qr_ws' -->
   <!-- Load hardware interface -->
   <node name="agile_driver" pkg="agile_apps" type="agile_apps" output="screen">
@@ -27,7 +27,7 @@
     output="screen" args="load pos_based_pos_traj_controller" /-->
 
   <!-- Convert joint states to /tf tranforms -->
-  <!-- node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" / -->
+  <node name="agile_robot_state_puber" pkg="robot_state_publisher" type="robot_state_publisher" />
 
 </launch>
 

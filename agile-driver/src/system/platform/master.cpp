@@ -21,7 +21,7 @@ const size_t MAX_PKTS_SIZE = 512;
 SINGLETON_IMPL(Master)
 
 Master::Master()
-: tick_interval_(5), thread_alive_(false),
+: tick_interval_(1), thread_alive_(false),
   propagate_manager_(PropagateManager::create_instance()),
   sw_node_manager_(SWNodeManager::create_instance()) {
   queue_4_w_.reserve(MAX_PKTS_SIZE);

@@ -142,7 +142,7 @@ bool RosWrapper::start() {
         qr_control::MiiControl::instance());
 
     if (!ros::param::get("~gait_topic", str)) {
-      LOG_INFO << "No 'gai_topic' parameter, using the default name of topic"
+      LOG_INFO << "No 'gait_topic' parameter, using the default name of topic"
           << " -- gait_control";
       str = "gait_control";
     }
