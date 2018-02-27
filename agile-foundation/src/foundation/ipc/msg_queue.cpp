@@ -7,10 +7,13 @@
 
 #include "foundation/ipc/msg_queue.h"
 #include "foundation/internal/sync.h"
+#include <chrono>
 
 using namespace internal;
 
 SINGLETON_IMPL(MsgQueue)
+
+std::chrono::high_resolution_clock::time_point _g_timestamp;
 
 MsgQueue::MsgQueue() {
   __init_key_map();
@@ -72,11 +75,15 @@ bool MsgQueue::read_from_msgq(const std::string& _n, MsgBase* _msg, size_t _s) {
 /*!
  * @brief Get the data.
  */
-bool MsgQueue::write_to_msgq(const std::string& _n, const MsgBase* _msg, size_t _s) {
+bool MsgQueue::write_to_msgq(const std::string& _n, MsgBase* _msg, size_t _s) {
   auto _msgq_id = get_msgq_id(_n);
   if (-1 == _msgq_id) return false;
+  ///! No subscriber, false transmission.
+  if (__get_count_key_map(_n) <= 1) return true;
 
-  return (msgsnd(_msgq_id, _msg, _s, IPC_NOWAIT) > 0);
+  _msg->timestamp = std::chrono::time_point_cast<std::chrono::milliseconds>(
+      std::chrono::system_clock::now()).time_since_epoch().count();
+  return (msgsnd(_msgq_id, _msg, _s, IPC_NOWAIT) >= 0);
 }
 
 int MsgQueue::get_msgq_id(const std::string& _n) {

@@ -12,7 +12,8 @@
 #include <sys/msg.h>
 
 typedef struct {
-  long msg_id;
+  long    msg_id;
+  int64_t timestamp; // in ms
 } MsgBase;
 
 class MsgQueue {
@@ -34,7 +35,7 @@ public:
   /*!
    * @brief Get the data.
    */
-  bool write_to_msgq(const std::string& _n, const MsgBase*, size_t);
+  bool write_to_msgq(const std::string& _n, MsgBase*, size_t);
 
   /*!
    * @brief Get the message queue id.

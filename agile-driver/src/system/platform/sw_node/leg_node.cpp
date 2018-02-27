@@ -21,7 +21,10 @@
 
 namespace middleware {
 
+// #define SAVE_MSG_TO_FILE
+#ifdef  SAVE_MSG_TO_FILE
 FILE* _msg_fd = nullptr;
+#endif
 
 const size_t JNT_P_CMD_DSIZE   = 6;
 const size_t JNT_PV0_CMD_DSIZE = 8;
@@ -94,7 +97,9 @@ bool LegNode::auto_init() {
     if (3 == count) break;
   }
   // PRESS_THEN_GO
+#ifdef  SAVE_MSG_TO_FILE
   _msg_fd = fopen("/home/bibei/Workspaces/agile_ws/src/agile_robot/agile-apps/config/ag", "w+");
+#endif
 
   tag = Label::make_label(getLabel(), "touchdown");
   if ((cfg->get_value(tag, "label", tmp_str))
@@ -177,9 +182,14 @@ void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
     offset += sizeof(count); // each count will stand two bytes.
   }
 
-  if (true && LegType::FL == leg_)
+  if (false && LegType::FL == leg_)
+#ifdef  SAVE_MSG_TO_FILE
     fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg_),
         counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+#else
+    printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg_),
+        counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+#endif
   // if (LegType::HL == leg_) printf("%d: 0x%02X, 0x%02X", leg_, __p[offset], __p[offset + 1]);
   td_->updateForceCount((__p[offset] | (__p[offset + 1] << 8)));
 }
@@ -228,6 +238,9 @@ bool LegNode::generateCmd(MiiVector<Packet>& pkts) {
 
 
 bool LegNode::__fill_pos_cmd(MiiVector<Packet>& pkts) {
+//  double cmds[JntType::N_JNTS]  = {0};
+//  short counts[JntType::N_JNTS] = {0};
+
   int offset  = 0;
   short count = 0;
   bool is_any_valid = false;
@@ -235,10 +248,13 @@ bool LegNode::__fill_pos_cmd(MiiVector<Packet>& pkts) {
   for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
     if (jnts_by_type_[type]->new_command_) {
       is_any_valid = true;
-      // if ((LegType::FL == leg_) && (JntType::HIP == type))
-      //   printf("LegNode: [%d] - (%d): %+01.04f\n", leg_, type, jnt_cmds_[type][0]);
+//      if ((LegType::FL == leg_)/* && (JntType::HIP == type)*/)
+//        printf("LegNode: [%s] - (%s): %+01.04f\n", LEGTYPE_TOSTRING(leg_),
+//            JNTTYPE_TOSTRING(type), jnt_cmds_[type][0]);
       count = (*jnt_cmds_[type] - jnt_params_[type]->offset) / jnt_params_[type]->scale;
       memcpy(cmd.data + offset, &count, sizeof(count));
+//      cmds[type]   = *jnt_cmds_[type];
+//      counts[type] = count;
 //      if (LegType::FL == leg_)
 //        printf("LegNode: [%s] - (%s):\t%05d\n", LEGTYPE_TOSTRING(leg_), JNTTYPE_TOSTRING(type), count);
       jnts_by_type_[type]->new_command_ = false;
@@ -249,7 +265,14 @@ bool LegNode::__fill_pos_cmd(MiiVector<Packet>& pkts) {
     offset += sizeof(count); // Each count stand two bytes.
   }
 
-  if (is_any_valid) pkts.push_back(cmd);
+  if (is_any_valid) {
+//    if (false && LegType::FL == leg_)
+//      printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg_),
+//          cmds[JntType::KNEE], cmds[JntType::HIP], cmds[JntType::YAW]);
+
+    pkts.push_back(cmd);
+  }
+
   return is_any_valid;
 }
 

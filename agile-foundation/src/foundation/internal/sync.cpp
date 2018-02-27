@@ -81,6 +81,21 @@ bool __add_key_map(const std::string& _n, key_t _key, int _id, IPC_TYPE _type) {
   return true;
 }
 
+int  __get_count_key_map(const std::string& _n) {
+  auto _addr = shmat(shmget(KEY_MAP_OF_KEY, 0, 0), NULL, 0);
+  if (nullptr == _addr) return -1;
+  _PrivateKeyMap* _key_map = (_PrivateKeyMap*) _addr;
+
+  for (size_t offset = 0; offset < MAX_SHM_SIZE; ++offset) {
+    if (0 == _n.compare(_key_map[offset].name)) {
+      return _key_map[offset].count;
+    }
+  }
+
+  ///! NO FOUND
+  return -1;
+}
+
 bool __add_count_key_map(const std::string& _n) {
   auto _addr = shmat(shmget(KEY_MAP_OF_KEY, 0, 0), NULL, 0);
   if (nullptr == _addr) return false;

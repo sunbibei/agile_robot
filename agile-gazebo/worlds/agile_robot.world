@@ -12,26 +12,31 @@
     
     <model name="agile_robot">
       <!-- The kinect camera -->
-      <include>
+<!--       <include>
         <uri>model://kinect</uri>
-        <pose>0.073 0 4.7 0 0 0</pose>
-      </include>
+        <pose>0.073 0 0.57 0 0 0</pose>
+      </include> -->
 
       <include>
-        <pose>0 0 4.6 0 0 0</pose>
+        <pose>0 0 0.56 0 0 0</pose>
         <uri>model://agile_robot</uri>
       </include>
 
-      <joint name="camera_joint" type="fixed">
+<!--       <joint name="camera_joint" type="fixed">
         <parent>agile_robot::agile_robot::body</parent>
         <child>agile_robot::kinect::link</child>
-      </joint>
+      </joint> -->
+
+<!--       <joint name="ground_fixed_joint" type="fixed">
+        <parent>ground_plane::ground_plane::link</parent>
+        <child>agile_robot::agile_robot::body</child>
+      </joint> -->
       
-      <plugin name="agile_plugin" filename="libagile_plugin.so" >
-      <!-- plugin name="agile_robot_plugin" filename="libagile_gazebo_driver.so" -->
+      <!-- plugin name="agile_plugin" filename="libagile_plugin.so" -->
+      <plugin name="agile_robot_plugin" filename="libagile_gazebo_driver.so">
         <config name="configures for GzAgilePlugin" >
-          <leg_node_msgq_name>leg_node</leg_node_msgq_name>
-          <cmd_msgq_name>cmd_msgq</cmd_msgq_name>
+          <leg_node_ipc_name>leg_node</leg_node_ipc_name>
+          <cmd_ipc_name>cmds</cmd_ipc_name>
 
           <FL_node_id>0x02</FL_node_id>
           <FL_YAW_linear_scale>1</FL_YAW_linear_scale>

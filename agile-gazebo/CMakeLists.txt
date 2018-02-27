@@ -141,7 +141,7 @@ include_directories(
 set(SRC_ROOT            plugins/src)
 set(SRC_TEST_ROOT       plugins/test)
 
-set(SRC_PLUGIN_FILES    ${SRC_ROOT}/gazebo_propagate.cc
+set(SRC_PLUGIN_FILES    ${SRC_ROOT}/gz_agile_plugin.cc
 )
 
 # set(SYS_TEST_FILES      ${SRC_TEST_ROOT}/test.cpp)
@@ -151,9 +151,9 @@ add_library(${PROJECT_NAME}_driver SHARED
   ${SRC_PLUGIN_FILES}
 )
 
-add_library(agile_plugin SHARED
-  ${SRC_ROOT}/gz_agile_plugin.cc
-)
+# add_library(agile_plugin SHARED
+#   ${SRC_ROOT}/gz_agile_plugin.cc
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -171,13 +171,15 @@ add_library(agile_plugin SHARED
 target_link_libraries(${PROJECT_NAME}_driver
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
-)
-
-target_link_libraries(agile_plugin
-  ${GAZEBO_LIBRARIES}
   agile_foundation
   agile_foundation_repository
 )
+
+# target_link_libraries(agile_plugin
+#   ${GAZEBO_LIBRARIES}
+#   agile_foundation
+#   agile_foundation_repository
+# )
 
 #############
 ## Install ##
@@ -190,7 +192,6 @@ install(DIRECTORY plugins/include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS ${PROJECT_NAME}_driver
-								agile_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

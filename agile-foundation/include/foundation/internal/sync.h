@@ -37,6 +37,10 @@ const std::string SYNC_IDENTIFY  = "SYNC";
 
 bool __init_key_map();
 bool __add_key_map(const std::string& _n, key_t _key, int _id, IPC_TYPE _type);
+/*!
+ * If no such @_n name of IPC or not exist 'SYNC', return -1.
+ */
+int  __get_count_key_map(const std::string& _n);
 bool __add_count_key_map(const std::string& _n);
 bool __sub_count_key_map(const std::string& _n);
 key_t __find_ava_key(const std::string& _n, IPC_TYPE type);

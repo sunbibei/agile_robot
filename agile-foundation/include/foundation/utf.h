@@ -99,7 +99,8 @@
       } \
     }
 
-#define PRESS_THEN_GO do {LOG_WARNING << " -> Press any key to continue."; getchar();} while(0);
+#define PRESS_THEN_GO do {LOG_WARNING << " -> Press any key to continue."; } while(0);
+// #define PRESS_THEN_GO do {LOG_WARNING << " -> Press any key to continue."; getchar();} while(0);
 //   {LOG_WARNING << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__ << " -> Press any key to continue."; getchar();}
 
 

@@ -19,13 +19,25 @@
 
 #include <foundation/utf.h>
 #include <foundation/ipc/msg_queue.h>
+#include <foundation/ipc/shared_mem.h>
+
 #include <toolbox/time_control.h>
 
 #define GZ_R_THREAD_NAME ("gz_r")
 #define GZ_W_THREAD_NAME ("gz_w")
 
-
+// #define SAVE_MSG_TO_FILE
+#ifdef  SAVE_MSG_TO_FILE
 FILE* _msg_fd = nullptr;
+#endif
+
+double _g_init_pose[][JntType::N_JNTS] = {
+    {+0.00000, +0.50851, -1.14050},
+    {+0.00000, +0.50851, -1.14050},
+    {+0.00000, -0.50851, +1.14050},
+    {+0.00000, -0.50851, +1.14050}
+};
+
 using namespace gazebo;
 namespace agile_gazebo {
 void __parse_jnt_name(const std::string& _n, LegType& _l, JntType& _j);
@@ -42,9 +54,11 @@ struct LinearParams {
 GzAgilePlugin::GzAgilePlugin()
   : gazebo::ModelPlugin(),
     world_(nullptr), model(nullptr),
-    rw_thread_alive_(false), msgq_(nullptr),
-    swap_r_buffer_(nullptr),
-    swap_w_buffer_(nullptr) {
+    rw_thread_alive_(false), ipc_(nullptr),
+#ifdef USE_SHM
+    shm_r_buf_(nullptr),     shm_w_buf_(nullptr),
+#endif
+    swap_r_buffer_(nullptr), swap_w_buffer_(nullptr) {
   ///! initialize the glog.
 //  google::InitGoogleLogging("qr_driver");
 //  google::FlushLogFiles(google::GLOG_INFO);
@@ -71,7 +85,24 @@ GzAgilePlugin::~GzAgilePlugin() {
   // Disconnect from gazebo events
   updateConnection.reset();
 
-  MsgQueue::destroy_instance();
+  ipc_->destroy_instance();
+
+//  Packet pkg;
+//  int count = 0;
+//  while (!swap_w_buffer_->empty()) {
+//    swap_w_buffer_->pop(pkg);
+//    ++count;
+//  }
+//  printf("W SIZE: %d\n", count);
+//
+//  count = 0;
+//  while (!swap_r_buffer_->empty()) {
+//    swap_r_buffer_->pop(pkg);
+//    ++count;
+//  }
+//  printf("R SIZE: %d\n", count);
+
+
 
   rw_thread_alive_ = false;
   middleware::ThreadPool::instance()->stop();
@@ -92,7 +123,7 @@ GzAgilePlugin::~GzAgilePlugin() {
 }
 
 void GzAgilePlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
-  std::cout << "Loading... 0.0.3" << std::endl;
+  // std::cout << "Loading... 0.0.3" << std::endl;
   // Store the pointer to the model
   model   = _parent;
   world_  = _parent->GetWorld();
@@ -165,26 +196,41 @@ void GzAgilePlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
     }
   }
 
-  std::cout << "The configure of joint list as follow:" << std::endl;
-  FOR_EACH_LEG(l) {
-    printf("%s[0x%02X]:\n", LEGTYPE_TOSTRING(l), leg_2_id_lut_[l]);
-    FOR_EACH_JNT(j) {
-      printf("\t%s\t-> %+11.8f : %+8.5f\n", joints_[l][j]->GetName().c_str(),
-          linear_params_[l][j].scale, linear_params_[l][j].offset);
+  if (false) {
+    std::cout << "The configure of joint list as follow:" << std::endl;
+    FOR_EACH_LEG(l) {
+      printf("%s[0x%02X]:\n", LEGTYPE_TOSTRING(l), leg_2_id_lut_[l]);
+      FOR_EACH_JNT(j) {
+        printf("\t%s\t-> %+11.8f : %+8.5f\n", joints_[l][j]->GetName().c_str(),
+            linear_params_[l][j].scale, linear_params_[l][j].offset);
+      }
     }
   }
   // initialize the msgq names
-  cmd_msgq_name_        = cfg->GetElement("cmd_msgq_name")->Get<std::string>();
-  leg_node_msgq_name_   = cfg->GetElement("leg_node_msgq_name")->Get<std::string>();
-  std::cout << "The names of msgq: " << cmd_msgq_name_ << " " << leg_node_msgq_name_ << std::endl;
+  cmd_ipc_name_        = cfg->GetElement("cmd_ipc_name")->Get<std::string>();
+  leg_node_ipc_name_   = cfg->GetElement("leg_node_ipc_name")->Get<std::string>();
+  std::cout << "The names of IPCs: " << cmd_ipc_name_ << " " << leg_node_ipc_name_ << std::endl;
   ///! launch to the read/write thread.
   swap_r_buffer_   = new boost::lockfree::queue<Packet>(1024);
   swap_w_buffer_   = new boost::lockfree::queue<Packet>(1024);
   rw_thread_alive_ = true;
-  msgq_            = MsgQueue::create_instance();
+  ///! Choice the style of IPC
+#ifdef USE_SHM
+  ///! The follow is Shared Memory.
+  ipc_ = SharedMem::create_instance();
+  ipc_->create_shm(leg_node_ipc_name_, LegType::N_LEGS*sizeof(Packet));
+  ipc_->create_shm(cmd_ipc_name_,      LegType::N_LEGS*sizeof(Packet));
+  shm_r_buf_ = ipc_->get_addr_from_shm(cmd_ipc_name_);
+  shm_w_buf_ = ipc_->get_addr_from_shm(leg_node_ipc_name_);
+#else
+  ///! The follow is Message Queue.
+  ipc_            = MsgQueue::create_instance();
+  ipc_->create_msgq(leg_node_ipc_name_);
+  ipc_->create_msgq(cmd_ipc_name_);
+#endif
+
+  ///! Launch threads.
   auto thread_pool = middleware::ThreadPool::create_instance();
-  msgq_->create_msgq(leg_node_msgq_name_);
-  msgq_->create_msgq(cmd_msgq_name_);
   thread_pool->add(GZ_R_THREAD_NAME, &GzAgilePlugin::msg_r_update, this);
   thread_pool->add(GZ_W_THREAD_NAME, &GzAgilePlugin::msg_w_update, this);
   thread_pool->start(GZ_R_THREAD_NAME);
@@ -195,8 +241,10 @@ void GzAgilePlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   updateConnection = event::Events::ConnectWorldUpdateBegin(
       std::bind(&GzAgilePlugin::event_update, this));
 
+#ifdef SAVE_MSG_TO_FILE
   _msg_fd = fopen("/home/bibei/Workspaces/agile_ws/src/agile_robot/agile-apps/config/gz", "w+");
-  std::cout << "Has Load the GzPropagateG... ..." << std::endl;
+#endif
+  std::cout << "It has Load the GzPropagateG... ..." << std::endl;
 }
 
 // Called by the world update start event
@@ -208,58 +256,105 @@ void GzAgilePlugin::event_update() {
 //  static size_t count = 0;
 //  if (0 == ++count%10000)
 //    std::cout << "update ..." << std::endl;
+  FOR_EACH_LEG(l) {
+    FOR_EACH_JNT(j) {
+      joints_[l][j]->SetPosition(0, _g_init_pose[l][j]);
+    }
+  }
+  return;
 
   if (!rw_thread_alive_) return;
 
-  Packet pkt;
-  if (read(pkt)) {
-    ///! The command frequency control
-    static TimeControl _s_post_tick(true);
-    static int64_t     _s_sum_interval  = 0;
-    static int64_t     _s_tick_interval = 50;
-    _s_sum_interval += _s_post_tick.dt();
-    if (_s_sum_interval > _s_tick_interval) {
-      _s_sum_interval = 0;
+  ///! The frequency of responding command is the highest.
+  if (read(pkt_rw_))
+    __parse_command_pkg(pkt_rw_);
 
-      __parse_command_pkg(pkt);
-    }
-  }
+  ///! The frequency control
+  ///! The 1000/5=200 Hz is the highest frequency of normal communication between agile-driver.
+  static TimeControl _s_post_tick(true);
+  static int64_t     _s_sum_interval  = 0;
+  static int64_t     _s_tick_interval = 5;
+  _s_sum_interval += _s_post_tick.dt();
+  if (_s_sum_interval < _s_tick_interval) return;
+  _s_sum_interval = 0;
 
+  ///! send the robot states.
   __update_robot_stats();
 }
 
 void GzAgilePlugin::msg_w_update() {
+#ifdef USE_SHM
+  Packet _pkg;
+  size_t _start = 0;
+#else
   MsgqPacket _pkg;
   _pkg.msg_id = 0x02; // means from gazebo plugin
+#endif
 
   TIMER_INIT
   while (rw_thread_alive_) {
     if (!swap_w_buffer_->empty()) {
+#ifdef USE_SHM
+      swap_w_buffer_->pop(_pkg);
+      _start = id_2_leg_lut_[_pkg.node_id] * sizeof(Packet);
+      memcpy(shm_w_buf_ + _start, &_pkg, sizeof(Packet));
+//      if (ipc_->write_to_shm(leg_node_msgq_name_, _pkg, start)) {
+//        std::cout << "Send the command fail." << std::endl;
+//      }
+      if (false && 0x02u == _pkg.node_id)
+        printf("  -> NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+          (int)_pkg.node_id,
+          (int)_pkg.msg_id,  (int)_pkg.size,
+          (int)_pkg.data[0], (int)_pkg.data[1],
+          (int)_pkg.data[2], (int)_pkg.data[3],
+          (int)_pkg.data[4], (int)_pkg.data[5],
+          (int)_pkg.data[6], (int)_pkg.data[7]);
+#else
       swap_w_buffer_->pop(_pkg.pkg);
-
-      if (msgq_->write_to_msgq(leg_node_msgq_name_, &_pkg, sizeof(_pkg))) {
+      if (!ipc_->write_to_msgq(leg_node_ipc_name_, &_pkg, sizeof(_pkg))) {
         std::cout << "Send the command fail." << std::endl;
       }
-      if (false && 0x02u == _pkg.pkg.node_id)
-        printf("  -> T  O:0x%02X NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+      if (false)
+        printf("  <- T  O:0x%02X NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
           (int)_pkg.msg_id,      (int)_pkg.pkg.node_id,
           (int)_pkg.pkg.msg_id,  (int)_pkg.pkg.size,
           (int)_pkg.pkg.data[0], (int)_pkg.pkg.data[1],
           (int)_pkg.pkg.data[2], (int)_pkg.pkg.data[3],
           (int)_pkg.pkg.data[4], (int)_pkg.pkg.data[5],
           (int)_pkg.pkg.data[6], (int)_pkg.pkg.data[7]);
+#endif
     }
 
-    TIMER_CONTROL(10)
+    TIMER_CONTROL(1)
   }
 }
 
 void GzAgilePlugin::msg_r_update() {
+#ifdef USE_SHM
+  Packet _pkg;
+  size_t _start = 0;
+#else
   MsgqPacket _pkg;
+#endif
 
   TIMER_INIT
   while (rw_thread_alive_) {
-    if (msgq_->read_from_msgq(cmd_msgq_name_, &_pkg, sizeof(_pkg))) {
+#ifdef USE_SHM
+    FOR_EACH_LEG(l) {
+      _start = l * sizeof(Packet);
+      memcpy(&_pkg, shm_r_buf_ + _start, sizeof(Packet));
+      swap_r_buffer_->push(_pkg);
+      if (false)
+        printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+          (int)_pkg.node_id,
+          (int)_pkg.msg_id,  (int)_pkg.size,
+          (int)_pkg.data[0], (int)_pkg.data[1],
+          (int)_pkg.data[2], (int)_pkg.data[3],
+          (int)_pkg.data[4], (int)_pkg.data[5],
+          (int)_pkg.data[6], (int)_pkg.data[7]);
+    }
+#else
+    if (ipc_->read_from_msgq(cmd_ipc_name_, &_pkg, sizeof(_pkg))) {
       swap_r_buffer_->push(_pkg.pkg);
       if (false)
         printf("  <- FROM:0x%02X NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
@@ -270,6 +365,7 @@ void GzAgilePlugin::msg_r_update() {
           (int)_pkg.pkg.data[4], (int)_pkg.pkg.data[5],
           (int)_pkg.pkg.data[6], (int)_pkg.pkg.data[7]);
     }
+#endif
 
     TIMER_CONTROL(10)
   }
@@ -301,7 +397,7 @@ inline bool GzAgilePlugin::read(Packet& pkt) {
 void GzAgilePlugin::__update_robot_stats() {
 
   double poss[JntType::N_JNTS]  = {0};
-  short counts[JntType::N_JNTS] = {0};
+//  short counts[JntType::N_JNTS] = {0};
 
   Packet pkt;
   FOR_EACH_LEG(leg) {
@@ -316,7 +412,7 @@ void GzAgilePlugin::__update_robot_stats() {
       memcpy(pkt.data + offset, &count, sizeof(short));
 
       poss[jnt]   = pos;
-      counts[jnt] = count;
+//      counts[jnt] = count;
       offset += sizeof(short);
     }
 //    if (false && LegType::FL == leg)
@@ -332,11 +428,17 @@ void GzAgilePlugin::__update_robot_stats() {
         (int)pkt.data[6], (int)pkt.data[7]);
     }
 
-    if (true && LegType::FL == leg)
+#ifdef SAVE_MSG_TO_FILE
+    if (false && LegType::FL == leg)
       fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
           counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+#else
+//    if (false && LegType::FL == leg)
+//      printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
+//          counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+#endif
 
-    if (false && LegType::FL == leg)
+    if (true && LegType::FL == leg)
       printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg),
           poss[JntType::KNEE], poss[JntType::HIP], poss[JntType::YAW]);
     ///! write the robot state into the message queue.
@@ -382,30 +484,30 @@ void GzAgilePlugin::__write_command_to_sim(const Packet& pkt) {
   int offset  = 0;
   LegType leg = id_2_leg_lut_[pkt.node_id];
 
-//  double cmds[JntType::N_JNTS]  = {0};
-//  short counts[JntType::N_JNTS] = {0};
+  double cmds[JntType::N_JNTS]  = {0};
+  short counts[JntType::N_JNTS] = {0};
   for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
     memcpy(&count, pkt.data + offset, sizeof(count));
     cmd = linear_params_[leg][type].scale * count + linear_params_[leg][type].offset;
-//    cmds[type]   = cmd;
-//    counts[type] = count;
+    cmds[type]   = cmd;
+    counts[type] = count;
     switch (pkt.msg_id) {
     case MII_MSG_COMMON_DATA_1: joints_[leg][type]->SetPosition(0, cmd); break;
     case MII_MSG_COMMON_DATA_2: joints_[leg][type]->SetVelocity(0, cmd); break;
-    case MII_MSG_COMMON_DATA_3: joints_[leg][type]->SetForce(0, cmd);    break;
+    case MII_MSG_COMMON_DATA_3: joints_[leg][type]->SetForce(0,    cmd); break;
     default:
       gzerr << "ERROR msg_id";
     }
 
     offset += sizeof(count);
   }
-//  if (true && LegType::FL == leg)
-//    printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
-//        counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
-//
-//  if (false && LegType::FL == leg)
-//    printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg),
-//        cmds[JntType::KNEE], cmds[JntType::HIP], cmds[JntType::YAW]);
+  if (false && LegType::FL == leg)
+    printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
+        counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+
+  if (false && LegType::FL == leg)
+    printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg),
+        cmds[JntType::KNEE], cmds[JntType::HIP], cmds[JntType::YAW]);
 }
 
 inline void __parse_jnt_name(const std::string& _n, LegType& _l, JntType& _j) {

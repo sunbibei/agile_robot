@@ -105,7 +105,7 @@ void RobotLeg::executEef(const Eigen::Vector3d& xyz) {
   ik(xyz, _jnt_pos);
 
   joint_command(_jnt_pos);
-  if (false && LegType::FL == leg_type())
+  if (true/* && LegType::FL == leg_type()*/)
     printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg_type()),
         _jnt_pos[JntType::KNEE], _jnt_pos[JntType::HIP], _jnt_pos[JntType::YAW]);
 }

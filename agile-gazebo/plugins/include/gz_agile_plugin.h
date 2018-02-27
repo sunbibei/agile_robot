@@ -20,8 +20,12 @@
 
 #include <vector>
 #include <boost/lockfree/queue.hpp>
+
+//! The default style is msgq.
+// #define USE_SHM
 ///! Forward declare
 class MsgQueue;
+class SharedMem;
 
 namespace agile_gazebo {
 
@@ -74,9 +78,17 @@ private:
   gazebo::event::ConnectionPtr updateConnection;
 
   bool                            rw_thread_alive_;
-  MsgQueue*                       msgq_;
-  std::string                     cmd_msgq_name_;
-  std::string                     leg_node_msgq_name_;
+  ///! The message queue or the shared memory
+  Packet                          pkt_rw_;
+#ifdef USE_SHM
+  SharedMem*                      ipc_;
+  void*                           shm_r_buf_;
+  void*                           shm_w_buf_;
+#else
+  MsgQueue*                       ipc_;
+#endif
+  std::string                     cmd_ipc_name_;
+  std::string                     leg_node_ipc_name_;
   boost::lockfree::queue<Packet>* swap_r_buffer_;
   boost::lockfree::queue<Packet>* swap_w_buffer_;
   ///! These interfaces for Joint, Order by leg * joint
