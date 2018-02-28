@@ -11,14 +11,13 @@
 #endif
 
 #include <apps/ros_wrapper.h>
-#include <iostream>
 
 int main(int argc, char* argv[]) {
-  google::InitGoogleLogging("qr_driver");
+  google::InitGoogleLogging("agile_apps");
   google::FlushLogFiles(google::GLOG_INFO);
   FLAGS_colorlogtostderr = true;
 
-  ros::init(argc, argv, "mii_qr");
+  ros::init(argc, argv, "mii_agile");
   ros::NodeHandle nh("~");
 
   if (nullptr == RosWrapper::create_instance("qr.wrapper"))

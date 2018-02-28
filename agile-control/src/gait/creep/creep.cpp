@@ -181,7 +181,8 @@ void Creep::checkState() {
       auto diff = (leg_ifaces_[l]->eef() - eef_cmds_[l]).norm();
       if (diff > 0.3) return;
     }
-    // return;
+    return;
+
     ///! the end of WK_INIT_POS
     timer_->stop(&_s_tmp_span);
     LOG_WARNING << "*******----INIT POSE OK!(" << _s_tmp_span << "ms)----*******";

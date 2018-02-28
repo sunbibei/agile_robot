@@ -256,12 +256,12 @@ void GzAgilePlugin::event_update() {
 //  static size_t count = 0;
 //  if (0 == ++count%10000)
 //    std::cout << "update ..." << std::endl;
-  FOR_EACH_LEG(l) {
-    FOR_EACH_JNT(j) {
-      joints_[l][j]->SetPosition(0, _g_init_pose[l][j]);
-    }
-  }
-  return;
+  // FOR_EACH_LEG(l) {
+  //   FOR_EACH_JNT(j) {
+  //     joints_[l][j]->SetPosition(0, _g_init_pose[l][j]);
+  //   }
+  // }
+  // return;
 
   if (!rw_thread_alive_) return;
 
