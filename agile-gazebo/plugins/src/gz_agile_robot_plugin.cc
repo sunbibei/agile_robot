@@ -15,11 +15,10 @@
  *
 */
 
-#include <gz_agile_plugin.h>
-
 #include <foundation/utf.h>
 #include <foundation/ipc/msg_queue.h>
 #include <foundation/ipc/shared_mem.h>
+#include <gz_agile_robot_plugin.h>
 
 #include <toolbox/time_control.h>
 
@@ -31,12 +30,12 @@
 FILE* _msg_fd = nullptr;
 #endif
 
-double _g_init_pose[][JntType::N_JNTS] = {
-    {+0.00000, +0.50851, -1.14050},
-    {+0.00000, +0.50851, -1.14050},
-    {+0.00000, -0.50851, +1.14050},
-    {+0.00000, -0.50851, +1.14050}
-};
+//double _g_init_pose[][JntType::N_JNTS] = {
+//    {+0.00000, +0.50851, -1.14050},
+//    {+0.00000, +0.50851, -1.14050},
+//    {+0.00000, -0.50851, +1.14050},
+//    {+0.00000, -0.50851, +1.14050}
+//};
 
 using namespace gazebo;
 namespace agile_gazebo {
@@ -51,7 +50,7 @@ struct LinearParams {
   double offset;
 };
 
-GzAgilePlugin::GzAgilePlugin()
+GzAgileRobotPlugin::GzAgileRobotPlugin()
   : gazebo::ModelPlugin(),
     world_(nullptr), model(nullptr),
     rw_thread_alive_(false), ipc_(nullptr),
@@ -80,7 +79,7 @@ GzAgilePlugin::GzAgilePlugin()
   }
 }
 
-GzAgilePlugin::~GzAgilePlugin() {
+GzAgileRobotPlugin::~GzAgileRobotPlugin() {
   std::cout << "Deconstructing the GzAgilePlugin... ..." << std::endl;
   // Disconnect from gazebo events
   updateConnection.reset();
@@ -122,7 +121,7 @@ GzAgilePlugin::~GzAgilePlugin() {
   // google::ShutdownGoogleLogging();
 }
 
-void GzAgilePlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
+void GzAgileRobotPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   // std::cout << "Loading... 0.0.3" << std::endl;
   // Store the pointer to the model
   model   = _parent;
@@ -231,15 +230,15 @@ void GzAgilePlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 
   ///! Launch threads.
   auto thread_pool = middleware::ThreadPool::create_instance();
-  thread_pool->add(GZ_R_THREAD_NAME, &GzAgilePlugin::msg_r_update, this);
-  thread_pool->add(GZ_W_THREAD_NAME, &GzAgilePlugin::msg_w_update, this);
+  thread_pool->add(GZ_R_THREAD_NAME, &GzAgileRobotPlugin::msg_r_update, this);
+  thread_pool->add(GZ_W_THREAD_NAME, &GzAgileRobotPlugin::msg_w_update, this);
   thread_pool->start(GZ_R_THREAD_NAME);
   thread_pool->start(GZ_W_THREAD_NAME);
 
   // Listen to the update event. This event is broadcast every
   // simulation iteration.
   updateConnection = event::Events::ConnectWorldUpdateBegin(
-      std::bind(&GzAgilePlugin::event_update, this));
+      std::bind(&GzAgileRobotPlugin::event_update, this));
 
 #ifdef SAVE_MSG_TO_FILE
   _msg_fd = fopen("/home/bibei/Workspaces/agile_ws/src/agile_robot/agile-apps/config/gz", "w+");
@@ -248,7 +247,7 @@ void GzAgilePlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 }
 
 // Called by the world update start event
-void GzAgilePlugin::event_update() {
+void GzAgileRobotPlugin::event_update() {
   // Apply a small linear velocity to the model.
 //  this->model->SetLinearVel(ignition::math::Vector3d(.3, 0, 0));
 //  return;
@@ -256,12 +255,13 @@ void GzAgilePlugin::event_update() {
 //  static size_t count = 0;
 //  if (0 == ++count%10000)
 //    std::cout << "update ..." << std::endl;
-  // FOR_EACH_LEG(l) {
-  //   FOR_EACH_JNT(j) {
-  //     joints_[l][j]->SetPosition(0, _g_init_pose[l][j]);
-  //   }
-  // }
-  // return;
+  FOR_EACH_LEG(l) {
+    FOR_EACH_JNT(j) {
+      // joints_[l][j]->SetPosition(0, _g_init_pose[l][j]);
+      joints_[l][j]->SetPosition(0, 0);
+    }
+  }
+  return;
 
   if (!rw_thread_alive_) return;
 
@@ -282,7 +282,7 @@ void GzAgilePlugin::event_update() {
   __update_robot_stats();
 }
 
-void GzAgilePlugin::msg_w_update() {
+void GzAgileRobotPlugin::msg_w_update() {
 #ifdef USE_SHM
   Packet _pkg;
   size_t _start = 0;
@@ -329,7 +329,7 @@ void GzAgilePlugin::msg_w_update() {
   }
 }
 
-void GzAgilePlugin::msg_r_update() {
+void GzAgileRobotPlugin::msg_r_update() {
 #ifdef USE_SHM
   Packet _pkg;
   size_t _start = 0;
@@ -378,7 +378,7 @@ void GzAgilePlugin::msg_r_update() {
  * @param pkt[in] The Packet object need to convert and write
  * @return Return true if successful, or return false
  */
-inline bool GzAgilePlugin::write(const Packet& pkt) {
+inline bool GzAgileRobotPlugin::write(const Packet& pkt) {
   return swap_w_buffer_->push(pkt);
 }
 /**
@@ -387,14 +387,14 @@ inline bool GzAgilePlugin::write(const Packet& pkt) {
  * @param pkt[out] The Packet object converted from the message
  * @return Return true if read successful, or return false
  */
-inline bool GzAgilePlugin::read(Packet& pkt) {
+inline bool GzAgileRobotPlugin::read(Packet& pkt) {
   return swap_r_buffer_->pop(pkt);
 }
 
 
 //const unsigned char g_TEST_MSG[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
 //const short g_TEST_COUNT[] = {+2142, +2797, +1638};
-void GzAgilePlugin::__update_robot_stats() {
+void GzAgileRobotPlugin::__update_robot_stats() {
 
   double poss[JntType::N_JNTS]  = {0};
 //  short counts[JntType::N_JNTS] = {0};
@@ -446,7 +446,7 @@ void GzAgilePlugin::__update_robot_stats() {
   }
 }
 
-void GzAgilePlugin::__parse_command_pkg(const Packet& pkt) {
+void GzAgileRobotPlugin::__parse_command_pkg(const Packet& pkt) {
   if (false) {
     printf("%s", (std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) + ":" + std::to_string(__LINE__)).c_str());
     printf(" -> NODE ID:0x%02X MSG ID: 0%02ou LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
@@ -471,7 +471,7 @@ void GzAgilePlugin::__parse_command_pkg(const Packet& pkt) {
   }
 }
 
-void GzAgilePlugin::__write_command_to_sim(const Packet& pkt) {
+void GzAgileRobotPlugin::__write_command_to_sim(const Packet& pkt) {
   static const unsigned int JNT_CMD_SIZE = 6;
   if (JNT_CMD_SIZE != pkt.size) {
     gzerr << "The data size of MII_MSG_COMMON_DATA_3 message does not match!"
@@ -537,4 +537,4 @@ inline void __parse_jnt_name(const std::string& _n, LegType& _l, JntType& _j) {
 } /* end namespace gazebo */
 
 // Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(agile_gazebo::GzAgilePlugin)
+GZ_REGISTER_MODEL_PLUGIN(agile_gazebo::GzAgileRobotPlugin)

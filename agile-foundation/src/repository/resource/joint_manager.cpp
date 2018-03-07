@@ -84,6 +84,8 @@ const JntCmdType& JointManager::getJointCommandMode() {
 }
 
 double JointManager::operator()(LegType owner, JntType type, JntDataType data) {
+  if (nullptr == jnt_list_by_type_[owner][type]) return NAN;
+
   switch (data) {
   case JntDataType::POS: return jnt_list_by_type_[owner][type]->joint_position();
   case JntDataType::VEL: return jnt_list_by_type_[owner][type]->joint_velocity();

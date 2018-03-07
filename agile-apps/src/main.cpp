@@ -19,8 +19,13 @@ int main(int argc, char* argv[]) {
 
   ros::init(argc, argv, "mii_agile");
   ros::NodeHandle nh("~");
+  std::string prefix;
+  if (!ros::param::get("~prefix", prefix)) {
+    LOG_FATAL << "Could not found the 'prefix' parameter, Did you forget point this parameter.";
+    return -1;
+  }
 
-  if (nullptr == RosWrapper::create_instance("qr.wrapper"))
+  if (nullptr == RosWrapper::create_instance(prefix))
     LOG_FATAL << "Can't get the instance of RosWrapper!";
   RosWrapper::instance()->start();
 
@@ -34,7 +39,7 @@ int main(int argc, char* argv[]) {
 #ifdef  CHECK_INST_
   Label::printfEveryInstance();
 #endif
-  LOG_INFO << "The shutdown of qr_driver has finished... ...";
+  LOG_INFO << "The shutdown of agile-apps has finished... ...";
   google::ShutdownGoogleLogging();
   return 0;
 }

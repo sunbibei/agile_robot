@@ -6,20 +6,20 @@
  *  Implemented by Sampson on Dec 8, 2017
  */
 
-#ifndef INCLUDE_ROBOT_LEG_QR_LEG_H_
-#define INCLUDE_ROBOT_LEG_QR_LEG_H_
+#ifndef INCLUDE_ROBOT_LEG_AGILE_LEG_H_
+#define INCLUDE_ROBOT_LEG_AGILE_LEG_H_
 
 #include "robot/leg/robot_leg.h"
 #include <foundation/utf.h>
 
 namespace qr_control {
 
-class QrLeg: public RobotLeg {
+class AgileLeg: public RobotLeg {
 public:
-  QrLeg();
+  AgileLeg();
   virtual bool auto_init() override;
 
-  virtual ~QrLeg();
+  virtual ~AgileLeg();
 
 ///! inherit from RobotLeg
 protected:
@@ -68,7 +68,7 @@ public:
   /*!
    * @brief The current Jacobian matrix with given joint position.
    */
-  virtual void Jacobian(Eigen::Matrix3Xd&) override;
+  virtual void jacobian(Eigen::Matrix3Xd&) override;
 ///! Offer some convenient interfaces for user.
 public:
   ///! The position of LegType::YAW joint.
@@ -99,4 +99,4 @@ public:
 
 } /* namespace qr_control */
 
-#endif /* INCLUDE_ROBOT_LEG_QR_LEG_H_ */
+#endif /* INCLUDE_ROBOT_LEG_AGILE_LEG_H_ */

@@ -13,8 +13,6 @@
 <!-- =================================================================================== -->
     <link name='body'>
       <pose frame=''>0 0 1 0 0 0</pose>
-      <gravity>1</gravity>
-
       <inertial>
         <pose frame=''>0 0 0 0 0 0</pose>
         <mass>25</mass>
@@ -27,7 +25,12 @@
           <izz>0.109242</izz>
         </inertia>
       </inertial>
-      
+
+      <self_collide>0</self_collide>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <enable_wind>0</enable_wind>
+
       <visual name='body_visual'>
         <pose frame=''>0 0 0 0 0 0</pose>
         <geometry>
@@ -38,9 +41,16 @@
         <material>
           <script>
             <name>Gazebo/Green</name>
+            <uri>__default__</uri>
           </script>
+          <shader type='vertex'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <ambient>0 1 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 1</emissive>
         </material>
-
         <transparency>0</transparency>
         <cast_shadows>1</cast_shadows>
       </visual>
@@ -48,7 +58,7 @@
       <collision name='body_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <box>
             <size>0.8 0.3 0.2</size>
@@ -118,7 +128,7 @@
         <limit>
           <lower>-0.329319</lower>
           <upper>0.416405</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -154,7 +164,7 @@
         <limit>
           <lower>-0.329319</lower>
           <upper>0.416405</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -190,7 +200,7 @@
         <limit>
           <lower>-0.329319</lower>
           <upper>0.416405</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -226,7 +236,7 @@
         <limit>
           <lower>-0.329319</lower>
           <upper>0.416405</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -281,7 +291,7 @@
       <enable_wind>0</enable_wind>
 
       <visual name='fl_base_visual'>
-        <pose frame=''>0 0 0 1.5708 0 0</pose>
+        <pose frame=''>0 0 0 1.5708 -0 -3.14159</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -290,7 +300,15 @@
         <material>
           <script>
             <name>Gazebo/Yellow</name>
+            <uri>__default__</uri>
           </script>
+          <shader type='vertex'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <ambient>0 1 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 1</emissive>
         </material>
 
         <transparency>0</transparency>
@@ -300,7 +318,7 @@
       <collision name='fl_base_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -357,7 +375,7 @@
     <link name='fr_base'>
       <pose frame=''>0.37 -0.2 1 0 0 0</pose>
       <inertial>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <mass>0.678337</mass>
         <inertia>
           <ixx>0.0004582</ixx>
@@ -379,7 +397,7 @@
       <enable_wind>0</enable_wind>
 
       <visual name='fr_base_visual'>
-        <pose frame=''>0 0 0 1.5708 0 -3.14159</pose>
+        <pose frame=''>0 0 0 1.5708 -0 -3.14159</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -406,7 +424,7 @@
       <collision name='fr_base_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -463,7 +481,7 @@
     <link name='hl_base'>
       <pose frame=''>-0.37 0.2 1 0 0 0</pose>
       <inertial>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <mass>0.678337</mass>
         <inertia>
           <ixx>0.0004582</ixx>
@@ -485,7 +503,7 @@
       <enable_wind>0</enable_wind>
 
       <visual name='hl_base_visual'>
-        <pose frame=''>0 0 0 1.5708 0 -3.14159</pose>
+        <pose frame=''>0 0 0 1.5708 -0 -3.14159</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -512,7 +530,7 @@
       <collision name='hl_base_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -569,7 +587,7 @@
     <link name='hr_base'>
       <pose frame=''>-0.37 -0.2 1 0 0 0</pose>
       <inertial>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <mass>0.678337</mass>
         <inertia>
           <ixx>0.0004582</ixx>
@@ -591,7 +609,7 @@
       <enable_wind>0</enable_wind>
 
       <visual name='hr_base_visual'>
-        <pose frame=''>0 0 0 1.5708 0 -3.14159</pose>
+        <pose frame=''>0 0 0 1.5708 -0 -3.14159</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -618,7 +636,7 @@
       <collision name='hr_base_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -688,7 +706,7 @@
         <limit>
           <lower>-0.262827</lower>
           <upper>0.8726</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -724,7 +742,7 @@
         <limit>
           <lower>-0.262827</lower>
           <upper>0.8726</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -760,7 +778,7 @@
         <limit>
           <lower>-0.8726</lower>
           <upper>0.262827</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -796,7 +814,7 @@
         <limit>
           <lower>-0.8726</lower>
           <upper>0.262827</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -828,7 +846,7 @@
 <!-- =================================================================================== -->
     <link name='fl_leg'>
       <pose frame=''>0.37 0.2 0.77 0 0 0</pose>
-      <gravity>1</gravity>
+
       <inertial>
         <pose frame=''>0 0 0 0 0 0</pose>
         <mass>1</mass>
@@ -842,6 +860,15 @@
         </inertia>
       </inertial>
 
+      <velocity_decay>
+        <linear>0</linear>
+        <angular>0</angular>
+      </velocity_decay>
+      <self_collide>0</self_collide>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <enable_wind>0</enable_wind>
+
       <visual name='fl_leg_link_visual'>
         <pose frame=''>0 0 0 0 0 0</pose>
         <geometry>
@@ -853,9 +880,16 @@
         <material>
           <script>
             <name>Gazebo/Yellow</name>
+            <uri>__default__</uri>
           </script>
+          <shader type='vertex'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 1</emissive>
         </material>
-
         <transparency>0</transparency>
         <cast_shadows>1</cast_shadows>
       </visual>
@@ -870,29 +904,28 @@
         <material>
           <script>
             <name>Gazebo/Yellow</name>
+            <uri>__default__</uri>
           </script>
+          <shader type='vertex'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 1</emissive>
         </material>
         <transparency>0</transparency>
         <cast_shadows>1</cast_shadows>
       </visual>
 
-      <collision name='fl_leg_knee_collision'>
-        <pose frame=''>0 0 -0.23 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.05</radius>
-          </sphere>
-        </geometry>
-      </collision>
-
       <collision name='fl_leg_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.03</radius>
-            <length>0.46</length>
+            <length>0.36</length>
           </cylinder>
         </geometry>
         <surface>
@@ -944,7 +977,7 @@
     </link> <!-- end fl_leg link -->
 
     <link name='fr_leg'>
-      <pose frame=''>0.37 -0.2 0.77 0 0 0</pose>
+      <pose frame=''>0.37 -0.2 0.77 0 -0 0</pose>
 
       <inertial>
         <pose frame=''>0 0 0 0 0 0</pose>
@@ -994,7 +1027,7 @@
       </visual>
 
       <visual name='fr_leg_knee_visual'>
-        <pose frame=''>0 0 -0.23 0 0 0</pose>
+        <pose frame=''>0 0 -0.23 0 -0 0</pose>
         <geometry>
           <sphere>
             <radius>0.05</radius>
@@ -1017,23 +1050,14 @@
         <cast_shadows>1</cast_shadows>
       </visual>
 
-      <collision name='fr_leg_knee_collision'>
-        <pose frame=''>0 0 -0.23 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.05</radius>
-          </sphere>
-        </geometry>
-      </collision>
-
       <collision name='fr_leg_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.03</radius>
-            <length>0.46</length>
+            <length>0.36</length>
           </cylinder>
         </geometry>
         <surface>
@@ -1158,15 +1182,6 @@
         <cast_shadows>1</cast_shadows>
       </visual>
 
-      <collision name='hl_leg_knee_collision'>
-        <pose frame=''>0 0 -0.23 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.05</radius>
-          </sphere>
-        </geometry>
-      </collision>
-
       <collision name='hl_leg_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
@@ -1174,7 +1189,7 @@
         <geometry>
           <cylinder>
             <radius>0.03</radius>
-            <length>0.46</length>
+            <length>0.36</length>
           </cylinder>
         </geometry>
         <surface>
@@ -1226,7 +1241,7 @@
     </link> <!-- end hl_leg link -->
 
     <link name='hr_leg'>
-      <pose frame=''>-0.37 -0.2 0.77 0 0 0</pose>
+      <pose frame=''>-0.37 -0.2 0.77 0 -0 0</pose>
 
       <inertial>
         <pose frame=''>0 0 0 0 0 0</pose>
@@ -1299,23 +1314,14 @@
         <cast_shadows>1</cast_shadows>
       </visual>
 
-      <collision name='hr_leg_knee_collision'>
-        <pose frame=''>0 0 -0.23 0 0 0</pose>
-        <geometry>
-          <sphere>
-            <radius>0.05</radius>
-          </sphere>
-        </geometry>
-      </collision>
-
       <collision name='hr_leg_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.03</radius>
-            <length>0.46</length>
+            <length>0.36</length>
           </cylinder>
         </geometry>
         <surface>
@@ -1381,7 +1387,7 @@
         <limit>
           <lower>-1.72775</lower>
           <upper>-0.595113</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -1415,7 +1421,7 @@
         <limit>
           <lower>-1.72775</lower>
           <upper>-0.595113</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -1449,7 +1455,7 @@
         <limit>
           <lower>0.595113</lower>
           <upper>1.72775</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -1483,7 +1489,7 @@
         <limit>
           <lower>0.595113</lower>
           <upper>1.72775</upper>
-          <effort>30000</effort>
+          <effort>50</effort>
           <velocity>1</velocity>
         </limit>
         <dynamics>
@@ -1537,7 +1543,7 @@
       <enable_wind>0</enable_wind>
 
       <visual name='fl_shine_visual'>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.03</radius>
@@ -1562,7 +1568,7 @@
       </visual>
 
       <visual name='fl_foot_visual'>
-        <pose frame=''>0 0 -0.23 0 0 0</pose>
+        <pose frame=''>0 0 -0.23 0 -0 0</pose>
         <geometry>
           <sphere>
             <radius>0.03</radius>
@@ -1644,7 +1650,7 @@
       <collision name='fl_foot_collision'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0 0 -0.23 0 0 0</pose>
+        <pose frame=''>0 0 -0.23 0 -0 0</pose>
         <geometry>
           <sphere>
             <radius>0.03</radius>
@@ -2118,7 +2124,7 @@
       <enable_wind>0</enable_wind>
 
       <visual name='hr_shine_visual'>
-        <pose frame=''>0 0 0 0 0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <cylinder>
             <radius>0.03</radius>
@@ -2240,12 +2246,20 @@
               <slip1>0</slip1>
               <slip2>0</slip2>
             </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
           </friction>
           <bounce>
-            <restitution_coefficient>0.5</restitution_coefficient>
+            <restitution_coefficient>0</restitution_coefficient>
             <threshold>1e+06</threshold>
           </bounce>
-
           <contact>
             <collide_without_contact>0</collide_without_contact>
             <collide_without_contact_bitmask>1</collide_without_contact_bitmask>

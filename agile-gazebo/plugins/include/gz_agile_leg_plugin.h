@@ -1,12 +1,12 @@
 /*
- * model_push.h
+ * gz_agile_leg_plugin.h
  *
- *  Created on: Feb 11, 2018
+ *  Created on: Mar 7, 2018
  *      Author: bibei
  */
 
-#ifndef PLUGINS_INCLUDE_GZ_AGILE_PLUGIN_H_
-#define PLUGINS_INCLUDE_GZ_AGILE_PLUGIN_H_
+#ifndef PLUGINS_INCLUDE_GZ_AGILE_LEG_PLUGIN_H_
+#define PLUGINS_INCLUDE_GZ_AGILE_LEG_PLUGIN_H_
 
 #include "system/platform/protocol/qr_protocol.h"
 #include "foundation/utf.h"
@@ -29,11 +29,10 @@ class SharedMem;
 
 namespace agile_gazebo {
 
-class GzAgilePlugin : public gazebo::ModelPlugin {
+class GzAgileLegPlugin : public gazebo::ModelPlugin {
 public:
-  GzAgilePlugin();
-  virtual ~GzAgilePlugin();
-
+  GzAgileLegPlugin();
+  virtual ~GzAgileLegPlugin();
 public:
   void Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf);
   // Called by the world update start event
@@ -91,16 +90,16 @@ private:
   std::string                     leg_node_ipc_name_;
   boost::lockfree::queue<Packet>* swap_r_buffer_;
   boost::lockfree::queue<Packet>* swap_w_buffer_;
-  ///! These interfaces for Joint, Order by leg * joint
-  std::vector<std::vector<gazebo::physics::JointPtr>> joints_;
+  ///! These interfaces for Joint
+  std::vector<gazebo::physics::JointPtr> joints_;
   ///! These interfaces for Actor
   // MiiVector<gazebo::physics::ActorPtr> actors_;
   ///! NODE_ID map to LEG
-  std::vector<LegType>             id_2_leg_lut_;
-  std::vector<unsigned char>       leg_2_id_lut_;
-  class LinearParams*              linear_params_[LegType::N_LEGS];
+  LegType             leg_type_;
+  unsigned char       leg_id_;
+  class LinearParams* linear_params_;
 };
 
-}
+} /* namespace agile_gazebo */
 
-#endif /* PLUGINS_INCLUDE_GZ_AGILE_PLUGIN_H_ */
+#endif /* PLUGINS_INCLUDE_GZ_AGILE_LEG_PLUGIN_H_ */

@@ -68,7 +68,7 @@ public:
   /*!
    * @brief The current Jacobian matrix with given joint position.
    */
-  virtual void Jacobian(Eigen::Matrix3Xd&) = 0;
+  virtual void jacobian(Eigen::Matrix3Xd&) = 0;
   ///! need to delete
   // virtual void inverseKinematics(const EVX& jnt_pos, EVX& angle) = 0;
 

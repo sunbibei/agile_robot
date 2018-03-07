@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="agile_leg_world">
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    
+    <model name="agile_robot">
+      <include>
+        <pose>0 0 0 0 0 0</pose>
+        <uri>model://agile_leg</uri>
+      </include>
+
+      <joint name="ground_fixed_joint" type="fixed">
+        <parent>ground_plane::ground_plane::link</parent>
+        <child>agile_leg::agile_leg::base</child>
+      </joint>
+      
+      <plugin name="agile_leg_plugin" filename="libagile_gazebo_leg_plugin.so">
+        <config name="configures for GzAgileLegPlugin" >
+          <leg_node_ipc_name>leg_node</leg_node_ipc_name>
+          <cmd_ipc_name>cmds</cmd_ipc_name>
+
+          <leg_type>FL</leg_type>
+          <node_id>0x02</node_id>
+
+          <!-- The linear coefficients -->
+          <YAW_linear_scale>1</YAW_linear_scale>
+          <YAW_linear_offset>16290</YAW_linear_offset>
+          <HIP_linear_scale>-1</HIP_linear_scale>
+          <HIP_linear_offset>23079</HIP_linear_offset>
+          <KNEE_linear_scale>1</KNEE_linear_scale>
+          <KNEE_linear_offset>28734</KNEE_linear_offset>
+        </config>
+      </plugin>
+
+    </model>
+
+    <!-- Physics settings for simulation -->
+    <gravity>0 0 -9.8</gravity>
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>50</iters>
+          <sor>1.4</sor>
+        </solver>
+        <constraints>
+          <cfm>0</cfm>
+          <erp>1</erp>
+          <contact_max_correcting_vel>0</contact_max_correcting_vel>
+          <contact_surface_layer>0</contact_surface_layer>
+        </constraints>
+      </ode>
+    </physics>
+  </world>
+</sdf>

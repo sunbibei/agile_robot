@@ -45,7 +45,7 @@ set(GAIT_FILES        ${SRC_GAITS_ROOT}/gait_manager.cpp
 set(ROBOT_FILES       ${SRC_RO_LEG_ROOT}/data_leg.cpp
                       ${SRC_RO_LEG_ROOT}/math_leg.cpp
                       ${SRC_RO_LEG_ROOT}/robot_leg.cpp
-                      ${SRC_RO_LEG_ROOT}/qr_leg.cpp
+                      ${SRC_RO_LEG_ROOT}/agile_leg.cpp
                       ${SRC_RO_BOFY_ROOT}/data_body.cpp
                       ${SRC_RO_BOFY_ROOT}/math_body.cpp
                       ${SRC_RO_BOFY_ROOT}/qr_body.cpp

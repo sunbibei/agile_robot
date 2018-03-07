@@ -34,7 +34,7 @@ RosWrapper* RosWrapper::create_instance(const MiiString& __tag) {
   if (nullptr != instance_) {
     LOG_WARNING << "This method 'create_instance()' is called twice.";
   } else {
-    instance_ = new RosWrapper(__tag);
+    instance_ = new RosWrapper(Label::make_label(__tag, "wrapper"));
   }
   return instance_;
 }
@@ -207,7 +207,7 @@ inline void __fill_imu_data(sensor_msgs::Imu& to, ImuSensor* from) {
 inline void __fill_force_data(std_msgs::Int32MultiArray& to, MiiVector<ForceSensor*>& from) {
   for (const LegType& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
     // LOG_DEBUG << "enter: " << leg << " " << to.data.size() << " " << from.size();// << " " << from[leg];
-    to.data[leg] = from[leg]->force_data();
+    to.data[leg] = (nullptr != from[leg]) ? from[leg]->force_data() : NAN;
   }
 }
 
@@ -229,9 +229,10 @@ void RosWrapper::publishRTMsg() {
   ros::Publisher force_puber
       = nh_.advertise<std_msgs::Int32MultiArray>("foot_forces", 1);
 
-  ros::Publisher cmd_puber;
-  if (!use_ros_control_)
-    cmd_puber = nh_.advertise<std_msgs::Float64MultiArray>("/dragon/joint_commands", 10);
+// TODO Redesigned the Command publisher.
+//  ros::Publisher cmd_puber;
+//  if (!use_ros_control_)
+//    cmd_puber = nh_.advertise<std_msgs::Float64MultiArray>("/dragon/joint_commands", 10);
 
   sensor_msgs::JointState     __jnt_msg;
   sensor_msgs::Imu            __imu_msg;
@@ -250,15 +251,15 @@ void RosWrapper::publishRTMsg() {
     __f_msg.layout.dim.push_back(dim);
   }
 
-  Eigen::VectorXd* _sub_cmd[LegType::N_LEGS];
-  if (!use_ros_control_) {
-    auto cfg = MiiCfgReader::instance();
-    MiiVector<MiiString> cmds;
-    cfg->get_value(Label::make_label(root_tag_, "roswrapper"), "cmds", cmds);
-    FOR_EACH_LEG(l) {
-     _sub_cmd[l] = GET_COMMAND_NO_FLAG(cmds[l], Eigen::VectorXd*);
-    }
-  }
+//  Eigen::VectorXd* _sub_cmd[LegType::N_LEGS];
+//  if (!use_ros_control_) {
+//    auto cfg = MiiCfgReader::instance();
+//    MiiVector<MiiString> cmds;
+//    cfg->get_value(Label::make_label(root_tag_, "roswrapper"), "cmds", cmds);
+//    FOR_EACH_LEG(l) {
+//     _sub_cmd[l] = GET_COMMAND_NO_FLAG(cmds[l], Eigen::VectorXd*);
+//    }
+//  }
 
   TIMER_INIT
   while (alive_ && ros::ok()) {
@@ -275,11 +276,10 @@ void RosWrapper::publishRTMsg() {
       __fill_force_data(__f_msg, td_list_by_type_);
       force_puber.publish(__f_msg);
     }
-
-    if (!use_ros_control_ && cmd_puber.getNumSubscribers()) {
-      __fill_cmd_data(__cmd_msg, _sub_cmd);
-      cmd_puber.publish(__cmd_msg);
-    }
+//    if (!use_ros_control_ && cmd_puber.getNumSubscribers()) {
+//      __fill_cmd_data(__cmd_msg, _sub_cmd);
+//      cmd_puber.publish(__cmd_msg);
+//    }
 
     TIMER_CONTROL(rt_duration_)
   }

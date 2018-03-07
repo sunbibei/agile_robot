@@ -130,7 +130,7 @@ int main() {
   LOG_INFO << "I'm CLIENT";
 #endif
 
-  auto shm = SharedMem::create_instance();
+  SharedMem* shm = SharedMem::create_instance();
   if (nullptr == shm)
     LOG_FATAL << "What fucking... ...";
 

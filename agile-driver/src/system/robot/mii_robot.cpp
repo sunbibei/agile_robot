@@ -165,7 +165,7 @@ bool MiiRobot::init(bool use_mii_control) {
   MiiVector<MiiString> vec_str;
   cfg->get_value_fatal(
       Label::make_label(prefix_tag_, "touchdowns"), "labels", vec_str);
-  td_list_by_type_.resize(vec_str.size());
+  td_list_by_type_.resize(LegType::N_LEGS);
   for (const auto& td : vec_str) {
     ForceSensor* p_td = Label::getHardwareByName<ForceSensor>(td);
     if (nullptr != p_td) {
@@ -286,10 +286,10 @@ void MiiRobot::supportRegistry() {
         jnt_manager_->setJointCommandMode(jnt_reg_res_->cmd_mode);
 
       for (const auto& l : {LegType::FL, LegType::HL, LegType::FR, LegType::HR}) {
-        auto& flag = *(jnt_reg_res_->cmd_flag[l]);
-        if (!flag.load()) continue;
+        auto flag = jnt_reg_res_->cmd_flag[l];
+        if ((nullptr == flag) || !flag->load()) continue;
 
-        flag.store(false);
+        flag->store(false);
         auto& cmd_ref = *jnt_reg_res_->command[l];
         for (const auto& j : {JntType::KNEE, JntType::HIP, JntType::YAW})
           jnt_manager_->addJointCommand(l, j, cmd_ref(j));
