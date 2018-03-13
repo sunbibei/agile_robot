@@ -11,7 +11,7 @@
 #include <chrono>
 #include <foundation/utf.h>
 
-namespace qr_control {
+namespace agile_control {
 
 class MiiControl {
   SINGLETON_DECLARE(MiiControl, const MiiString&)

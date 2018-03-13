@@ -11,7 +11,7 @@
 ///! Just test
 // class Trajectory { };
 
-namespace qr_control {
+namespace agile_control {
 
 RobotLeg::RobotLeg()
   : MathLeg(),

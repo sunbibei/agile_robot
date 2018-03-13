@@ -6,7 +6,6 @@
  */
 
 #include "gait/creep/creep.h"
-#include "robot/qr_robot.h"
 #include "adt/segmented.h"
 #include "adt/polynomial.h"
 #include "adt/geometry.h"
@@ -14,12 +13,13 @@
 #include <toolbox/time_control.h>
 #include <foundation/cfg_reader.h>
 #include <boost/algorithm/clamp.hpp>
+#include <robot/agile_robot.h>
 
 #ifdef TEST_TIME
 #include <fstream>
 #endif
 
-namespace qr_control {
+namespace agile_control {
 
 struct CreepParams {
   ///! The foot step in x-direction
@@ -805,4 +805,4 @@ void Creep::prog_eef_traj(const Eigen::Vector3d& _next_fpt) {
 } /* namespace qr_control */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(qr_control::Creep, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_control::Creep, Label)

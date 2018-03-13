@@ -10,7 +10,7 @@
       <uri>model://ground_plane</uri>
     </include>
     
-    <model name="agile_robot">
+    <model name="agile_leg">
       <include>
         <pose>0 0 0 0 0 0</pose>
         <uri>model://agile_leg</uri>
@@ -32,10 +32,15 @@
           <!-- The linear coefficients -->
           <YAW_linear_scale>1</YAW_linear_scale>
           <YAW_linear_offset>16290</YAW_linear_offset>
+          <YAW_pid_gains>0 0 0</YAW_pid_gains>
+
           <HIP_linear_scale>-1</HIP_linear_scale>
           <HIP_linear_offset>23079</HIP_linear_offset>
+          <HIP_pid_gains>100 10 0</HIP_pid_gains>
+
           <KNEE_linear_scale>1</KNEE_linear_scale>
           <KNEE_linear_offset>28734</KNEE_linear_offset>
+          <KNEE_pid_gains>100 10 0</KNEE_pid_gains>
         </config>
       </plugin>
 

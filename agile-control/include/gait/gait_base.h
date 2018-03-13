@@ -10,7 +10,7 @@
 
 #include <foundation/label.h>
 
-namespace qr_control {
+namespace agile_control {
 
 class StateMachineBase {
 public:

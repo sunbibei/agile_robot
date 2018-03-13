@@ -10,7 +10,7 @@
 
 #include <vector>
 
-namespace qr_control {
+namespace agile_control {
 namespace internal {
 
 /*!

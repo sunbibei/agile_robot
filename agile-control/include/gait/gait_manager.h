@@ -13,7 +13,7 @@
 
 #include <mutex>
 
-namespace qr_control {
+namespace agile_control {
 
 class GaitManager
     : public internal::ResourceManager<GaitBase> {

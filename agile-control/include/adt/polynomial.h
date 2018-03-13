@@ -13,7 +13,7 @@
 
 #include <iomanip>
 
-namespace qr_control {
+namespace agile_control {
 
 // const double INFINITY = DBL_MAX;
 

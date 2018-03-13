@@ -9,7 +9,7 @@
 #include <foundation/cfg_reader.h>
 #include <repository/registry.h>
 
-namespace qr_control {
+namespace agile_control {
 
 struct _ImuSensor {
   const Eigen::VectorXd* ang_vel_;

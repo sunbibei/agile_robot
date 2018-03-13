@@ -7,7 +7,7 @@
 
 #include "adt/geometry.h"
 
-namespace qr_control {
+namespace agile_control {
 namespace geometry {
 
 ///! the distance between the point p1 to the point p2
@@ -125,7 +125,7 @@ Point2d centroid_of_triangle    (const Point2d& a, const Point2d& b, const Point
 // #define TEST_GEOMETRY
 #ifdef TEST_GEOMETRY
 
-using namespace qr_control;
+using namespace agile_control;
 using namespace geometry;
 #include <iostream>
 

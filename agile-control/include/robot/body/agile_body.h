@@ -5,17 +5,17 @@
  *      Author: bibei
  */
 
-#ifndef INCLUDE_ROBOT_BODY_QR_BODY_H_
-#define INCLUDE_ROBOT_BODY_QR_BODY_H_
+#ifndef INCLUDE_ROBOT_BODY_AGILE_BODY_H_
+#define INCLUDE_ROBOT_BODY_AGILE_BODY_H_
 
 #include "robot_body.h"
 
-namespace qr_control {
+namespace agile_control {
 
-class QrBody: public RobotBody {
+class AgileBody: public RobotBody {
 public:
-  QrBody();
-  virtual ~QrBody();
+  AgileBody();
+  virtual ~AgileBody();
 
 ///! inherit from MathBody
 public:
@@ -35,4 +35,4 @@ public:
 
 } /* namespace qr_control */
 
-#endif /* INCLUDE_ROBOT_BODY_QR_BODY_H_ */
+#endif /* INCLUDE_ROBOT_BODY_AGILE_BODY_H_ */

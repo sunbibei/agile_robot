@@ -10,7 +10,7 @@
 
 #include "math_body.h"
 
-namespace qr_control {
+namespace agile_control {
 
 /*!
  * @brief The body of robot can not operate by itself, so the RobotBody is null.

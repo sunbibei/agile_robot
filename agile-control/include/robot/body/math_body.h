@@ -10,7 +10,7 @@
 
 #include <robot/body/data_body.h>
 
-namespace qr_control {
+namespace agile_control {
 
 class MathBody: public DataBody {
 ///! These are the

@@ -14,7 +14,7 @@
 #include <thread>
 #include <iostream>
 
-namespace qr_control {
+namespace agile_control {
 // params list and parser from cfg
 class QrLegTopology
 {
@@ -326,4 +326,4 @@ void AgileLeg::jacobian(Eigen::Matrix3Xd& _jacob) {
 } /* namespace qr_control */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(qr_control::AgileLeg, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_control::AgileLeg, Label)

@@ -8,13 +8,13 @@
 // #ifdef XXX
 
 #include "gait/walk/walk.h"
-#include "robot/qr_robot.h"
 #include "adt/segmented.h"
 #include "adt/polynomial.h"
 #include "adt/geometry.h"
 
 #include <toolbox/time_control.h>
 #include <foundation/cfg_reader.h>
+#include <robot/agile_robot.h>
 
 #ifdef DIS_JNT_LIMIT
 #include <repository/resource/joint_manager.h>
@@ -22,7 +22,7 @@
 
 #include <limits>
 
-namespace qr_control {
+namespace agile_control {
 
 bool _s_is_hang = false;
 
@@ -546,8 +546,8 @@ void Walk::post_tick() {
 //  if (current_state_ == WalkState::WK_SWING) {
 //    __print_positions(leg_ifaces_[swing_leg_]->eef(), eef_traj_->sample(1));
 //  } else
-  // print_jnt_pos(JNTS_TARGET);
-  // print_eef_pos();
+   print_jnt_pos(JNTS_TARGET);
+   print_eef_pos();
 
 #ifdef RECORDER_EEF_TRAJ
     Discrete<double, 14>::StateVec vec;
@@ -705,8 +705,8 @@ void Walk::close_to_floor() {
 
 bool Walk::end_swing_leg() {
  // auto diff = (ctf_eef_[swing_leg_] - leg_ifaces_[swing_leg_]->eef()).norm();
-  auto diff = (eef_traj_->sample(eef_traj_->ceiling()).head(2)
-                 - leg_ifaces_[swing_leg_]->eef().head(2)).norm();
+//  auto diff = (eef_traj_->sample(eef_traj_->ceiling()).head(2)
+//                 - leg_ifaces_[swing_leg_]->eef().head(2)).norm();
 
   ///! for real robot
  // return ( (diff < 1) ? ((LEGTYPE_IS_FRONT(swing_leg_)) ?
@@ -1316,4 +1316,4 @@ Eigen::Vector2d __cross_point(
 } /* namespace qr_control */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(qr_control::Walk, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_control::Walk, Label)

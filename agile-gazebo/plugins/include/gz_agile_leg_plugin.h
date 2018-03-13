@@ -26,6 +26,7 @@
 ///! Forward declare
 class MsgQueue;
 class SharedMem;
+class Pid;
 
 namespace agile_gazebo {
 
@@ -39,6 +40,10 @@ public:
   void event_update();
 
 protected:
+  /*!
+   * @brief This method is the thread function for the control of joints.
+   */
+  void joint_control();
   /**
    * @brief This method completes the function that convert the Packet
    *        to the form of message which be needed by the specific communication
@@ -76,7 +81,7 @@ private:
   // Pointer to the update event connection
   gazebo::event::ConnectionPtr updateConnection;
 
-  bool                            rw_thread_alive_;
+  bool                            thread_alive_;
   ///! The message queue or the shared memory
   Packet                          pkt_rw_;
 #ifdef USE_SHM
@@ -92,6 +97,9 @@ private:
   boost::lockfree::queue<Packet>* swap_w_buffer_;
   ///! These interfaces for Joint
   std::vector<gazebo::physics::JointPtr> joints_;
+  ///! These interfaces for the control of joint.
+  std::vector<class Pid*>                joints_control_;
+  std::vector<class JntTarget*>          joints_target_;
   ///! These interfaces for Actor
   // MiiVector<gazebo::physics::ActorPtr> actors_;
   ///! NODE_ID map to LEG

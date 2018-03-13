@@ -6,12 +6,11 @@
  */
 
 #include "gait/sl/hopping.h"
-#include "robot/qr_robot.h"
-
 #include <toolbox/time_control.h>
 #include <foundation/cfg_reader.h>
+#include <robot/agile_robot.h>
 
-namespace qr_control {
+namespace agile_control {
 
 ///! The private parameters for trot.
 struct __SLHPParams {
@@ -75,6 +74,7 @@ bool SLHopping::starting() {
   params_ = new __SLHPParams(Label::make_label(getLabel(), "parameters"));
 
   leg_cmd_    = new LegTarget;
+  current_state_ = SLHPState::SL_STC_TEST_STATE;
   return true;
 }
 

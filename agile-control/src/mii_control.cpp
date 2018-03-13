@@ -8,14 +8,14 @@
 #include <foundation/cfg_reader.h>
 #include <foundation/auto_instanceor.h>
 #include <foundation/thread/threadpool.h>
+#include <robot/agile_robot.h>
 
 #include "mii_control.h"
-#include "robot/qr_robot.h"
 #include "gait/gait_manager.h"
 
 #include <thread>
 
-namespace qr_control {
+namespace agile_control {
 
 // #define MII_CTRL ("mii-control")
 
@@ -82,7 +82,7 @@ void MiiControl::activate(const MiiString& _n) {
 void MiiControl::create_system_instance() {
   if (nullptr == GaitManager::create_instance())
     LOG_FATAL << "Create the singleton 'GaitManager' has failed.";
-  if (nullptr == QrRobot::create_instance())
+  if (nullptr == AgileRobot::create_instance())
     LOG_FATAL << "Create the singleton 'QrRobot' has failed.";
 }
 

@@ -5,22 +5,22 @@
  *      Author: bibei
  */
 
-#include <robot/qr_robot.h>
+#include <robot/agile_robot.h>
 
-namespace qr_control {
+namespace agile_control {
 
-SINGLETON_IMPL(QrRobot)
+SINGLETON_IMPL(AgileRobot)
 
-QrRobot::QrRobot()
+AgileRobot::AgileRobot()
   : LegRobot() {
   ; // Nothing to do here.
 }
 
-QrRobot::~QrRobot() {
+AgileRobot::~AgileRobot() {
   ; // Nothing to do here.
 }
 
-double QrRobot::stability_margin() const {
+double AgileRobot::stability_margin() const {
   // TODO
   return 10000.0;
 }

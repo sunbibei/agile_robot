@@ -13,7 +13,7 @@
 #include <Eigen/Dense>
 #include <boost/shared_ptr.hpp>
 
-namespace qr_control {
+namespace agile_control {
 
 /*!
  * @brief The trajectory base class, define the interface for each sub-class

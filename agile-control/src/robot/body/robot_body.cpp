@@ -8,7 +8,7 @@
 #include <robot/body/robot_body.h>
 #include <robot/leg_robot.h>
 
-namespace qr_control {
+namespace agile_control {
 
 bool RobotBody::auto_init() {
   if (!MathBody::auto_init()) return false;
@@ -21,7 +21,7 @@ bool RobotBody::auto_init() {
 
 
 #ifdef XXX
-namespace qr_control {
+namespace agile_control {
 
 
 

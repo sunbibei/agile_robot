@@ -19,7 +19,7 @@
 ///! Forward declaration
 class TimeControl;
 
-namespace qr_control {
+namespace agile_control {
 
 enum CreepState {
   UNKNOWN_CP_STATE = -1,

@@ -10,7 +10,7 @@
 
 #include "trajectory.h"
 
-namespace qr_control {
+namespace agile_control {
 
 /*!
  * @brief The implement of Segmented trajectory.
@@ -43,6 +43,11 @@ public:
   ///! This method remove a segmented trajectory
   // void remove(Trajectory<_DataType, _Dim_X>*);
 
+//  ///! This method return the start point
+//  _DataType floor(bool* exit = nullptr)   const;
+//  ///! This method return the end   point
+//  _DataType ceiling(bool* exit = nullptr) const;
+
 public:
 //  template<typename _T1, int _T2>
 //  friend std::ostream& operator<<(std::ostream&, const Segmented<_T1, _T2>& traj);
@@ -50,7 +55,7 @@ public:
 protected:
   MiiVector<typename Trajectory<_DataType, _Dim_X>::TrajSp> seqs_;
   MiiVector<typename Trajectory<_DataType, _Dim_X>::Range*> ranges_;
-  typename Trajectory<_DataType, _Dim_X>::Range*            coj_range_;
+  // typename Trajectory<_DataType, _Dim_X>::Range*            coj_range_;
 };
 
 
@@ -66,7 +71,7 @@ Segmented<_DataType, _Dim_X>::Segmented() {
 
   ranges_.reserve(DEFAULT_SEGS);
   // for (auto& r : ranges_) r = nullptr;
-  coj_range_ = nullptr;
+  Trajectory<_DataType, _Dim_X>::range_ = nullptr;
 }
 
 template<typename _DataType, int _Dim_X>
@@ -89,13 +94,13 @@ void Segmented<_DataType, _Dim_X>::add(
   tmp_range->ceiling = ceiling;
   ranges_.push_back(tmp_range);
 
-  if (!coj_range_) {
-    coj_range_ = new typename Trajectory<_DataType, _Dim_X>::Range;
-    coj_range_->floor   = floor;
-    coj_range_->ceiling = ceiling;
+  if (!Trajectory<_DataType, _Dim_X>::range_) {
+    Trajectory<_DataType, _Dim_X>::range_ = new typename Trajectory<_DataType, _Dim_X>::Range;
+    Trajectory<_DataType, _Dim_X>::range_->floor   = floor;
+    Trajectory<_DataType, _Dim_X>::range_->ceiling = ceiling;
   } else {
-    coj_range_->floor   = std::min(coj_range_->floor,   floor);
-    coj_range_->ceiling = std::max(coj_range_->ceiling, ceiling);
+    Trajectory<_DataType, _Dim_X>::range_->floor   = std::min(Trajectory<_DataType, _Dim_X>::range_->floor,   floor);
+    Trajectory<_DataType, _Dim_X>::range_->ceiling = std::max(Trajectory<_DataType, _Dim_X>::range_->ceiling, ceiling);
   }
 }
 
@@ -110,13 +115,13 @@ void Segmented<_DataType, _Dim_X>::add(
   tmp_range->ceiling = _to;
   ranges_.push_back(tmp_range);
 
-  if (!coj_range_) {
-    coj_range_ = new typename Trajectory<_DataType, _Dim_X>::Range;
-    coj_range_->floor   = _from;
-    coj_range_->ceiling = _to;
+  if (!Trajectory<_DataType, _Dim_X>::range_) {
+    Trajectory<_DataType, _Dim_X>::range_ = new typename Trajectory<_DataType, _Dim_X>::Range;
+    Trajectory<_DataType, _Dim_X>::range_->floor   = _from;
+    Trajectory<_DataType, _Dim_X>::range_->ceiling = _to;
   } else {
-    coj_range_->floor   = std::min(coj_range_->floor,   _from);
-    coj_range_->ceiling = std::max(coj_range_->ceiling, _to);
+    Trajectory<_DataType, _Dim_X>::range_->floor   = std::min(Trajectory<_DataType, _Dim_X>::range_->floor,   _from);
+    Trajectory<_DataType, _Dim_X>::range_->ceiling = std::max(Trajectory<_DataType, _Dim_X>::range_->ceiling, _to);
   }
 }
 
@@ -146,15 +151,15 @@ void Segmented<_DataType, _Dim_X>::clear() {
   }
   ranges_.clear();
 
-  delete coj_range_;
-  coj_range_ = nullptr;
+  delete Trajectory<_DataType, _Dim_X>::range_;
+  Trajectory<_DataType, _Dim_X>::range_ = nullptr;
 }
 
 template<typename _DataType, int _Dim_X>
 typename Trajectory<_DataType, _Dim_X>::StateVec
 Segmented<_DataType, _Dim_X>::sample(_DataType _t) const {
-  assert(coj_range_ && "No trajectory be added!");
-  _t = __clamp(_t, coj_range_->floor, coj_range_->ceiling);
+  // assert(Trajectory<_DataType, _Dim_X>::range_ && "No trajectory be added!");
+  _t = __clamp(_t, Trajectory<_DataType, _Dim_X>::range_->floor, Trajectory<_DataType, _Dim_X>::range_->ceiling);
 
   for (size_t i = 0; i < ranges_.size(); ++i)   {
     if ((_t >= ranges_[i]->floor) && (_t <= ranges_[i]->ceiling)) {
@@ -166,6 +171,20 @@ Segmented<_DataType, _Dim_X>::sample(_DataType _t) const {
   assert(false && ("range error"));
   return seqs_[0]->sample(_t);
 }
+
+//template<typename _DataType, int _Dim_X>
+//_DataType Segmented<_DataType, _Dim_X>::floor(bool* exit) const {
+//  if (exit) *exit = (nullptr != Trajectory<_DataType, _Dim_X>::range_);
+//
+//  return (Trajectory<_DataType, _Dim_X>::range_) ? Trajectory<_DataType, _Dim_X>::range_->floor : std::numeric_limits<_DataType>::min();
+//}
+//
+//template<typename _DataType, int _Dim_X>
+//_DataType Segmented<_DataType, _Dim_X>::ceiling(bool* exit) const {
+//  if (exit) *exit = (nullptr != Trajectory<_DataType, _Dim_X>::range_);
+//
+//  return (Trajectory<_DataType, _Dim_X>::range_) ? Trajectory<_DataType, _Dim_X>::range_->ceiling : std::numeric_limits<_DataType>::max();
+//}
 
 //template<typename _T1, int _T2>
 //std::ostream& operator<<(std::ostream& os, const Segmented<_T1, _T2>& traj) {

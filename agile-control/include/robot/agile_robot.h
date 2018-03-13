@@ -5,17 +5,17 @@
  *      Author: bibei
  */
 
-#ifndef INCLUDE_ROBOT_QR_ROBOT_H_
-#define INCLUDE_ROBOT_QR_ROBOT_H_
+#ifndef INCLUDE_ROBOT_AGILE_ROBOT_H_
+#define INCLUDE_ROBOT_AGILE_ROBOT_H_
 
 // #include <foundation/utf.h>
 
 #include <robot/leg_robot.h>
 
-namespace qr_control {
+namespace agile_control {
 
-class QrRobot: public LegRobot {
-SINGLETON_DECLARE(QrRobot)
+class AgileRobot: public LegRobot {
+SINGLETON_DECLARE(AgileRobot)
 
 ///! inherit from LegRobot
 public:
@@ -24,4 +24,4 @@ public:
 
 } /* namespace qr_control */
 
-#endif /* INCLUDE_ROBOT_QR_ROBOT_H_ */
+#endif /* INCLUDE_ROBOT_AGILE_ROBOT_H_ */

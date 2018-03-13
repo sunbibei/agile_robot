@@ -14,7 +14,7 @@
 ///! Forward declaration
 class TimeControl;
 
-namespace qr_control {
+namespace agile_control {
 
 enum SLHPState {
   INVALID_SL_HP_STATE = -1,

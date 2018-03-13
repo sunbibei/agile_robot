@@ -12,9 +12,13 @@
 #include <foundation/ipc/shared_mem.h>
 
 #include <toolbox/time_control.h>
+#include <toolbox/pid.h>
 
-#define GZ_R_THREAD_NAME ("gz_r")
-#define GZ_W_THREAD_NAME ("gz_w")
+#include <atomic>
+
+#define GZ_R_THREAD_NAME   ("gz_r")
+#define GZ_W_THREAD_NAME   ("gz_w")
+#define GZ_PID_THREAD_NAME ("gz_pid")
 
 // #define SAVE_MSG_TO_FILE
 #ifdef  SAVE_MSG_TO_FILE
@@ -36,10 +40,16 @@ struct LinearParams {
   double offset;
 };
 
+struct JntTarget {
+  JntCmdType       type;
+  double           value;
+  std::atomic_bool is_new;
+};
+
 GzAgileLegPlugin::GzAgileLegPlugin()
   : gazebo::ModelPlugin(),
     world_(nullptr), model(nullptr),
-    rw_thread_alive_(false), ipc_(nullptr),
+    thread_alive_(false), ipc_(nullptr),
 #ifdef USE_SHM
     shm_r_buf_(nullptr),     shm_w_buf_(nullptr),
 #endif
@@ -55,11 +65,11 @@ GzAgileLegPlugin::GzAgileLegPlugin()
 
 GzAgileLegPlugin::~GzAgileLegPlugin() {
   std::cout << "Deconstructing the GzAgilePlugin... ..." << std::endl;
-  // Disconnect from gazebo events
-  updateConnection.reset();
+  thread_alive_ = false;
+  middleware::ThreadPool::instance()->stop();
+  middleware::ThreadPool::destroy_instance();
 
   ipc_->destroy_instance();
-
 //  Packet pkg;
 //  int count = 0;
 //  while (!swap_w_buffer_->empty()) {
@@ -75,9 +85,15 @@ GzAgileLegPlugin::~GzAgileLegPlugin() {
 //  }
 //  printf("R SIZE: %d\n", count);
 
-  rw_thread_alive_ = false;
-  middleware::ThreadPool::instance()->stop();
-  middleware::ThreadPool::destroy_instance();
+  for (auto& p : joints_control_) {
+    delete p;
+    p = nullptr;
+  }
+
+  for (auto& p : joints_target_) {
+    delete p;
+    p = nullptr;
+  }
 
   delete swap_r_buffer_;
   delete swap_w_buffer_;
@@ -87,6 +103,8 @@ GzAgileLegPlugin::~GzAgileLegPlugin() {
   delete linear_params_;
   linear_params_ = nullptr;
 
+  // Disconnect from gazebo events
+  updateConnection.reset();
   std::cout << "Deconstructed  the GzAgilePlugin... ..." << std::endl;
   // google::ShutdownGoogleLogging();
 }
@@ -98,8 +116,6 @@ void GzAgileLegPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   world_  = _parent->GetWorld();
 
   joints_.resize(JntType::N_JNTS);
-
-  LegType leg = LegType::UNKNOWN_LEG;
   JntType jnt = JntType::UNKNOWN_JNT;
   auto _js_ptr = model->GetJoints();
   for (auto& _j : _js_ptr) {
@@ -171,6 +187,22 @@ void GzAgileLegPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
     linear_params_[j].offset = alpha * beta * -0.000174528;
   }
 
+  joints_control_.resize(JntType::N_JNTS);
+  joints_target_.resize(JntType::N_JNTS);
+  // for (const auto& j : {JntType::HIP, JntType::KNEE}){
+  FOR_EACH_JNT(j) {
+    _tag = JNTTYPE_TOSTRING(j);
+    auto gains_str = cfg->GetElement(_tag + "_pid_gains")->Get<std::string>();
+    std::stringstream ss;
+    ss << gains_str;
+    double kp, ki, kd;
+    ss >> kp >> ki >> kd;
+
+    joints_target_[j]  = new JntTarget;
+    joints_control_[j] = new Pid(_tag + "_pid");
+    joints_control_[j]->gains(kp, ki, kd);
+  }
+
   if (false) {
     std::cout << "The configure of joint list as follow:" << std::endl;
     printf("%s[0x%02X]:\n", LEGTYPE_TOSTRING(leg_type_), leg_id_);
@@ -186,7 +218,7 @@ void GzAgileLegPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   ///! launch to the read/write thread.
   swap_r_buffer_   = new boost::lockfree::queue<Packet>(1024);
   swap_w_buffer_   = new boost::lockfree::queue<Packet>(1024);
-  rw_thread_alive_ = true;
+  thread_alive_ = true;
   ///! Choice the style of IPC
 #ifdef USE_SHM
   ///! The follow is Shared Memory.
@@ -204,10 +236,12 @@ void GzAgileLegPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 
   ///! Launch threads.
   auto thread_pool = middleware::ThreadPool::create_instance();
-  thread_pool->add(GZ_R_THREAD_NAME, &GzAgileLegPlugin::msg_r_update, this);
-  thread_pool->add(GZ_W_THREAD_NAME, &GzAgileLegPlugin::msg_w_update, this);
+  thread_pool->add(GZ_R_THREAD_NAME,   &GzAgileLegPlugin::msg_r_update,  this);
+  thread_pool->add(GZ_W_THREAD_NAME,   &GzAgileLegPlugin::msg_w_update,  this);
+  thread_pool->add(GZ_PID_THREAD_NAME, &GzAgileLegPlugin::joint_control, this);
   thread_pool->start(GZ_R_THREAD_NAME);
   thread_pool->start(GZ_W_THREAD_NAME);
+  thread_pool->start(GZ_PID_THREAD_NAME);
 
   // Listen to the update event. This event is broadcast every
   // simulation iteration.
@@ -229,10 +263,29 @@ void GzAgileLegPlugin::event_update() {
 //  static size_t count = 0;
 //  if (0 == ++count%10000)
 //    std::cout << "update ..." << std::endl;
-  FOR_EACH_JNT(j) {
-    joints_[j]->SetPosition(0, _g_init_pose[j]);
-    // joints_[j]->SetPosition(0, -0.32);
-  }
+//  FOR_EACH_JNT(j) {
+//    joints_[j]->SetPosition(0, _g_init_pose[j]);
+//    // joints_[j]->SetPosition(0, -0.32);
+//  }
+//  ///! The frequency control
+//  ///! The 1000/5=200 Hz is the highest frequency of normal communication between agile-driver.
+//  static TimeControl _s_post_tick(true);
+//  static int64_t     _s_sum_interval  = 0;
+//  static int64_t     _s_tick_interval = 5;
+//  _s_sum_interval += _s_post_tick.dt();
+//  if (_s_sum_interval < _s_tick_interval) return;
+//  _s_sum_interval = 0;
+//
+//  ///! send the robot states.
+//  __update_robot_stats();
+//  return;
+
+  if (!thread_alive_) return;
+
+  ///! The frequency of responding command is the highest.
+  if (read(pkt_rw_))
+    __parse_command_pkg(pkt_rw_);
+
   ///! The frequency control
   ///! The 1000/5=200 Hz is the highest frequency of normal communication between agile-driver.
   static TimeControl _s_post_tick(true);
@@ -244,25 +297,31 @@ void GzAgileLegPlugin::event_update() {
 
   ///! send the robot states.
   __update_robot_stats();
-  return;
+}
 
-  if (!rw_thread_alive_) return;
+void GzAgileLegPlugin::joint_control() {
+  TIMER_INIT
 
-  ///! The frequency of responding command is the highest.
-  if (read(pkt_rw_))
-    __parse_command_pkg(pkt_rw_);
+  double _u = 0;
+  while (thread_alive_) {
+    FOR_EACH_JNT(j) {
+      if ((nullptr == joints_target_[j]) || (nullptr == joints_control_[j]))
+        continue;
 
-  ///! The frequency control
-  ///! The 1000/5=200 Hz is the highest frequency of normal communication between agile-driver.
-//  static TimeControl _s_post_tick(true);
-//  static int64_t     _s_sum_interval  = 0;
-//  static int64_t     _s_tick_interval = 5;
-//  _s_sum_interval += _s_post_tick.dt();
-//  if (_s_sum_interval < _s_tick_interval) return;
-//  _s_sum_interval = 0;
-//
-//  ///! send the robot states.
-//  __update_robot_stats();
+      // TODO need to support the velocity and torque command
+      if (joints_target_[j]->is_new.load()) {
+        joints_control_[j]->target(joints_target_[j]->value);
+        joints_target_[j]->is_new.store(false);
+      }
+
+      _u = 0;
+      joints_control_[j]->control(joints_[j]->Position(), _u);
+      joints_[j]->SetVelocity(0, _u);
+      // joints_[j]->SetForce(0, _u);
+    }
+
+    TIMER_CONTROL(10);
+  }
 }
 
 void GzAgileLegPlugin::msg_w_update() {
@@ -275,7 +334,7 @@ void GzAgileLegPlugin::msg_w_update() {
 #endif
 
   TIMER_INIT
-  while (rw_thread_alive_) {
+  while (thread_alive_) {
     if (!swap_w_buffer_->empty()) {
 #ifdef USE_SHM
       swap_w_buffer_->pop(_pkg);
@@ -321,7 +380,7 @@ void GzAgileLegPlugin::msg_r_update() {
 #endif
 
   TIMER_INIT
-  while (rw_thread_alive_) {
+  while (thread_alive_) {
 #ifdef USE_SHM
     FOR_EACH_LEG(l) {
       _start = l * sizeof(Packet);
@@ -378,11 +437,12 @@ inline bool GzAgileLegPlugin::read(Packet& pkt) {
 //const unsigned char g_TEST_MSG[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
 //const short g_TEST_COUNT[] = {+2142, +2797, +1638};
 void GzAgileLegPlugin::__update_robot_stats() {
+  const static unsigned char GZ_BUS_ID             = 0x01u;
   const static unsigned char ROBOT_STATES_PKG_SIZE = 0x08u;
   double poss[JntType::N_JNTS]  = {0};
 //  short counts[JntType::N_JNTS] = {0};
 
-  Packet pkt = {INVALID_BYTE, leg_id_, MII_MSG_HEARTBEAT_MSG_1, ROBOT_STATES_PKG_SIZE, {0}};
+  Packet pkt = {GZ_BUS_ID, leg_id_, MII_MSG_HEARTBEAT_MSG_1, ROBOT_STATES_PKG_SIZE, {0}};
   double pos  = 0;
   short count = 0;
   int offset  = 0;
@@ -420,7 +480,7 @@ void GzAgileLegPlugin::__update_robot_stats() {
 //          counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
 #endif
 
-  if (true)
+  if (false)
     printf(" - [%s]%+8.5f, [%s]%+8.5f, [%s]%+8.5f\n",
         JNTTYPE_TOSTRING(JntType::KNEE), poss[JntType::KNEE],
         JNTTYPE_TOSTRING(JntType::HIP),  poss[JntType::HIP],
@@ -471,18 +531,25 @@ void GzAgileLegPlugin::__write_command_to_sim(const Packet& pkt) {
   double cmds[JntType::N_JNTS]  = {0};
   short counts[JntType::N_JNTS] = {0};
   for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+    if ((INVALID_BYTE == pkt.data[offset]) && (INVALID_BYTE == pkt.data[offset + 1])) {
+      offset += sizeof(count);
+      continue;
+    }
+
     memcpy(&count, pkt.data + offset, sizeof(count));
     cmd = linear_params_[type].scale * count + linear_params_[type].offset;
     cmds[type]   = cmd;
     counts[type] = count;
     switch (pkt.msg_id) {
-    case MII_MSG_COMMON_DATA_1: joints_[type]->SetPosition(0, cmd); break;
-    case MII_MSG_COMMON_DATA_2: joints_[type]->SetVelocity(0, cmd); break;
-    case MII_MSG_COMMON_DATA_3: joints_[type]->SetForce(0,    cmd); break;
+    case MII_MSG_COMMON_DATA_1: joints_target_[type]->type = JntCmdType::CMD_POS; break;
+    case MII_MSG_COMMON_DATA_2: joints_target_[type]->type = JntCmdType::CMD_VEL; break;
+    case MII_MSG_COMMON_DATA_3: joints_target_[type]->type = JntCmdType::CMD_TOR; break;
     default:
       gzerr << "ERROR msg_id";
+      joints_target_[type]->type = JntCmdType::UNKNOWN_CMD_TYPE;
     }
-
+    joints_target_[type]->value  = cmd;
+    joints_target_[type]->is_new.store(true);
     offset += sizeof(count);
   }
   if (false)

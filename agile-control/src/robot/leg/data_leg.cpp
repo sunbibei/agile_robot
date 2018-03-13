@@ -11,7 +11,7 @@
 #include "robot/leg/data_leg.h"
 
 
-namespace qr_control {
+namespace agile_control {
 
 DataLeg::DataLeg()
   : Label("robot-leg"), leg_type_(LegType::UNKNOWN_LEG),

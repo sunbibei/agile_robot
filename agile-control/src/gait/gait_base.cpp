@@ -10,7 +10,7 @@
 #include <foundation/cfg_reader.h>
 
 
-namespace qr_control {
+namespace agile_control {
 StateMachineBase::StateMachineBase()  { }
 
 StateMachineBase::~StateMachineBase() { }

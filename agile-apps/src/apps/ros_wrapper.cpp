@@ -134,12 +134,12 @@ bool RosWrapper::start() {
     }
     MiiCfgReader::instance()->add_config(str);
 
-    mii_control_ = qr_control::MiiControl::create_instance("ctrl");
+    mii_control_ = agile_control::MiiControl::create_instance("ctrl");
     if ((nullptr == mii_control_) || !mii_control_->init())
       LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
 
-    ThreadPool::instance()->add(MII_CTRL_THREAD, &qr_control::MiiControl::tick,
-        qr_control::MiiControl::instance());
+    ThreadPool::instance()->add(MII_CTRL_THREAD, &agile_control::MiiControl::tick,
+        agile_control::MiiControl::instance());
 
     if (!ros::param::get("~gait_topic", str)) {
       LOG_INFO << "No 'gait_topic' parameter, using the default name of topic"
@@ -315,7 +315,7 @@ void RosWrapper::rosControlLoop() {
 }
 
 void RosWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
-  static auto _s_inst = qr_control::MiiControl::instance();
+  static auto _s_inst = agile_control::MiiControl::instance();
   if (nullptr == _s_inst) return;
 
   if (msg->data.compare("p")) {
@@ -332,21 +332,24 @@ void RosWrapper::halt() {
     controller_manager_.reset();
     hardware_interface_.reset();
   } else {
-    qr_control::MiiControl::instance()->destroy_instance();
+    agile_control::MiiControl::instance()->destroy_instance();
   }
 }
 
 #ifdef DEBUG_TOPIC
 void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
-  auto jnt = jnt_manager_->getJointHandle(LegType::FL, JntType::HIP);
+  auto jnt  = jnt_manager_->getJointHandle(LegType::FL, JntType::HIP);
+  auto jnt1 = jnt_manager_->getJointHandle(LegType::FL, JntType::KNEE);
   LOG_INFO << "Jnt: " << jnt->joint_name();
   // double limits[] = {-0.15, 0.75};
-  double limits[] = {-0.2, 0.7};
-  MiiString type = "square";
+  double limits[]  = {-0.2, 0.7};
+  double limits1[] = {-1.5, -0.65};
+  MiiString type = "sin";
 
   // std::vector<double> _y;
   // _y.reserve(512);
   jnt->updateJointCommand(limits[0]);
+  jnt1->updateJointCommand(limits1[0]);
   LOG_INFO << "Go to initialize position.";
   sleep(2);
 
@@ -356,7 +359,9 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
       // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
       double tmp = (limits[1] - limits[0])*sin(_x) + limits[0];
       jnt->updateJointCommand(tmp);
-      LOG_INFO << "Add the target: " << tmp;
+      double tmp1 = (limits1[1] - limits1[0])*sin(_x) + limits1[0];
+      jnt1->updateJointCommand(tmp1);
+      LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
       //return;
     }
@@ -388,36 +393,6 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   } else {
     ;
   }
-
-  /*for (auto& jnt : *jnt_manager_) {
-    // LOG_DEBUG << "Joint " << jnt->joint_name() << " adds the command " << msg->data;
-    jnt->updateJointCommand(msg->data);
-  }*/
-  // 实现方式0
-  /*LOG_INFO << "test write style 0";
-  for (auto& jnt : robot_->jnt_names_) {
-    Motor::CmdType cmd(msg->data, Motor::CmdType::MODE_POS_);
-    robot_->addCommand(jnt, cmd);
-  }*/
-  // 实现方式1
-  /*LOG_INFO << "test write style 1";
-  for (auto& jnt : robot_->jnt_names_) {
-    Motor::CmdTypeSp cmd(new Motor::CmdType(msg->data, Motor::CmdType::MODE_POS_));
-    robot_->addCommand(jnt, cmd);
-  }*/
-  // 实现方式2
-  /*LOG_INFO << "test write style 2";
-  std::vector<HwCmdSp> cmd_vec;
-  std::vector<std::string> cmd_name;
-  for (const auto& jnt : robot_->jnt_names_) {
-    auto cmd = boost::dynamic_pointer_cast<Joint::CmdType>(robot_->hw_unit_[jnt]->getCommand());
-    cmd->command_ = msg->data;
-    cmd->mode_    = JntCmdType::POS;
-
-    cmd_vec.push_back(cmd);
-    cmd_name.push_back(jnt);
-  }
-  robot_->addCommand(cmd_name, cmd_vec);*/
 
   LOG_INFO << "Debug Callback Completed!";
 }

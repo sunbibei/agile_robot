@@ -11,7 +11,7 @@
 #include <adt/trajectory.h>
 #include "robot/leg/math_leg.h"
 
-namespace qr_control {
+namespace agile_control {
 
 struct LegTarget {
   JntCmdType       cmd_type;

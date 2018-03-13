@@ -8,7 +8,7 @@
 #include "gait/gait_manager.h"
 #include <foundation/cfg_reader.h>
 
-namespace qr_control {
+namespace agile_control {
 
 SINGLETON_IMPL(GaitManager)
 

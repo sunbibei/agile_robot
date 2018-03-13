@@ -11,7 +11,7 @@
 #include <foundation/label.h>
 #include "robot/leg/data_leg.h"
 
-namespace qr_control {
+namespace agile_control {
 
 enum LegState {
   INVALID_STATE = -1,

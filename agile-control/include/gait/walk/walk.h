@@ -33,7 +33,7 @@
 ///! Forward declaration
 class TimeControl;
 
-namespace qr_control {
+namespace agile_control {
 
 enum WalkState {
   UNKNOWN_WK_STATE = -1,

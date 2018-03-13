@@ -11,7 +11,7 @@
 #include <repository/resource/joint_manager.h>
 #endif
 
-namespace qr_control {
+namespace agile_control {
 
 LegRobot* LegRobot::leg_robot_inst_ = nullptr;
 

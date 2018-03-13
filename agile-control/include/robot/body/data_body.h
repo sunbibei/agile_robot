@@ -12,7 +12,7 @@
 #include <Eigen/Dense>
 // namespace middleware { class ImuSensor; }
 
-namespace qr_control {
+namespace agile_control {
 
 class DataBody: public Label {
 public:

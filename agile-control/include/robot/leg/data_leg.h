@@ -14,7 +14,7 @@
 #include <Eigen/Dense>
 #include <atomic>
 
-namespace qr_control {
+namespace agile_control {
 
 class DataLeg: public Label {
 public:

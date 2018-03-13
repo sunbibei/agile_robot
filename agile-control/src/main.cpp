@@ -43,8 +43,8 @@ int main(int argc, char* argv[]) {
   ros::init(argc, argv, "test_qr");
   ros::NodeHandle nh;
 
-  qr_control::GaitManager* _manager
-    = qr_control::GaitManager::create_instance();
+  agile_control::GaitManager* _manager
+    = agile_control::GaitManager::create_instance();
 
   create_system_instance();
 

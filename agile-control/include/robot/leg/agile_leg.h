@@ -12,7 +12,7 @@
 #include "robot/leg/robot_leg.h"
 #include <foundation/utf.h>
 
-namespace qr_control {
+namespace agile_control {
 
 class AgileLeg: public RobotLeg {
 public:

@@ -63,7 +63,7 @@ private:
   boost::shared_ptr<class RosRobotHW> hardware_interface_;
   boost::shared_ptr<controller_manager::ControllerManager> controller_manager_;
 
-  qr_control::MiiControl* mii_control_;
+  agile_control::MiiControl* mii_control_;
 };
 
 #endif /* INCLUDE_QR_ROS_WRAPPER_H_ */

@@ -7,7 +7,7 @@
 
 #include <robot/body/math_body.h>
 
-namespace qr_control {
+namespace agile_control {
 
 //MathBody::MathBody() {
 //  ;

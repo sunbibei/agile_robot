@@ -14,7 +14,7 @@
  * @brief This h-file is a kit of geometry.
  */
 
-namespace qr_control {
+namespace agile_control {
 namespace geometry {
 
 ///! The convenient alias.

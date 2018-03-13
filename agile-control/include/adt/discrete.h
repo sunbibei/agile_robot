@@ -11,7 +11,7 @@
 #include "trajectory.h"
 #include <fstream>
 
-namespace qr_control {
+namespace agile_control {
 
 /*!
  * @brief The implement of discrete trajectory.

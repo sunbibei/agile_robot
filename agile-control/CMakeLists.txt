@@ -40,6 +40,7 @@ set(GAIT_FILES        ${SRC_GAITS_ROOT}/gait_manager.cpp
                       ${SRC_GAITS_ROOT}/creep/creep.cpp
                       ${SRC_GAITS_ROOT}/walk/walk.cpp
                       ${SRC_GAITS_ROOT}/sl/hopping.cpp
+                      ${SRC_GAITS_ROOT}/sl/sl_test.cpp
 )
 
 set(ROBOT_FILES       ${SRC_RO_LEG_ROOT}/data_leg.cpp
@@ -48,10 +49,10 @@ set(ROBOT_FILES       ${SRC_RO_LEG_ROOT}/data_leg.cpp
                       ${SRC_RO_LEG_ROOT}/agile_leg.cpp
                       ${SRC_RO_BOFY_ROOT}/data_body.cpp
                       ${SRC_RO_BOFY_ROOT}/math_body.cpp
-                      ${SRC_RO_BOFY_ROOT}/qr_body.cpp
+                      ${SRC_RO_BOFY_ROOT}/agile_body.cpp
                       ${SRC_RO_BOFY_ROOT}/robot_body.cpp
                       ${SRC_ROBOT_ROOT}/leg_robot.cpp
-                      ${SRC_ROBOT_ROOT}/qr_robot.cpp
+                      ${SRC_ROBOT_ROOT}/agile_robot.cpp
 
                       ${SRC_ADT_ROOT}/geometry.cpp
 )
