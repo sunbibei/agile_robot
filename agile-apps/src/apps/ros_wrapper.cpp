@@ -30,7 +30,7 @@
 
 SINGLETON_IMPL_NO_CREATE(RosWrapper)
 
-RosWrapper* RosWrapper::create_instance(const MiiString& __tag) {
+RosWrapper* RosWrapper::create_instance(const std::string& __tag) {
   if (nullptr != instance_) {
     LOG_WARNING << "This method 'create_instance()' is called twice.";
   } else {
@@ -39,7 +39,7 @@ RosWrapper* RosWrapper::create_instance(const MiiString& __tag) {
   return instance_;
 }
 
-RosWrapper::RosWrapper(const MiiString& __tag)
+RosWrapper::RosWrapper(const std::string& __tag)
   : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag), alive_(true),
     rt_duration_(1000/50), ros_ctrl_duration_(1000/100), use_ros_control_(false),
     mii_control_(nullptr) {
@@ -65,7 +65,7 @@ RosWrapper::~RosWrapper() {
 
 void RosWrapper::create_system_instance() {
 
-  MiiString str;
+  std::string str;
   // if (nh_.getParam("configure", cfg)) {
   if (!ros::param::get("~configure", str)) {
     LOG_FATAL << "RosWapper can't find the 'configure' parameter "
@@ -112,7 +112,7 @@ bool RosWrapper::start() {
     ThreadPool::instance()->add(ROS_CTRL_THREAD, &RosWrapper::rosControlLoop, this);
   } else {
     // Use the MII Control
-    MiiString str;
+    std::string str;
     if (!ros::param::get("~gait_lib", str)) {
       LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
           << "in the parameter server. Did you forget define this parameter.";
@@ -204,7 +204,7 @@ inline void __fill_imu_data(sensor_msgs::Imu& to, ImuSensor* from) {
   to.header.stamp = ros::Time::now();
 }
 
-inline void __fill_force_data(std_msgs::Int32MultiArray& to, MiiVector<ForceSensor*>& from) {
+inline void __fill_force_data(std_msgs::Int32MultiArray& to, std::vector<ForceSensor*>& from) {
   for (const LegType& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
     // LOG_DEBUG << "enter: " << leg << " " << to.data.size() << " " << from.size();// << " " << from[leg];
     to.data[leg] = (nullptr != from[leg]) ? from[leg]->force_data() : NAN;
@@ -215,7 +215,7 @@ inline void __fill_cmd_data(std_msgs::Float64MultiArray& __cmd_msg, Eigen::Vecto
   __cmd_msg.data.clear();
   for (const auto& l : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
     const auto& cmd = *(cmds[l]);
-    for (const auto& j : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+    for (const auto& j : {JntType::KFE, JntType::HFE, JntType::HAA}) {
       __cmd_msg.data.push_back(cmd(j));
     }
   }
@@ -243,7 +243,7 @@ void RosWrapper::publishRTMsg() {
 
   __f_msg.data.resize(4);
   __f_msg.layout.data_offset = 0;
-  for (const MiiString& l : {"fl", "fr", "hl", "hr"}) {
+  for (const std::string& l : {"fl", "fr", "hl", "hr"}) {
     std_msgs::MultiArrayDimension dim;
     dim.label = "foot_" + l;
     dim.size  = 1;
@@ -338,13 +338,13 @@ void RosWrapper::halt() {
 
 #ifdef DEBUG_TOPIC
 void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
-  auto jnt  = jnt_manager_->getJointHandle(LegType::FL, JntType::HIP);
-  auto jnt1 = jnt_manager_->getJointHandle(LegType::FL, JntType::KNEE);
+  auto jnt  = jnt_manager_->getJointHandle(LegType::FL, JntType::HFE);
+  auto jnt1 = jnt_manager_->getJointHandle(LegType::FL, JntType::KFE);
   LOG_INFO << "Jnt: " << jnt->joint_name();
   // double limits[] = {-0.15, 0.75};
   double limits[]  = {-0.2, 0.7};
   double limits1[] = {-1.5, -0.65};
-  MiiString type = "sin";
+  std::string type = "sin";
 
   // std::vector<double> _y;
   // _y.reserve(512);

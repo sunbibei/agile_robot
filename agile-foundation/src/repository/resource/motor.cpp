@@ -37,7 +37,7 @@ struct MotorCommand {
   /*const*/ short   MAX_VEL;
 };
 
-Motor::Motor(const MiiString& _l)
+Motor::Motor(const std::string& _l)
   : Label(_l), joint_handle_(nullptr), motor_state_(nullptr),
     motor_cmd_(nullptr), new_command_(false) {
   ;
@@ -45,7 +45,7 @@ Motor::Motor(const MiiString& _l)
 
 bool Motor::auto_init() {
   auto cfg = MiiCfgReader::instance();
-  MiiString _x, jnt_tag;
+  std::string _x, jnt_tag;
   Label::split_label(getLabel(), jnt_tag, _x);
   joint_handle_ = Label::getHardwareByName<Joint>(jnt_tag);
   if (nullptr == joint_handle_) {
@@ -56,7 +56,7 @@ bool Motor::auto_init() {
 
   motor_state_ = new MotorState;
   motor_cmd_   = new MotorCommand(JointManager::instance()->getJointCommandMode());
-  MiiVector<short> lims;
+  std::vector<short> lims;
   cfg->get_value(getLabel(), "vel_limits", lims);
   if (2 != lims.size()) {
     LOG_WARNING << "You should fill the limits of the motor velocity.";
@@ -96,11 +96,11 @@ void Motor::updateMotorCommand(double v) {
   }
 }
 
-const MiiString&  Motor::motor_name() const {
+const std::string&  Motor::motor_name() const {
   return joint_handle_->joint_name();
 }
 
-const MiiString&  Motor::joint_name() const {
+const std::string&  Motor::joint_name() const {
   return joint_handle_->joint_name();
 }
 

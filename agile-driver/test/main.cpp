@@ -13,19 +13,19 @@
 #include <foundation/auto_instanceor.h>
 
 class TestMiiRobot : middleware::MiiRobot {
-  SINGLETON_DECLARE(TestMiiRobot, const MiiString&)
+  SINGLETON_DECLARE(TestMiiRobot, const std::string&)
 
   public:
     virtual void create_system_instance() override;
     virtual bool start() override;
     void halt();
   private:
-    MiiString       root_tag_;
+    std::string       root_tag_;
 };
 
 SINGLETON_IMPL_NO_CREATE(TestMiiRobot)
 
-TestMiiRobot* TestMiiRobot::create_instance(const MiiString& __tag) {
+TestMiiRobot* TestMiiRobot::create_instance(const std::string& __tag) {
   if (nullptr != instance_) {
     LOG_WARNING << "This method 'create_instance()' is called twice.";
   } else {
@@ -34,7 +34,7 @@ TestMiiRobot* TestMiiRobot::create_instance(const MiiString& __tag) {
   return instance_;
 }
 
-TestMiiRobot::TestMiiRobot(const MiiString& __tag)
+TestMiiRobot::TestMiiRobot(const std::string& __tag)
   : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag)/*, alive_(false),
     rt_duration_(1000/50), ros_ctrl_duration_(1000/100), use_ros_control_(false)*/ {
   // LOG_DEBUG << "Enter the roswrapper construction";
@@ -55,7 +55,7 @@ TestMiiRobot::~TestMiiRobot() {
 
 void TestMiiRobot::create_system_instance() {
 
-  MiiString str = "/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/config/robot_config.xml";
+  std::string str = "/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/config/robot_config.xml";
   if (nullptr == MiiCfgReader::create_instance(str))
     LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
 

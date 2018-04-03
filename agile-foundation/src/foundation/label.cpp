@@ -12,10 +12,10 @@
 
 #define COMMA (".")
 
-const MiiString                      Label::null = "";
-std::map<MiiString, Label::LabelPtr> Label::s_label_table_;
+const std::string                      Label::null = "";
+std::map<std::string, Label::LabelPtr> Label::s_label_table_;
 
-Label::Label(const MiiString& __l, const MiiString& __p)
+Label::Label(const std::string& __l, const std::string& __p)
 : label_(make_label(__p, __l)) {
   /*std::cout << "table's address: " << &s_label_table_ << std::endl;
   std::cout << "Insert? address: " << this << std::endl;
@@ -23,17 +23,17 @@ Label::Label(const MiiString& __l, const MiiString& __p)
   std::cout << "After insert, size: " << s_label_table_.size() << std::endl;*/
 }
 
-Label::Label(const MiiString& _l, const Label& _obj)
+Label::Label(const std::string& _l, const Label& _obj)
 : Label(_l, _obj.getLabel()) {
   ;
 }
 
-Label::Label(const MiiString& _l, LabelPtr _obj)
+Label::Label(const std::string& _l, LabelPtr _obj)
 : Label(_l, _obj->getLabel()) {
   ;
 }
 
-Label::Label(const MiiString& _l, Label* _obj)
+Label::Label(const std::string& _l, Label* _obj)
 : Label(_l, _obj->getLabel()) {
   ;
 }
@@ -44,21 +44,21 @@ Label::~Label() {
   // LOG_DEBUG << "The instance named\t" << label_ << "\thas destroyed.";
 }
 
-MiiString Label::make_label(const MiiString& p, const MiiString& l) {
-  return MiiString(p + COMMA + l);
+std::string Label::make_label(const std::string& p, const std::string& l) {
+  return std::string(p + COMMA + l);
 }
 
-MiiString Label::parent_label(const MiiString& l) {
+std::string Label::parent_label(const std::string& l) {
   size_t p = l.rfind(COMMA);
-  if (MiiString::npos == p)
+  if (std::string::npos == p)
     return null;
   else
     return l.substr(0, p);
 }
 
-void Label::split_label(MiiString l, MiiString& p, MiiString& v) {
+void Label::split_label(std::string l, std::string& p, std::string& v) {
   size_t pos = l.rfind(COMMA);
-  if (MiiString::npos == pos) {
+  if (std::string::npos == pos) {
     p = null;
     v = l;
   } else {

@@ -16,7 +16,7 @@ namespace agile_control {
 
 class DataBody: public Label {
 public:
-  DataBody(const MiiString& _l = "data-body");
+  DataBody(const std::string& _l = "data-body");
   virtual bool auto_init() override;
 
   virtual ~DataBody();

@@ -32,7 +32,7 @@ enum CreepState {
 
 class Creep: public GaitBase {
 public:
-  Creep(const MiiString& _n = "creep");
+  Creep(const std::string& _n = "creep");
   virtual bool auto_init() override;
 
   virtual ~Creep();

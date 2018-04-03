@@ -16,7 +16,7 @@ namespace middleware {
 class Motor: public Label {
   friend class LegNode;
 public:
-  Motor(const MiiString& _l = "motor");
+  Motor(const std::string& _l = "motor");
   virtual bool auto_init() override;
 
   virtual ~Motor();
@@ -25,8 +25,8 @@ public:
   void updateMotorCommand(double);
 
 public:
-  const MiiString&  motor_name() const;
-  const MiiString&  joint_name() const;
+  const std::string&  motor_name() const;
+  const std::string&  joint_name() const;
   const JntType&    joint_type() const;
   const LegType&    leg_type()   const;
   const JntCmdType& cmd_mode()   const;
@@ -59,7 +59,7 @@ protected:
   void updateMotorTorque  (short);
 
 protected:
-  MiiString           motor_name_;
+  std::string           motor_name_;
   class Joint*        joint_handle_;
   class MotorState*   motor_state_;
   class MotorCommand* motor_cmd_;

@@ -11,7 +11,7 @@
 
 namespace middleware {
 
-PowerNode::PowerNode(const MiiString& __l)
+PowerNode::PowerNode(const std::string& __l)
   : SWNode(__l), power_info_(nullptr) {
 
 }
@@ -20,7 +20,7 @@ bool PowerNode::auto_init() {
   if (!SWNode::auto_init()) return false;
   auto cfg = MiiCfgReader::instance();
 
-  MiiString power_label;
+  std::string power_label;
   cfg->get_value_fatal(getLabel(), "label", power_label);
   power_info_ = Label::getHardwareByName<Power>(power_label);
   if (nullptr == power_info_) {

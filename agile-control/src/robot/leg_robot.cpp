@@ -48,9 +48,6 @@ RobotBody* LegRobot::robot_body() {
   return body_iface_;
 }
 
-
-
-
 inline void __print_color_helper(LegType l) {
   FOR_EACH_JNT(j) {
 #ifdef DIS_JNT_LIMIT
@@ -106,7 +103,7 @@ void print_jnt_pos(LegType l, const Eigen::VectorXd& _tjnt) {
 //printf("|LEG -| +0.0000| +0.0000| +0.0000| +0.0000|\n");
   printf("|    -"); __print_color_helper(l); printf("\n");
   printf("|    =| %+7.04f| %+7.04f| %+7.04f| %+7.04f|\n",
-      _tjnt(JntType::YAW), _tjnt(JntType::HIP), _tjnt(JntType::KNEE), (_tjnt - _jnt).norm());
+      _tjnt(JntType::HAA), _tjnt(JntType::HFE), _tjnt(JntType::KFE), (_tjnt - _jnt).norm());
 }
 ///! print the joint position of the all of leg.
 void print_jnt_pos() {

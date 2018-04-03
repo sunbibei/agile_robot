@@ -15,7 +15,7 @@ namespace middleware {
 class Power: public Label {
   friend class PowerNode;
 public:
-  Power(const MiiString& _l = Label::null);
+  Power(const std::string& _l = Label::null);
   virtual bool auto_init() override;
 
   virtual ~Power();

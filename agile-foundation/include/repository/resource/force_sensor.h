@@ -15,7 +15,7 @@ namespace middleware {
 class ForceSensor : public Label {
   friend class LegNode;
 public:
-  ForceSensor(const MiiString& __l = Label::null);
+  ForceSensor(const std::string& __l = Label::null);
   // 妥协方案
   virtual bool auto_init() override;
   ~ForceSensor();

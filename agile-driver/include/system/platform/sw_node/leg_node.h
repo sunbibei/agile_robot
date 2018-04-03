@@ -15,23 +15,23 @@ namespace middleware {
 
 class LegNode: public SWNode {
 public:
-  LegNode(const MiiString& __l = Label::null);
+  LegNode(const std::string& __l = Label::null);
   virtual bool auto_init() override;
 
   virtual ~LegNode();
 
   virtual void handleMsg(const Packet&)        override;
-  virtual bool generateCmd(MiiVector<Packet>&) override;
+  virtual bool generateCmd(std::vector<Packet>&) override;
 
 protected:
   // there are three joint in each leg
   LegType                                leg_;
-  MiiVector<class Joint*>                jnts_by_type_;
-  MiiVector<class Motor*>                motors_by_type_;
+  std::vector<class Joint*>                jnts_by_type_;
+  std::vector<class Motor*>                motors_by_type_;
   class ForceSensor*                     td_;
 
   // The order match the @joints_by_type_
-  MiiVector<class __PrivateLinearParams*> jnt_params_;
+  std::vector<class __PrivateLinearParams*> jnt_params_;
   // The constant pointer of the joint command
   const double*             jnt_cmds_[JntType::N_JNTS];
   const short*              motor_cmds_[JntType::N_JNTS];
@@ -43,11 +43,11 @@ private:
   void __parse_motor_cmd_1(const unsigned char*);
   void __parse_motor_cmd_2(const unsigned char*);
 
-  bool __fill_pos_cmd(MiiVector<Packet>& pkts);
-  bool __fill_vel_cmd(MiiVector<Packet>& pkts);
-  bool __fill_tor_cmd(MiiVector<Packet>& pkts);
-  bool __fill_pos_vel_cmd(MiiVector<Packet>& pkts);
-  bool __fill_motor_vel_cmd(MiiVector<Packet>& pkts);
+  bool __fill_pos_cmd(std::vector<Packet>& pkts);
+  bool __fill_vel_cmd(std::vector<Packet>& pkts);
+  bool __fill_tor_cmd(std::vector<Packet>& pkts);
+  bool __fill_pos_vel_cmd(std::vector<Packet>& pkts);
+  bool __fill_motor_vel_cmd(std::vector<Packet>& pkts);
 };
 
 } /* namespace middleware */

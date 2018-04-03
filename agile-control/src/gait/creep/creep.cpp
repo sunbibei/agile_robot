@@ -46,7 +46,7 @@ struct CreepParams {
   ///! The maximum swing difference(cm)
   double   ALLOW_DIFF;
 
-  CreepParams(const MiiString& _tag)
+  CreepParams(const std::string& _tag)
     : FOOT_STEP(10),     FOOT_STEP_Y(0),
       STANCE_HEIGHT(46), SWING_HEIGHT(5),
       COG_TIME(2000),    SWING_TIME(2000),
@@ -69,7 +69,7 @@ struct CreepParams {
   }
 };
 
-Creep::Creep(const MiiString& _n)
+Creep::Creep(const std::string& _n)
   : GaitBase(_n), body_iface_(nullptr),
     current_state_(CreepState::UNKNOWN_CP_STATE),
     cp_params_(nullptr), swing_leg_(LegType::UNKNOWN_LEG),
@@ -109,7 +109,7 @@ bool Creep::auto_init() {
   cfg->get_value(getLabel(), "hang",     is_hang_);
   cfg->get_value(getLabel(), "interval", post_tick_interval_);
 
-  MiiString _tag = Label::make_label(getLabel(), "coeffs");
+  std::string _tag = Label::make_label(getLabel(), "coeffs");
   cp_params_ = new CreepParams(_tag);
 
   return true;

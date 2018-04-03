@@ -14,14 +14,14 @@ namespace middleware {
 
 class UsbPropagate: public Propagate {
 public:
-  UsbPropagate(const MiiString& l = "usb");
+  UsbPropagate(const std::string& l = "usb");
   virtual bool auto_init() override;
 
   virtual ~UsbPropagate();
 
   struct UsbConfig {
-    MiiString file_name;
-    MiiString parity;
+    std::string file_name;
+    std::string parity;
     int       baud_rate;
     int       data_bit;
     int       stop_bit;

@@ -20,7 +20,7 @@ namespace middleware {
 
 class PcanPropagate: public Propagate {
 public:
-  PcanPropagate(const MiiString& l = "pcan");
+  PcanPropagate(const std::string& l = "pcan");
   virtual ~PcanPropagate();
   virtual bool auto_init() override;
 

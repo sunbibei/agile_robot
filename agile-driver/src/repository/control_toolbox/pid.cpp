@@ -175,8 +175,8 @@ private:
   short target_;
   bool  internal_flag_;
   ///! The stability array
-  MiiVector<short> x_buf_;
-  MiiVector<short> e_buf_;
+  std::vector<short> x_buf_;
+  std::vector<short> e_buf_;
 
   const size_t BUF_REV_SIZE = 64;
 
@@ -253,13 +253,13 @@ public:
 
 };
 
-Pid::Pid(const MiiString& prefix)
+Pid::Pid(const std::string& prefix)
   : gains_(new Gains), errors_(new Errors),
     limits_(new Limits), time_control_(new TimeControl),
     stability_(nullptr) {
   auto cfg = MiiCfgReader::instance();
 
-  MiiVector<double> tmp_vec_d;
+  std::vector<double> tmp_vec_d;
   cfg->get_value_fatal(prefix, "gains", tmp_vec_d);
   if (5 == tmp_vec_d.size()) {
     gains_->p_gain_ = tmp_vec_d[0];
@@ -269,7 +269,7 @@ Pid::Pid(const MiiString& prefix)
     gains_->i_max_  = tmp_vec_d[4];
   }
 
-  MiiVector<short> tmp_vec_s;
+  std::vector<short> tmp_vec_s;
   cfg->get_value(prefix, "limits", tmp_vec_s);
   if (4 == tmp_vec_s.size()) {
     limits_->command[Limits::MIN] = tmp_vec_s[0];
@@ -283,13 +283,13 @@ Pid::Pid(const MiiString& prefix)
   if (2 == tmp_vec_s.size())
     stability_ = new Stability(tmp_vec_s[0], tmp_vec_s[1]);
 
-  MiiString tmp;
+  std::string tmp;
   Label::split_label(prefix, tmp, name_);
 
   // For debug function
   __d_debug_ = false;
   if (cfg->get_value(prefix, "debug", __d_debug_) && __d_debug_) {
-    MiiString path = ".";
+    std::string path = ".";
     cfg->get_value(prefix, "path", path);
     __d_ofd_.open(path + "/" + name_
         /*+ "_" + std::to_string((short)gains_->p_gain_)

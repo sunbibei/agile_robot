@@ -104,14 +104,14 @@
 //   {LOG_WARNING << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__ << " -> Press any key to continue."; getchar();}
 
 
-template<class _Type>
-using MiiVector =  std::vector<_Type>;
+//template<class _Type>
+//using MiiVector =  std::vector<_Type>;
 
-template<class _Key, class _Value>
-using MiiMap    =  std::map<_Key, _Value>;
+//template<class _Key, class _Value>
+//using MiiMap    =  std::map<_Key, _Value>;
 
 // typedef std::string MiiString;
-using MiiString = std::string;
+// using MiiString = std::string;
 
 enum JntCmdType {
   UNKNOWN_CMD_TYPE = -1,
@@ -186,16 +186,19 @@ enum LegType {
 
 enum JntType {
   UNKNOWN_JNT = -1,
-  YAW = 0,
-  HIP = 1,
-  KNEE = 2,
+  ///! HIP abduction/adduction
+  HAA = 0,
+  ///! HIP flexion/extension
+  HFE = 1,
+  ///! KNEE flexion/extension
+  KFE = 2,
   N_JNTS = 3
 };
 
-#define FOR_EACH_JNT(j) for (const auto& j : {JntType::YAW, JntType::HIP, JntType::KNEE})
+#define FOR_EACH_JNT(j) for (const auto& j : {JntType::HAA, JntType::HFE, JntType::KFE})
 
 #define JNTTYPE_TOSTRING(l) \
-    ( ( (const char*[]){"UNKNOWN_JNT", "YAW", "HIP", "KNEE", "N_JNTS"} )[(l) + 1] )
+    ( ( (const char*[]){"UNKNOWN_JNT", "HAA", "HFE", "KFE", "N_JNTS"} )[(l) + 1] )
 
 #define _DEBUG_INFO_FLAG (true)
 

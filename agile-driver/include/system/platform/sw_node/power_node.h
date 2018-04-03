@@ -14,7 +14,7 @@ namespace middleware {
 
 class PowerNode: public SWNode {
 public:
-  PowerNode(const MiiString& __l = Label::null);
+  PowerNode(const std::string& __l = Label::null);
   virtual bool auto_init() override;
 
   virtual ~PowerNode();

@@ -22,7 +22,7 @@ struct __SLHPParams {
   ///! The damping coefficient
   double DMP_COF;
 
-  __SLHPParams(const MiiString& _tag)
+  __SLHPParams(const std::string& _tag)
     : STC_POS(0, 0, 46), SPR_CST(1.0), DMP_COF(0.5) {
     auto cfg = MiiCfgReader::instance();
     // TODO

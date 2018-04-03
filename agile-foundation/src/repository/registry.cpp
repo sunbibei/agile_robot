@@ -24,7 +24,7 @@ Registry::~Registry() {
   }
 }
 
-bool Registry::registerResource(const MiiString& _n, ResType _handle) {
+bool Registry::registerResource(const std::string& _n, ResType _handle) {
   if (res_origin_.end() != res_origin_.find(_n)) {
     LOG_WARNING << "The named resource '" << _n << "' has registered in the resource table."
         << ", now it will be replaced.";
@@ -34,7 +34,7 @@ bool Registry::registerResource(const MiiString& _n, ResType _handle) {
   return true;
 }
 
-bool Registry::registerCommand(const MiiString& _n, CmdType _handle, std::atomic_bool** flag) {
+bool Registry::registerCommand(const std::string& _n, CmdType _handle, std::atomic_bool** flag) {
   if (cmd_origin_.end() != cmd_origin_.find(_n)) {
     LOG_WARNING << "The named command '" << _n << "' has registered in the command table."
         << ", now it will be replaced.";
@@ -50,7 +50,7 @@ bool Registry::registerCommand(const MiiString& _n, CmdType _handle, std::atomic
   return true;
 }
 
-inline MiiString getTypeName(const ResType& t) {
+inline std::string getTypeName(const ResType& t) {
   if (typeid(const short*) == t.type()) {
     return "short   ";
   } else if (typeid(const int*) == t.type()) {
@@ -70,7 +70,7 @@ inline MiiString getTypeName(const ResType& t) {
   }
 }
 
-inline MiiString getTypeName(const CmdType& t) {
+inline std::string getTypeName(const CmdType& t) {
   if (typeid(const short*) == t.type()) {
     return "short   ";
   } else if (typeid(int*) == t.type()) {

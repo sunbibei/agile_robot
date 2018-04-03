@@ -12,7 +12,7 @@ namespace middleware {
 
 const int MAX_COUNT = 10;
 
-ArmPcan::ArmPcan(const MiiString& l)
+ArmPcan::ArmPcan(const std::string& l)
   : PcanPropagate(l) {
   send_msg_.MSGTYPE = PCAN_MESSAGE_STANDARD;
 }

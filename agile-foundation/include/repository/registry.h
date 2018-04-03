@@ -50,40 +50,40 @@ class Registry {
   SINGLETON_DECLARE(Registry)
 
 public:
-  bool registerResource(const MiiString&, ResType);
-  bool registerCommand (const MiiString&, CmdType, std::atomic_bool** flag = nullptr);
+  bool registerResource(const std::string&, ResType);
+  bool registerCommand (const std::string&, CmdType, std::atomic_bool** flag = nullptr);
 
   ///! The boost static assert fail! so we need split into two methods.
   template<typename _DataType>
-  _DataType resource(const MiiString&);
+  _DataType resource(const std::string&);
   template<typename _DataType>
-  _DataType command(const MiiString&, std::atomic_bool** flag = nullptr);
+  _DataType command(const std::string&, std::atomic_bool** flag = nullptr);
 
 public:
   ///! Query the given name whether register in the registry.
-  // bool query(const MiiString&);
+  // bool query(const std::string&);
 
   ///! Search by the key words and return the results.
-  // MiiString search(const MiiString&);
+  // std::string search(const std::string&);
 
   ///! print the all of registry.
   void print();
 
 protected:
-  MiiMap<MiiString, ResType>    res_origin_;
+  std::map<std::string, ResType>    res_origin_;
 
   typedef struct {
     CmdType          handle;
     std::atomic_bool* flag;
   } CmdStruct;
-  MiiMap<MiiString, CmdStruct>  cmd_origin_;
+  std::map<std::string, CmdStruct>  cmd_origin_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 ////////////        The implementation of template methods         ////////////
 ///////////////////////////////////////////////////////////////////////////////
 template <typename _DataType>
-_DataType Registry::resource(const MiiString& _res_name) {
+_DataType Registry::resource(const std::string& _res_name) {
   if (res_origin_.end() == res_origin_.find(_res_name)) {
     return _DataType(nullptr);
   }
@@ -94,7 +94,7 @@ _DataType Registry::resource(const MiiString& _res_name) {
 }
 
 template <typename _DataType>
-_DataType Registry::command(const MiiString& _res_name, std::atomic_bool** flag) {
+_DataType Registry::command(const std::string& _res_name, std::atomic_bool** flag) {
   if (cmd_origin_.end() == cmd_origin_.find(_res_name)) {
     return _DataType(nullptr);
   }

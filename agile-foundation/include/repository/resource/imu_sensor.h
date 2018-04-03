@@ -15,7 +15,7 @@ namespace middleware {
 class ImuSensor: public Label {
 public:
   friend class ImuNode;
-  ImuSensor(const MiiString& l = Label::null);
+  ImuSensor(const std::string& l = Label::null);
   // 妥协方案
   virtual bool auto_init() override;
 

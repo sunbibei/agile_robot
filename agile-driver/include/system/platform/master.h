@@ -42,8 +42,8 @@ protected:
   class SWNodeManager*       sw_node_manager_;
 
 private:
-  MiiVector<Packet> queue_4_w_;
-  MiiVector<Packet> queue_4_r_;
+  std::vector<Packet> queue_4_w_;
+  std::vector<Packet> queue_4_r_;
 };
 
 } /* namespace middleware */

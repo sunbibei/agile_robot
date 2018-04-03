@@ -22,24 +22,24 @@ class Label {
   friend class AutoInstanceor;
 public:
   typedef boost::shared_ptr<Label> LabelPtr;
-  const static MiiString null;
+  const static std::string null;
 
-  Label(const MiiString& l, const MiiString& p = Label::null);
-  Label(const MiiString& l, const Label& p);
-  Label(const MiiString& l, LabelPtr p);
-  Label(const MiiString& l, Label* p);
+  Label(const std::string& l, const std::string& p = Label::null);
+  Label(const std::string& l, const Label& p);
+  Label(const std::string& l, LabelPtr p);
+  Label(const std::string& l, Label* p);
 
   virtual ~Label();
 
-  const MiiString& getLabel() { return label_; }
-  const MiiString& getLabel() const { return label_; }
+  const std::string& getLabel() { return label_; }
+  const std::string& getLabel() const { return label_; }
 
-  static MiiString make_label  (const MiiString& _p, const MiiString& _l);
-  static MiiString parent_label(const MiiString&);
-  static void      split_label (MiiString, MiiString&, MiiString&);
+  static std::string make_label  (const std::string& _p, const std::string& _l);
+  static std::string parent_label(const std::string&);
+  static void      split_label (std::string, std::string&, std::string&);
 
   template<class _Hardware>
-  static _Hardware* getHardwareByName(const MiiString&);
+  static _Hardware* getHardwareByName(const std::string&);
 
   // For Debug
   static void printfEveryInstance() {
@@ -59,7 +59,7 @@ public:
   }
 
 protected:
-  MiiString label_;
+  std::string label_;
 
 protected:
   /**
@@ -70,7 +70,7 @@ protected:
    */
   virtual bool auto_init();
 
-  static MiiMap<MiiString, LabelPtr>& label_table() { return s_label_table_; }
+  static std::map<std::string, LabelPtr>& label_table() { return s_label_table_; }
 
   /**
    * TODO
@@ -82,7 +82,7 @@ protected:
   }
 
 private:
-  static MiiMap<MiiString, LabelPtr> s_label_table_;
+  static std::map<std::string, LabelPtr> s_label_table_;
 };
 
 
@@ -91,7 +91,7 @@ private:
 ////////////        The implementation of template methods         ////////////
 ///////////////////////////////////////////////////////////////////////////////
 template<class _Hardware>
-_Hardware* Label::getHardwareByName(const MiiString& l) {
+_Hardware* Label::getHardwareByName(const std::string& l) {
   auto hw = label_table().find(l);
   if ((label_table().end() == hw)
       || (nullptr == boost::dynamic_pointer_cast<_Hardware>(hw->second))) {

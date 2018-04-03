@@ -14,7 +14,7 @@
 
 class Controller : public Label {
 public:
-  Controller(const MiiString& _l = "controller");
+  Controller(const std::string& _l = "controller");
   virtual bool auto_init() override;
 
   virtual ~Controller();

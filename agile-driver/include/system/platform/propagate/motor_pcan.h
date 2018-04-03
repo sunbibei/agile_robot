@@ -18,7 +18,7 @@ namespace middleware {
 
 class MotorPcan: public ArmPcan {
 public:
-  MotorPcan(const MiiString& l = "motor_pcan");
+  MotorPcan(const std::string& l = "motor_pcan");
   virtual bool auto_init() override;
 
   virtual ~MotorPcan();
@@ -30,13 +30,13 @@ public:
   virtual void updatePID(unsigned char);
 
 private:
-  void auto_inst_pid(const MiiString&);
+  void auto_inst_pid(const std::string&);
 
 protected:
   bool                       new_command_;
   bool                       pid_hijack_;
-  MiiVector<unsigned char>   node_ids_;
-  MiiVector<MiiVector<Pid*>> pids_;
+  std::vector<unsigned char>   node_ids_;
+  std::vector<std::vector<Pid*>> pids_;
 
   short X_[MAX_NODE_NUM][JntType::N_JNTS];
   short U_[MAX_NODE_NUM][JntType::N_JNTS];

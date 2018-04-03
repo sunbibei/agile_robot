@@ -25,13 +25,13 @@ class MiiConfig {
   SINGLETON_DECLARE(MiiConfig)
 
 public:
-  void parse(const MiiString& _fn, TiXmlDocument** _out_xml = nullptr,
-      const MiiString& _out_fn = "", bool print = false);
+  void parse(const std::string& _fn, TiXmlDocument** _out_xml = nullptr,
+      const std::string& _out_fn = "", bool print = false);
 
-  static void add_path(const MiiString& _p);
+  static void add_path(const std::string& _p);
 
 protected:
-  void parse_helper(TiXmlDocument*, TiXmlDocument* root, const MiiString& _out = "", bool print = false);
+  void parse_helper(TiXmlDocument*, TiXmlDocument* root, const std::string& _out = "", bool print = false);
 
   void init_path     (TiXmlDocument*, TiXmlElement*);
   void init_include  (TiXmlDocument*, TiXmlElement*);
@@ -39,19 +39,19 @@ protected:
   void init_protoType(TiXmlDocument*, TiXmlElement*);
 
   /*!
-   * @brief The callback is type as void(const MiiString&, void*), The first
+   * @brief The callback is type as void(const std::string&, void*), The first
    *        parameter is the label with given tag( or attribute), The second
    *        parameter is the TiXmlElement*( or char* for the attribute content).
    */
-  void regTagCb(TiXmlDocument*, const MiiString& _tag,
+  void regTagCb(TiXmlDocument*, const std::string& _tag,
       std::function<void(TiXmlElement*)>&);
 
 protected:
   TiXmlDocument*                             root_file_;
-  static MiiMap<MiiString, MiiString>        s_property_map_;
-  static MiiMap<MiiString, class ProtoInfo*> s_prototype_map_;
+  static std::map<std::string, std::string>        s_property_map_;
+  static std::map<std::string, class ProtoInfo*> s_prototype_map_;
 
-  static MiiVector<MiiString>                s_cfg_paths_;
+  static std::vector<std::string>                s_cfg_paths_;
 };
 
 } /* namespace internal */

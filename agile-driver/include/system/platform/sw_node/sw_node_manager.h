@@ -20,8 +20,8 @@ class SWNodeManager: public internal::ResourceManager<SWNode> {
 
 public:
   bool init();
-  void handleMsg(const MiiVector<Packet>&);
-  void generateCmd(MiiVector<Packet>&);
+  void handleMsg(const std::vector<Packet>&);
+  void generateCmd(std::vector<Packet>&);
 
 protected:
   // store all of the hw_unit which order by id

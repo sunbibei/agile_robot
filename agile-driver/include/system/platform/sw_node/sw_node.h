@@ -28,7 +28,7 @@ namespace middleware {
  */
 struct SWNode : public Label {
   friend class SWNodeManager;
-  SWNode(const MiiString& __l = Label::null);
+  SWNode(const std::string& __l = Label::null);
   virtual bool auto_init() override;
   virtual ~SWNode();
 
@@ -47,7 +47,7 @@ struct SWNode : public Label {
    * The new command packet will be pushed back into queue;
    * if generate the Command packet, return true. Or return false.
    */
-  virtual bool generateCmd(MiiVector<Packet>&);
+  virtual bool generateCmd(std::vector<Packet>&);
 
 protected:
   unsigned char node_id_;

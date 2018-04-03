@@ -17,7 +17,7 @@ namespace middleware {
 
 class DataService: public Label {
 public:
-  DataService(const MiiString& _l = "data-service");
+  DataService(const std::string& _l = "data-service");
   virtual bool auto_init() override;
 
   virtual ~DataService();
@@ -28,8 +28,8 @@ public:
 
 protected:
   bool          enable_;
-  MiiString     path_;
-  MiiString     ofn_;
+  std::string     path_;
+  std::string     ofn_;
   std::ofstream ofd_;
   char*         buffer_;
 

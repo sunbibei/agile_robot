@@ -23,17 +23,17 @@ SINGLETON_IMPL(MiiConfig)
 #define PATH            ("macro:path")
 #define INCLUDE         ("macro:include")
 
-const MiiString PROTO_PREFIX = "prototype:";
+const std::string PROTO_PREFIX = "prototype:";
 
 struct ProtoInfo {
   const TiXmlElement*          proto;
-  MiiMap<MiiString, MiiString> attr_val_map;
+  std::map<std::string, std::string> attr_val_map;
 };
 
-MiiMap<MiiString, MiiString>  MiiConfig::s_property_map_;
-MiiMap<MiiString, ProtoInfo*> MiiConfig::s_prototype_map_;
+std::map<std::string, std::string>  MiiConfig::s_property_map_;
+std::map<std::string, ProtoInfo*> MiiConfig::s_prototype_map_;
 
-MiiVector<MiiString>          MiiConfig::s_cfg_paths_;
+std::vector<std::string>          MiiConfig::s_cfg_paths_;
 
 void __reset_xml_doc(TiXmlDocument** _xml) {
   if (_xml && *_xml)
@@ -47,14 +47,14 @@ void __reset_xml_doc(TiXmlDocument** _xml) {
 }
 
 
-void __findTag(TiXmlElement* __curr, const MiiString& __p,
-    const MiiString& _tag, std::function<void(TiXmlElement*)>& cb) {
+void __findTag(TiXmlElement* __curr, const std::string& __p,
+    const std::string& _tag, std::function<void(TiXmlElement*)>& cb) {
   for (auto __next = __curr->FirstChildElement();
       nullptr != __next; __next = __next->NextSiblingElement()) {
 #ifdef LINK_CFG_READER
-    MiiString __next_p = Label::make_label(__p, __next->Value());
+    std::string __next_p = Label::make_label(__p, __next->Value());
 #else
-    MiiString __next_p = __p + "." + __next->Value();
+    std::string __next_p = __p + "." + __next->Value();
 #endif
     if (0 == _tag.compare(__next->Value()))
       cb(__next);
@@ -62,10 +62,10 @@ void __findTag(TiXmlElement* __curr, const MiiString& __p,
   }
 }
 
-size_t __recurse_escape(const MiiMap<MiiString, MiiString>& map,
-    const MiiString& _raw, size_t pos, MiiString& _val) {
-  MiiString _v;
-  MiiString _name;
+size_t __recurse_escape(const std::map<std::string, std::string>& map,
+    const std::string& _raw, size_t pos, std::string& _val) {
+  std::string _v;
+  std::string _name;
   size_t sta = pos;
   size_t off = pos;
   bool start = false;
@@ -101,16 +101,16 @@ size_t __recurse_escape(const MiiMap<MiiString, MiiString>& map,
   return off;
 }
 
-bool __parseMath(const MiiString& _raw, const MiiMap<MiiString, MiiString>& map,
+bool __parseMath(const std::string& _raw, const std::map<std::string, std::string>& map,
     double& _out) {
-  MiiVector<MiiString> sp;
+  std::vector<std::string> sp;
   boost::split(sp, _raw, boost::is_any_of("+-*/()"));
-  MiiString _r = _raw;
+  std::string _r = _raw;
   for (const auto& _v : sp) {
     const auto& _m = map.find(_v);
     if (map.end() != _m) {
       auto pos = _r.find(_m->first);
-      while (MiiString::npos != pos) {
+      while (std::string::npos != pos) {
         _r.replace(pos, _m->first.size(), _m->second);
         pos = _r.find(_m->first, pos + _m->second.size());
       }
@@ -120,17 +120,17 @@ bool __parseMath(const MiiString& _raw, const MiiMap<MiiString, MiiString>& map,
   return eval(_r, _out);
 }
 
-bool __parseProperty(const MiiString& _raw, MiiString& _val,
-    const MiiMap<MiiString, MiiString>& map, bool math = false) {
+bool __parseProperty(const std::string& _raw, std::string& _val,
+    const std::map<std::string, std::string>& map, bool math = false) {
   size_t p0    = 0;
   size_t p1    = 0;
   _val         = "";
-  MiiString _r = _raw;
+  std::string _r = _raw;
   while (p1 < _r.size()) {
     _r = _r.substr(p1);
 
     p0 = _r.find(ESCAPE);
-    if ((MiiString::npos == p0) || (p0 + 2) >= _r.size()) {
+    if ((std::string::npos == p0) || (p0 + 2) >= _r.size()) {
       _val += _r;
       return true;
     }
@@ -139,13 +139,13 @@ bool __parseProperty(const MiiString& _raw, MiiString& _val,
 
     p0 += 2;
     p1 = _r.find(END_CHAR, p0);
-    if (MiiString::npos == p1) {
+    if (std::string::npos == p1) {
       LOG_ERROR << "The useage of macro: ${...}";
       return false;
     }
     auto _n = _r.substr(p0, p1 - p0);
     double _math_v = 0;
-    MiiString new_val = "";
+    std::string new_val = "";
     if (math && __parseMath(_n, map, _math_v)) {
       new_val = std::to_string(_math_v);
     } else {
@@ -161,8 +161,8 @@ bool __parseProperty(const MiiString& _raw, MiiString& _val,
 }
 
 void __copy_element(TiXmlElement* _to, const TiXmlElement* _from,
-    const MiiMap<MiiString, MiiString>& _map) {
-  MiiString tmp;
+    const std::map<std::string, std::string>& _map) {
+  std::string tmp;
   for (auto _attr = _from->FirstAttribute();
       nullptr != _attr; _attr = _attr->Next()) {
     if (!__parseProperty(_attr->ValueStr(), tmp, _map))
@@ -185,13 +185,13 @@ void __copy_attribute(TiXmlElement* _to, const TiXmlElement* _from) {
   }
 }
 
-bool __parsePrototype(TiXmlElement* _curr, const MiiMap<MiiString, ProtoInfo*>& _map) {
+bool __parsePrototype(TiXmlElement* _curr, const std::map<std::string, ProtoInfo*>& _map) {
   if (!_curr || !_curr->Attribute("tag")) {
     LOG_ERROR << "The prototype'" << _curr->ValueStr() << "' no 'tag' attribute!";
     return false;
   }
   ///! Get the name of prototype
-  MiiString proto_name = _curr->ValueStr().substr(PROTO_PREFIX.size());
+  std::string proto_name = _curr->ValueStr().substr(PROTO_PREFIX.size());
   if (_map.end() == _map.find(proto_name)) {
     LOG_ERROR << "No such prototype:'" << proto_name << "' define before here.";
     return false;
@@ -223,11 +223,11 @@ bool __parsePrototype(TiXmlElement* _curr, const MiiMap<MiiString, ProtoInfo*>& 
 }
 
 void __recurse_parse(TiXmlElement* __curr,
-    const MiiMap<MiiString, MiiString>&  _property_map,
-    const MiiMap<MiiString, ProtoInfo*>& _prototype_map) {
-  if (!__curr || MiiString::npos != __curr->ValueStr().find("macro:")) return;
+    const std::map<std::string, std::string>&  _property_map,
+    const std::map<std::string, ProtoInfo*>& _prototype_map) {
+  if (!__curr || std::string::npos != __curr->ValueStr().find("macro:")) return;
   ///! first parse the prototype
-  if (MiiString::npos != __curr->ValueStr().find(PROTO_PREFIX)) {
+  if (std::string::npos != __curr->ValueStr().find(PROTO_PREFIX)) {
     if (!__parsePrototype(__curr, _prototype_map)) {
       LOG_ERROR << "The prototype'" << __curr->ValueStr() << "' has error!";
       return; // Don't need to parse the error prototype.
@@ -237,7 +237,7 @@ void __recurse_parse(TiXmlElement* __curr,
   ///! parse the proproperty of the current tag.
   for (auto _attr = __curr->FirstAttribute();
       nullptr != _attr; _attr = _attr->Next()) {
-    MiiString val;
+    std::string val;
     if (__parseProperty(_attr->ValueStr(), val, _property_map, true)) {
       _attr->SetValue(val);
     }
@@ -252,7 +252,7 @@ void __recurse_parse(TiXmlElement* __curr,
 void __remove_macro(TiXmlElement* __root) {
   auto __next = __root->FirstChildElement();
   while (nullptr != __next) {
-    if (MiiString::npos != __next->ValueStr().find("macro:")) {
+    if (std::string::npos != __next->ValueStr().find("macro:")) {
       __root->RemoveChild(__next);
       __next = __root->FirstChildElement();
     } else {
@@ -262,7 +262,7 @@ void __remove_macro(TiXmlElement* __root) {
   }
 }
 
-bool __get_full_fn(const MiiVector<MiiString>& _ps, const MiiString& _f, MiiString& _fn) {
+bool __get_full_fn(const std::vector<std::string>& _ps, const std::string& _f, std::string& _fn) {
   std::ifstream _ifd;
   _fn = _f;
   _ifd.open(_fn);
@@ -284,7 +284,7 @@ bool __get_full_fn(const MiiVector<MiiString>& _ps, const MiiString& _f, MiiStri
   return false;
 }
 
-void MiiConfig::regTagCb(TiXmlDocument* _doc, const MiiString& _tag,
+void MiiConfig::regTagCb(TiXmlDocument* _doc, const std::string& _tag,
     std::function<void(TiXmlElement*)>& cb) {
   if (!_doc || !_doc->RootElement()) return;
 
@@ -309,7 +309,7 @@ void MiiConfig::init_include(TiXmlDocument* _doc, TiXmlElement* root) {
   auto pv = root->Attribute("file");
   if (!pv) return;
 
-  MiiString _f_pv;
+  std::string _f_pv;
   if (!__get_full_fn(s_cfg_paths_, pv, _f_pv)) {
     LOG_WARNING << "No such file named '" << pv << "'";
     return;
@@ -333,7 +333,7 @@ void MiiConfig::init_property(TiXmlDocument*,  TiXmlElement* root) {
   if (!pn || !pv || (s_property_map_.end() != s_property_map_.find(pn))) return;
 
   if (s_property_map_.end() == s_property_map_.find(pn))
-    s_property_map_[pn] = pv; //.insert(std::make_pair(MiiString(pn), MiiString(pv)));
+    s_property_map_[pn] = pv; //.insert(std::make_pair(std::string(pn), std::string(pv)));
 
 }
 
@@ -346,17 +346,17 @@ void MiiConfig::init_protoType(TiXmlDocument*, TiXmlElement* root) {
   s_prototype_map_[root->Attribute("name")] = info;
 
   if (nullptr == root->Attribute("args")) return;
-  MiiString args = root->Attribute("args");
+  std::string args = root->Attribute("args");
   std::stringstream ss;
   ss << args;
-  MiiString arg;
+  std::string arg;
   while (ss >> arg)
     info->attr_val_map[arg] = "arg";
 }
 
-void MiiConfig::parse(const MiiString& _fn, TiXmlDocument** _out_xml,
-      const MiiString& _out_fn, bool print) {
-  MiiString _f_pv;
+void MiiConfig::parse(const std::string& _fn, TiXmlDocument** _out_xml,
+      const std::string& _out_fn, bool print) {
+  std::string _f_pv;
   if (!__get_full_fn(s_cfg_paths_, _fn, _f_pv)) {
     LOG_WARNING << "No such file named '" << _fn << "'";
     return;
@@ -392,7 +392,7 @@ void MiiConfig::parse(const MiiString& _fn, TiXmlDocument** _out_xml,
 }
 
 void MiiConfig::parse_helper(TiXmlDocument* doc, TiXmlDocument* root,
-    const MiiString& _out, bool print) {
+    const std::string& _out, bool print) {
 
   std::function<void(TiXmlElement*)>
   cb = std::bind(&MiiConfig::init_path,      this, doc, std::placeholders::_1);
@@ -418,7 +418,7 @@ void MiiConfig::parse_helper(TiXmlDocument* doc, TiXmlDocument* root,
     root->Print();
 }
 
-void MiiConfig::add_path(const MiiString& _p) {
+void MiiConfig::add_path(const std::string& _p) {
   for (const auto& p : s_cfg_paths_)
     if (0 == p.compare(_p)) return;
 

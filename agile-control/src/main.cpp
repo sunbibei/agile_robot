@@ -12,7 +12,7 @@
 
 #include <Eigen/Dense>
 
-void __auto_inst(const MiiString& __p, const MiiString& __type) {
+void __auto_inst(const std::string& __p, const std::string& __type) {
   LOG_INFO << "Create instance(" << __type << " " << __p;
   if (!AutoInstanceor::instance()->make_instance(__p, __type)) {
     LOG_WARNING << "Create instance(" << __type << " " << __p << ") fail!";

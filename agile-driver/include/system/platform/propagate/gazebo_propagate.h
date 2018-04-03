@@ -42,8 +42,8 @@ protected:
 #else
   MsgQueue*                       ipc_;
 #endif
-  MiiString       leg_node_ipc_name_;
-  MiiString       cmd_ipc_name_;
+  std::string       leg_node_ipc_name_;
+  std::string       cmd_ipc_name_;
 };
 
 } /* namespace middleware */

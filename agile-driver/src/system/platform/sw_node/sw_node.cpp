@@ -13,7 +13,7 @@
 
 namespace middleware {
 
-SWNode::SWNode(const MiiString& l)
+SWNode::SWNode(const std::string& l)
 : Label(l), node_id_(INVALID_BYTE) {
   SWNodeManager::instance()->add(this);
 }
@@ -30,7 +30,7 @@ void SWNode::handleMsg(const Packet&) {
 }
 
 SWNode::~SWNode()                 { }
-bool SWNode::generateCmd(MiiVector<Packet>&) { return false;  }
+bool SWNode::generateCmd(std::vector<Packet>&) { return false;  }
 bool SWNode::requireCmdDeliver()  { return true;   }
 
 } /* namespace quadruped_robot_driver */

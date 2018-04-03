@@ -18,7 +18,7 @@ namespace middleware {
 
 class PcanFake: public ArmPcan {
 public:
-  PcanFake(const MiiString& l = "pcan");
+  PcanFake(const std::string& l = "pcan");
   ~PcanFake();
   virtual bool auto_init() override;
 

@@ -39,7 +39,7 @@ public:
   const class JointManager& joint_manager_ref() { return *jnt_manager_; }
 
 public:
-  static void auto_inst(const MiiString& __p, const MiiString& __type);
+  static void auto_inst(const std::string& __p, const std::string& __type);
 
 protected:
   /**
@@ -47,7 +47,7 @@ protected:
    * @param _tag         Every necessary parameters will be found in this __tag
    * @param _mii_control Is use the Mii Control
    */
-  MiiRobot(const MiiString& __tag);
+  MiiRobot(const std::string& __tag);
   virtual ~MiiRobot();
 
 protected:
@@ -55,13 +55,13 @@ protected:
    * Given by subclass in the parameters list of the constructed function.
    * Tell MiiRobot what necessary parameters are found in @prefix_tag_.
    */
-  MiiString                     prefix_tag_;
+  std::string                     prefix_tag_;
   // class Master*                 master_;
   class JointManager*           jnt_manager_;
 
-  MiiVector<class ForceSensor*>          td_list_;
-  MiiVector<class ForceSensor*>          td_list_by_type_; // type: leg
-  MiiMap<MiiString, class ForceSensor*>  td_list_by_name_;
+  std::vector<class ForceSensor*>          td_list_;
+  std::vector<class ForceSensor*>          td_list_by_type_; // type: leg
+  std::map<std::string, class ForceSensor*>  td_list_by_name_;
 
   class ImuSensor*   imu_sensor_;
 
@@ -75,7 +75,7 @@ private:
   class __RegForceRes* td_reg_res_;
   class __RegImuRes*   imu_reg_res_;
   ///! The helper method
-  void __reg_resource_and_command(const MiiString&);
+  void __reg_resource_and_command(const std::string&);
 
 ///! These methods has been deleted.
 // public:

@@ -97,7 +97,7 @@ void GaitManager::tick() {
   running_gait_->post_tick();
 }
 
-void GaitManager::activate(const MiiString& gait_name) {
+void GaitManager::activate(const std::string& gait_name) {
   if ((0 == gait_name.compare("null")) || (0 == gait_name.compare("NULL"))) {
     actived_gait_ = nullptr;
     return;

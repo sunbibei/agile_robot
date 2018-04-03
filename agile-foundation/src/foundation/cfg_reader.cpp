@@ -18,9 +18,9 @@
 #define SUFFIX        ("cfg")
 #define KEYWORD_INC   ("include")
 
-bool __recurse_get_value(TiXmlElement* __ele, std::vector<MiiString> __path,
-                      const MiiString& attr, MiiString& __val) {
-  MiiString tag = __path.back();
+bool __recurse_get_value(TiXmlElement* __ele, std::vector<std::string> __path,
+                      const std::string& attr, std::string& __val) {
+  std::string tag = __path.back();
   __path.pop_back();
 
   for (TiXmlElement* __next_ele = __ele->FirstChildElement(tag);
@@ -40,12 +40,12 @@ bool __recurse_get_value(TiXmlElement* __ele, std::vector<MiiString> __path,
   return false;
 }
 
-bool __get_value_helper(TiXmlElement* __root, const MiiString& p,
-    const MiiString& __attr, bool fatal, MiiString& __pAttr) {
-  std::vector<MiiString> __ps;
-  MiiString __p = p; // Label::make_label("cfg", p);
+bool __get_value_helper(TiXmlElement* __root, const std::string& p,
+    const std::string& __attr, bool fatal, std::string& __pAttr) {
+  std::vector<std::string> __ps;
+  std::string __p = p; // Label::make_label("cfg", p);
   while (Label::null != __p) {
-    MiiString __l;
+    std::string __l;
     Label::split_label(__p, __p, __l);
     if (Label::null != __l) __ps.push_back(__l);
   }
@@ -68,12 +68,12 @@ bool __get_value_helper(TiXmlElement* __root, const MiiString& p,
   return true;
 }
 
-bool __file_list(const MiiString& _root, MiiMap<MiiString, MiiString>& _map) {
+bool __file_list(const std::string& _root, std::map<std::string, std::string>& _map) {
   DIR* dir = opendir(_root.c_str());
   if (!dir) return false;
 
   struct dirent* ptr;
-  MiiString tmp_str;
+  std::string tmp_str;
   while ((ptr = readdir(dir)) != NULL) {
     if( (0 == strcmp(ptr->d_name,"."))
         || (0 == strcmp(ptr->d_name,"..")) )
@@ -82,7 +82,7 @@ bool __file_list(const MiiString& _root, MiiMap<MiiString, MiiString>& _map) {
     case DT_REG:
     case DT_LNK:
       tmp_str = ptr->d_name;
-      if (MiiString::npos != tmp_str.find(SUFFIX))
+      if (std::string::npos != tmp_str.find(SUFFIX))
         _map[ptr->d_name] = _root;
 
       break;
@@ -95,7 +95,7 @@ bool __file_list(const MiiString& _root, MiiMap<MiiString, MiiString>& _map) {
   return true;
 }
 
-bool __get_full_fn(const MiiVector<MiiString>& _ps, const MiiString& _f, MiiString& _fn) {
+bool __get_full_fn(const std::vector<std::string>& _ps, const std::string& _f, std::string& _fn) {
   std::ifstream _ifd;
   _fn = _f;
   _ifd.open(_fn);
@@ -117,8 +117,8 @@ bool __get_full_fn(const MiiVector<MiiString>& _ps, const MiiString& _f, MiiStri
   return false;
 }
 
-bool __parse_root_file(const MiiString& _f, const MiiVector<MiiString>& _ps, MiiVector<MiiString>& fs) {
-  MiiString tmp;
+bool __parse_root_file(const std::string& _f, const std::vector<std::string>& _ps, std::vector<std::string>& fs) {
+  std::string tmp;
   if (!__get_full_fn(_ps, _f, tmp)) return false;
 
   std::ifstream ifd(tmp);
@@ -139,11 +139,11 @@ bool __parse_root_file(const MiiString& _f, const MiiVector<MiiString>& _ps, Mii
 }
 
 
-void __findAttr(TiXmlElement* __curr, const MiiString& __p,
-    const MiiString& attr, MiiCfgReader::Callback cb) {
+void __findAttr(TiXmlElement* __curr, const std::string& __p,
+    const std::string& attr, MiiCfgReader::Callback cb) {
   for (auto __next = __curr->FirstChildElement();
       nullptr != __next; __next = __next->NextSiblingElement()) {
-    MiiString __next_p = Label::make_label(__p, __next->Value());
+    std::string __next_p = Label::make_label(__p, __next->Value());
     if (nullptr != __next->Attribute(attr.c_str()))
       cb(__next_p, __next->Attribute(attr.c_str()));
 
@@ -151,18 +151,18 @@ void __findAttr(TiXmlElement* __curr, const MiiString& __p,
   }
 }
 
-/*void __findTag(TiXmlElement* __curr, const MiiString& __p,
-    const MiiString& _tag, MiiCfgReader::Callback1 cb) {
+/*void __findTag(TiXmlElement* __curr, const std::string& __p,
+    const std::string& _tag, MiiCfgReader::Callback1 cb) {
   for (auto __next = __curr->FirstChildElement();
       nullptr != __next; __next = __next->NextSiblingElement()) {
-    MiiString __next_p = Label::make_label(__p, __next->Value());
+    std::string __next_p = Label::make_label(__p, __next->Value());
     if (0 == _tag.compare(__next->Value()))
       cb(__next_p, __next);
     __findTag(__next, __next_p, _tag, cb);
   }
 }*/
 
-TiXmlElement* __findTag(TiXmlElement* __prefix, const MiiString& tag) {
+TiXmlElement* __findTag(TiXmlElement* __prefix, const std::string& tag) {
   if (nullptr == __prefix) return nullptr;
 
   for (auto __tag = __prefix->FirstChildElement();
@@ -172,10 +172,10 @@ TiXmlElement* __findTag(TiXmlElement* __prefix, const MiiString& tag) {
   return nullptr;
 }
 
-TiXmlElement* __findLabel(TiXmlElement* __root, MiiString __label) {
+TiXmlElement* __findLabel(TiXmlElement* __root, std::string __label) {
   if (__label.empty()) return nullptr;
 
-  MiiString __l;
+  std::string __l;
   Label::split_label(__label, __label, __l);
   if (0 != __l.compare(__root->Value())) return nullptr;
 
@@ -190,17 +190,17 @@ TiXmlElement* __findLabel(TiXmlElement* __root, MiiString __label) {
 
 SINGLETON_IMPL_NO_CREATE(MiiCfgReader)
 
-MiiVector<MiiString> MiiCfgReader::s_cfg_paths_;
+std::vector<std::string> MiiCfgReader::s_cfg_paths_;
 
-void MiiCfgReader::add_path(const MiiString& _p) {
+void MiiCfgReader::add_path(const std::string& _p) {
   for (const auto& p : s_cfg_paths_)
     if (0 == p.compare(_p)) return;
 
   s_cfg_paths_.push_back(_p);
 }
 
-bool MiiCfgReader::add_config(const MiiString& _f) {
-  MiiString _fn;
+bool MiiCfgReader::add_config(const std::string& _f) {
+  std::string _fn;
   if (!__get_full_fn(s_cfg_paths_, _f, _fn)) {
     LOG_ERROR << "Could not found the " << _f
             << ", did you forget define the file?";
@@ -237,7 +237,7 @@ bool MiiCfgReader::add_config(const MiiString& _f) {
   return true;
 }
 
-MiiCfgReader* MiiCfgReader::create_instance(const MiiString& file) {
+MiiCfgReader* MiiCfgReader::create_instance(const std::string& file) {
   if (nullptr == instance_) {
     add_path(".");
     instance_ = new MiiCfgReader(file);
@@ -248,7 +248,7 @@ MiiCfgReader* MiiCfgReader::create_instance(const MiiString& file) {
   return instance_;
 }
 
-MiiCfgReader::MiiCfgReader(const MiiString& file)
+MiiCfgReader::MiiCfgReader(const std::string& file)
 : cfg_docs_(nullptr), /*cfg_root_(nullptr),*/
   n_config_(0), N_config_(8) {
 
@@ -272,8 +272,8 @@ MiiCfgReader::~MiiCfgReader() {
   MACRO_DESTROY
 }
 
-void MiiCfgReader::regAttrCb(const MiiString& attr, Callback cb,
-    const MiiString& __prefix) {
+void MiiCfgReader::regAttrCb(const std::string& attr, Callback cb,
+    const std::string& __prefix) {
   for (size_t i = 0; i < n_config_; ++i) {
     auto cfg_root = cfg_docs_[i]->RootElement();
     if (!__prefix.empty()) {
@@ -287,7 +287,7 @@ void MiiCfgReader::regAttrCb(const MiiString& attr, Callback cb,
   }
 }
 
-/*void MiiCfgReader::regTagCb(const MiiString& _tag, Callback1 cb, const MiiString& _prefix) {
+/*void MiiCfgReader::regTagCb(const std::string& _tag, Callback1 cb, const std::string& _prefix) {
   for (size_t i = 0; i < n_config_; ++i) {
     auto cfg_root = cfg_docs_[i]->RootElement();
     if (!_prefix.empty()) {
@@ -300,7 +300,7 @@ void MiiCfgReader::regAttrCb(const MiiString& attr, Callback cb,
   }
 }*/
 
-bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr, MiiString& val) {
+bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::string& val) {
   size_t i = 0;
   for (; i < n_config_; ++i) {
     auto _cfg_root = cfg_docs_[i]->RootElement();
@@ -309,7 +309,7 @@ bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr, MiiStrin
   return (i != n_config_);
 }
 
-bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr,
+bool MiiCfgReader::get_value(const std::string& p, const std::string& attr,
     std::vector<bool>& vals) {
 
   std::vector<std::string> vec_str;
@@ -328,8 +328,8 @@ bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr,
   return !vals.empty();
 }
 
-bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr,
-    MiiVector<char>& vals) {
+bool MiiCfgReader::get_value(const std::string& p, const std::string& attr,
+    std::vector<char>& vals) {
 
   std::vector<std::string> vals_str;
   if (!get_value(p, attr, vals_str)) return false;
@@ -350,7 +350,7 @@ bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr,
   return true;
 }
 
-bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr, MiiVector<unsigned char>& vals) {
+bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::vector<unsigned char>& vals) {
   std::vector<char> vals_char;
   if (!get_value(p, attr, vals_char) || vals_char.empty()) return false;
 
@@ -360,7 +360,7 @@ bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr, MiiVecto
   return true;
 }
 
-bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr, MiiVector<JntType>& vals) {
+bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::vector<JntType>& vals) {
   std::vector<std::string> vals_str;
   if (!get_value(p, attr, vals_str)) return false;
 
@@ -368,11 +368,11 @@ bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr, MiiVecto
     boost::to_lower(str);
     JntType type = JntType::UNKNOWN_JNT;
     if (0 == str.compare("yaw")) {
-      type = JntType::YAW;
+      type = JntType::HAA;
     } else if (0 == str.compare("hip")) {
-      type = JntType::HIP;
+      type = JntType::HFE;
     } else if (0 == str.compare("knee")) {
-      type = JntType::KNEE;
+      type = JntType::KFE;
     } else {
       LOG_WARNING << "Error the 'jnt' TAG(" << str << ") in the 'joint' TAG, "
           << "require 'yaw', 'knee' or 'hip'";
@@ -384,7 +384,7 @@ bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr, MiiVecto
   return true;
 }
 
-bool MiiCfgReader::get_value(const MiiString& p, const MiiString& attr, MiiVector<LegType>& vals) {
+bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::vector<LegType>& vals) {
   std::vector<std::string> vals_str;
   if (!get_value(p, attr, vals_str)) return false;
 

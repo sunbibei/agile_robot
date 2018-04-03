@@ -15,8 +15,8 @@ const size_t  MAX_BUS_NUM = 10;
 #define MUTEX_TRY_LOCK(locker)    while (!locker.try_lock()) { };
 #define MUTEX_UNLOCK(locker)  locker.unlock();
 
-const MiiString THREAD_R_NAME = "propagate-r";
-const MiiString THREAD_W_NAME = "propagate-w";
+const std::string THREAD_R_NAME = "propagate-r";
+const std::string THREAD_W_NAME = "propagate-w";
 const size_t MAX_QUEUE_SIZE = 1024;
 std::thread update_thread_;
 
@@ -132,7 +132,7 @@ void PropagateManager::updateWrite() {
   }
 }
 
-bool PropagateManager::readPackets(MiiVector<Packet>& pkts) {
+bool PropagateManager::readPackets(std::vector<Packet>& pkts) {
   MUTEX_TRY_LOCK(lock_4_recv_)
   if (!pkts_queue_4_recv_.empty()) {
     for (const auto& pkt : pkts_queue_4_recv_)
@@ -144,7 +144,7 @@ bool PropagateManager::readPackets(MiiVector<Packet>& pkts) {
   return true;
 }
 
-bool PropagateManager::writePackets(const MiiVector<Packet>& pkts) {
+bool PropagateManager::writePackets(const std::vector<Packet>& pkts) {
   MUTEX_TRY_LOCK(lock_4_send_)
   if (!pkts.empty()) {
     for (const auto& pkt : pkts)

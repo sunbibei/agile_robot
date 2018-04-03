@@ -10,7 +10,7 @@
 
 namespace middleware {
 
-TouchdownEstimator::TouchdownEstimator(const MiiString& _l)
+TouchdownEstimator::TouchdownEstimator(const std::string& _l)
   : Label(_l) {
   ; // Nothing to do here
 }

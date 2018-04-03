@@ -53,8 +53,8 @@ public:
 //  friend std::ostream& operator<<(std::ostream&, const Segmented<_T1, _T2>& traj);
 
 protected:
-  MiiVector<typename Trajectory<_DataType, _Dim_X>::TrajSp> seqs_;
-  MiiVector<typename Trajectory<_DataType, _Dim_X>::Range*> ranges_;
+  std::vector<typename Trajectory<_DataType, _Dim_X>::TrajSp> seqs_;
+  std::vector<typename Trajectory<_DataType, _Dim_X>::Range*> ranges_;
   // typename Trajectory<_DataType, _Dim_X>::Range*            coj_range_;
 };
 

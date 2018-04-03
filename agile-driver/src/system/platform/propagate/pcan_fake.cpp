@@ -27,7 +27,7 @@ bool    g_repeat = false;
 #define PACKAGE_W_PRINT ("\033[33;1m -> %02d:%02d:%02d ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\033[0m\n")
 #define PACKAGE_R_PRINT ("\033[35;1m <- %02d:%02d:%02d ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\033[0m\n")
 
-PcanFake::PcanFake(const MiiString&)
+PcanFake::PcanFake(const std::string&)
   : swap_buffer_(nullptr) {
   r_time_t_ = nullptr;
   w_time_t_ = nullptr;
@@ -37,7 +37,7 @@ PcanFake::PcanFake(const MiiString&)
 bool PcanFake::auto_init() {
   auto cfg = MiiCfgReader::instance();
 
-  MiiString filename;
+  std::string filename;
   if (cfg->get_value(getLabel(), "output", filename))
     g_w_fd = fopen(filename.c_str(), "w");
   if (cfg->get_value(getLabel(), "input",  filename)) {

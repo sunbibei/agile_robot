@@ -31,7 +31,7 @@
 using namespace middleware;
 
 class RosWrapper : public MiiRobot {
-SINGLETON_DECLARE(RosWrapper, const MiiString&)
+SINGLETON_DECLARE(RosWrapper, const std::string&)
 
 public:
   virtual void create_system_instance() override;
@@ -53,7 +53,7 @@ private:
 private:
   // The ROS handle
   ros::NodeHandle nh_;
-  MiiString       root_tag_;
+  std::string       root_tag_;
 
   bool alive_;
   // About ROS control

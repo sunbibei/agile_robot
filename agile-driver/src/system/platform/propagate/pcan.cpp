@@ -15,7 +15,7 @@ namespace middleware {
 const unsigned int MAX_TRY_TIMES = 10;
 unsigned int       g_times_count = 0;
 
-PcanPropagate::PcanPropagate(const MiiString& l)
+PcanPropagate::PcanPropagate(const std::string& l)
   : Propagate(l), connected_(false),
     tmp_pcan_status_(PCAN_ERROR_OK) {
   pcan_config_ = {PCAN_USBBUS1, PCAN_BAUD_500K, 0, 0, 0};

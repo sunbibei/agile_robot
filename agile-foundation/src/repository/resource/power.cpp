@@ -30,9 +30,9 @@ struct PowerDescription {
   int power_sub_node;
 };
 
-MiiMap<LegType, PowerDescription> LEG_IDX_MAP;
+std::map<LegType, PowerDescription> LEG_IDX_MAP;
 
-Power::Power(const MiiString& _l)
+Power::Power(const std::string& _l)
     : Label(_l), power_infor_(nullptr), power_error_(nullptr) {
   ;
 }

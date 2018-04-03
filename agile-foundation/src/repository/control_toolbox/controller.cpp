@@ -7,7 +7,7 @@
 
 #include "repository/control_toolbox/controller.h"
 
-Controller::Controller(const MiiString& _l)
+Controller::Controller(const std::string& _l)
   : Label(_l) {
   // TODO Auto-generated constructor stub
 

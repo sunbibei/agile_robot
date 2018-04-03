@@ -29,7 +29,7 @@ public:
    * @brief This method finds a specific named joint, return iteration if successful,
    *        return end() if it has not found.
    */
-  iterator find(const MiiString& _n);
+  iterator find(const std::string& _n);
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////        The Common Interfaces         /////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,11 +38,11 @@ public:
    *        the joint states, or get the pointer of Joint object.
    */
   void   addJointCommand(LegType, JntType, double);
-  // void   addJointCommand(const MiiVector<LegType>&, const MiiVector<JntType>&, const MiiVector<double>&);
-  void   addJointCommand(const MiiString&, double);
-  // void   addJointCommand(const MiiString&, const MiiVector<double>&);
+  // void   addJointCommand(const std::vector<LegType>&, const std::vector<JntType>&, const std::vector<double>&);
+  void   addJointCommand(const std::string&, double);
+  // void   addJointCommand(const std::string&, const std::vector<double>&);
   Joint* getJointHandle(LegType, JntType);
-  Joint* getJointHandle(const MiiString&);
+  Joint* getJointHandle(const std::string&);
   ///! get/set the type of joint command.
   void   setJointCommandMode(JntCmdType);
   const JntCmdType& getJointCommandMode();
@@ -71,15 +71,15 @@ public:
   void joint_velocity_const_pointer(LegType _owner, JntType _type, const double* & _c_p);
   void joint_torque_const_pointer  (LegType _owner, JntType _type, const double* & _c_p);
   // override
-  void joint_position_const_pointer(const MiiString& _n, const double* & _c_p);
-  void joint_velocity_const_pointer(const MiiString& _n, const double* & _c_p);
-  void joint_torque_const_pointer  (const MiiString& _n, const double* & _c_p);
+  void joint_position_const_pointer(const std::string& _n, const double* & _c_p);
+  void joint_velocity_const_pointer(const std::string& _n, const double* & _c_p);
+  void joint_torque_const_pointer  (const std::string& _n, const double* & _c_p);
   // override
-  void joint_position_const_pointer(MiiVector<const double*>&);
-  void joint_velocity_const_pointer(MiiVector<const double*>&);
-  void joint_torque_const_pointer  (MiiVector<const double*>&);
+  void joint_position_const_pointer(std::vector<const double*>&);
+  void joint_velocity_const_pointer(std::vector<const double*>&);
+  void joint_torque_const_pointer  (std::vector<const double*>&);
   //
-  void joint_names(MiiVector<MiiString>&);
+  void joint_names(std::vector<std::string>&);
 
 protected:
   // Owner Size * Joint Size

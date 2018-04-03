@@ -121,7 +121,7 @@ void __config_usb(int fd, const UsbPropagate::UsbConfig& cfg) {
   __set_others(fd, cfg);
 }
 
-UsbPropagate::UsbPropagate(const MiiString& l)
+UsbPropagate::UsbPropagate(const std::string& l)
 : Propagate(l), opened_(false),
   usb_fd_(-1), node_id_(0xFF) {
   ; // Nothing to do here.

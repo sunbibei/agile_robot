@@ -13,7 +13,7 @@
 
 #define TEST_MAIN
 
-void print(const MiiString& p, const MiiString& l) {
+void print(const std::string& p, const std::string& l) {
   std::cout << "In Callback, " << Label::make_label(p, l) << std::endl;// ": ";
   // std::string val;
   // MiiCfgReader::instance()->get_value(Label::make_label(p, l), "auto_inst", val);
@@ -23,7 +23,7 @@ void print(const MiiString& p, const MiiString& l) {
 
 #include <sys/times.h>
 
-void __auto_inst(const MiiString& __p, const MiiString& __type) {
+void __auto_inst(const std::string& __p, const std::string& __type) {
   LOG_INFO << "Create instance(" << __type << " " << __p;
 /*  if (!AutoInstanceor::instance()->make_instance(__p, __type)) {
     LOG_WARNING << "Create instance(" << __type << " " << __p << ") fail!";
@@ -51,9 +51,9 @@ int main() {
 
   return 0;
 /*
-  std::vector<MiiString> ps = {"qr.second.third.forth.fifth.sixth.seventh.eighth.night.tenth",
+  std::vector<std::string> ps = {"qr.second.third.forth.fifth.sixth.seventh.eighth.night.tenth",
       "qr.second.third.forth.fifth.sixth.scale", "qr.second.third.forth.fifth.sixth.scale2"};
-  std::vector<MiiString> attrs = {"attr", "abcd", "efd"};
+  std::vector<std::string> attrs = {"attr", "abcd", "efd"};
 
 
   std::string val_str;

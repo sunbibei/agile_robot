@@ -12,7 +12,7 @@ namespace middleware {
 
 const int MAX_BUF_SIZE  = 1024;
 
-ImuJY901::ImuJY901(const MiiString& l)
+ImuJY901::ImuJY901(const std::string& l)
   : UsbPropagate(l), read_status_(-1), read_buf_(new char[MAX_BUF_SIZE]),
     buf_top_(read_buf_), buf_btm_(read_buf_),
     BUF_EOF_(read_buf_ + MAX_BUF_SIZE) {

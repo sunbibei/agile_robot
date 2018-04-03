@@ -22,6 +22,7 @@ enum LTestState {
   UNKNOWN_LT_STATE = -1,
   LT_INIT_POSE = 0,
   LT_SWING,
+  LT_WS_CALC,
   LT_PROD_TRAJ,
   N_LT_STATE,
 };
@@ -53,6 +54,8 @@ private:
   void pose_init();
   ///! The callback for WK_SWING
   void swing_leg();
+  ///! The callback for LT_WS_CALC
+  void ws_calc();
   ///! The callback for LT_PROD_TRAJ
   void prod_traj();
 
@@ -95,6 +98,8 @@ protected:
   TimeControl*              swing_timer_;
   ///! The trajectory for swing leg
   Traj3dSp                  eef_traj_;
+  ///! parameters for workspaces calculate.
+  class WSParam*            ws_params_;
   ///! parameters for gait control
   class LTParam*            params_;
   ///! which type of trajectory

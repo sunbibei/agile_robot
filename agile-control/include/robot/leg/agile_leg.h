@@ -72,11 +72,11 @@ public:
 ///! Offer some convenient interfaces for user.
 public:
   ///! The position of LegType::YAW joint.
-  double yaw()  const { return joint_position_const_ref()(JntType::YAW);  }
+  double yaw()  const { return joint_position_const_ref()(JntType::HAA);  }
   ///! The position of LegType::HIP joint.
-  double hip()  const { return joint_position_const_ref()(JntType::HIP);  }
+  double hip()  const { return joint_position_const_ref()(JntType::HFE);  }
   ///! The position of LegType::KNEE joint.
-  double knee() const { return joint_position_const_ref()(JntType::KNEE); }
+  double knee() const { return joint_position_const_ref()(JntType::KFE); }
 
 protected:
   double               td_thres_;

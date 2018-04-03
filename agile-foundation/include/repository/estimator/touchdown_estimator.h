@@ -28,7 +28,7 @@ public:
   virtual bool eval();
 
 public:
-  TouchdownEstimator(const MiiString& _l = Label::null);
+  TouchdownEstimator(const std::string& _l = Label::null);
   /**
    * @brief This method is proposed as a compromise for auto-instanceor.
    *        The all of the initialization will be completed in this method.

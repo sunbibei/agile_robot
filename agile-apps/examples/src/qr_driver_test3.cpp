@@ -25,7 +25,7 @@ bool QrDriverTestController3::init(hardware_interface::PositionJointInterface*, 
 
   auto jnt_manager = middleware::JointManager::instance();
   for (const auto& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR})
-    for (const auto& jnt : {JntType::KNEE, JntType::HIP, JntType::YAW})
+    for (const auto& jnt : {JntType::KFE, JntType::HFE, JntType::HAA})
       joint_handles_.push_back(jnt_manager->getJointHandle(leg, jnt));
 
 
@@ -69,7 +69,7 @@ void QrDriverTestController3::__initAllofData() {
   auto jnt_manager = middleware::JointManager::instance();
   for (const auto& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
     td_datas_.push_back(td_handles_[leg]->force_data_const_pointer());
-    for (const auto& jnt : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+    for (const auto& jnt : {JntType::KFE, JntType::HFE, JntType::HAA}) {
       auto j = jnt_manager->getJointHandle(leg, jnt);
       jnt_poss_.push_back(j->joint_position_const_pointer());
       jnt_vels_.push_back(j->joint_velocity_const_pointer());
@@ -97,7 +97,7 @@ void QrDriverTestController3::update(const ros::Time&, const ros::Duration&) {
 
   std::cout << "JointStates: \n";
   for (const auto& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
-    for (const auto& jnt : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+    for (const auto& jnt : {JntType::KFE, JntType::HFE, JntType::HAA}) {
       int idx = leg*JntType::N_JNTS+jnt;
       printf("[%d] - (%d): %+04f, %+04f, %+04f\n", leg, jnt,
           *(jnt_poss_[idx]), *(jnt_vels_[idx]), *(jnt_tors_[idx]));

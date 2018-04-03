@@ -29,8 +29,8 @@ public:
    *        the incoming data through the follow @readPackets methods and sends
    *        the outgoing data through the @writePackets methods.
    */
-  bool readPackets (MiiVector<Packet>&);
-  bool writePackets(const MiiVector<Packet>&);
+  bool readPackets (std::vector<Packet>&);
+  bool writePackets(const std::vector<Packet>&);
 
 protected:
   /**
@@ -43,15 +43,15 @@ protected:
   void updateWrite();
 
 protected:
-  MiiVector<Propagate*>       propa_list_by_bus_;
+  std::vector<Propagate*>       propa_list_by_bus_;
   // The interval time between twice RW.(in ms)
   std::chrono::milliseconds  propa_interval_;
   bool                       thread_alive_;
   // size_t                     pkts_queue_size;
   std::mutex          lock_4_send_;
   std::mutex          lock_4_recv_;
-  MiiVector<Packet>   pkts_queue_4_send_;
-  MiiVector<Packet>   pkts_queue_4_recv_;
+  std::vector<Packet>   pkts_queue_4_send_;
+  std::vector<Packet>   pkts_queue_4_recv_;
 };
 
 } /* namespace middleware */

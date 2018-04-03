@@ -9,7 +9,7 @@
 
 namespace middleware {
 
-LegPid::LegPid(const MiiString& prefix) {
+LegPid::LegPid(const std::string& prefix) {
   // TODO Auto-generated constructor stub
 
 }

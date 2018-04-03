@@ -42,24 +42,24 @@ public:
    * @param __args     The variadic templates offer the list of arguments.
    */
   template<typename _Func, typename... _BoundArgs>
-  void add(const MiiString& __n, _Func&& __f, _BoundArgs&&... __args);
+  void add(const std::string& __n, _Func&& __f, _BoundArgs&&... __args);
 
   bool init();
 
   bool start();
-  bool start(const MiiString& __n);
+  bool start(const std::string& __n);
   void stop();
-  void stop(const MiiString& __n);
+  void stop(const std::string& __n);
 
-  bool is_running(const MiiString& __n);
+  bool is_running(const std::string& __n);
 
 protected:
   void __internal_thread_task(class __PrivateThreadVar*);
-  void __register_thread_task(const MiiString&, std::function<void()>&);
+  void __register_thread_task(const std::string&, std::function<void()>&);
   /**
    * The list of thread function and variate.
    */
-  MiiMap<MiiString, class __PrivateThreadVar*>  thread_vars_;
+  std::map<std::string, class __PrivateThreadVar*>  thread_vars_;
 };
 
 
@@ -69,7 +69,7 @@ protected:
 ////////////        The implementation of template methods         ////////////
 ///////////////////////////////////////////////////////////////////////////////
 template<typename _Func, typename... _BoundArgs>
-void ThreadPool::add(const MiiString& __n, _Func&& __f, _BoundArgs&&... __args) {
+void ThreadPool::add(const std::string& __n, _Func&& __f, _BoundArgs&&... __args) {
   std::function<void()> f = std::bind(__f, __args...);
   __register_thread_task(__n, f);
 }

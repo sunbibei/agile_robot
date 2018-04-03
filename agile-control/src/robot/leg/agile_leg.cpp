@@ -19,7 +19,7 @@ namespace agile_control {
 class QrLegTopology
 {
 public:
-  QrLegTopology(const MiiString& _prefix) {
+  QrLegTopology(const std::string& _prefix) {
     auto cfg = MiiCfgReader::instance();
     cfg->get_value_fatal(_prefix, "base",  BASE_LEN);
     cfg->get_value_fatal(_prefix, "thigh", THIGH_LEN);
@@ -68,9 +68,9 @@ void AgileLeg::followJntTrajectory(JntType jnt, const Traj1dSp& _traj)  {
   // Just for debug
   for (int i = 0; i < 10; ++i) {
     std::cout << i
-     << ": " << _jnt_poss(JntType::HIP)
-     << ", " << _jnt_poss(JntType::HIP)
-     << ", " << _jnt_poss(JntType::KNEE) << std::endl;
+     << ": " << _jnt_poss(JntType::HFE)
+     << ", " << _jnt_poss(JntType::HFE)
+     << ", " << _jnt_poss(JntType::KFE) << std::endl;
 
     std::this_thread::sleep_for(std::chrono::seconds(4));
   }
@@ -244,20 +244,20 @@ void AgileLeg::ik(const Eigen::Vector3d& xyz, Eigen::VectorXd& jnts) {
     jnts.resize(JntType::N_JNTS);
 
   double Delte = -xyz.x();
-  jnts(JntType::YAW) = atan(-xyz.y() / xyz.z());
+  jnts(JntType::HAA) = atan(-xyz.y() / xyz.z());
 
-  double Epsilon = topology_->L0() + xyz.z() * cos(jnts(JntType::YAW))
-      - xyz.y() * sin(jnts(JntType::YAW));
+  double Epsilon = topology_->L0() + xyz.z() * cos(jnts(JntType::HAA))
+      - xyz.y() * sin(jnts(JntType::HAA));
 
-  jnts(JntType::KNEE) = topology_->SIGN() * acos((pow(Delte,2) + pow(Epsilon,2)
+  jnts(JntType::KFE) = topology_->SIGN() * acos((pow(Delte,2) + pow(Epsilon,2)
       - pow(topology_->L1(),2) - pow(topology_->L2(),2)) / 2.0 / topology_->L1() / topology_->L2());
 
-  double Phi = Delte + topology_->L2() * sin(jnts(JntType::KNEE));
+  double Phi = Delte + topology_->L2() * sin(jnts(JntType::KFE));
   if(Phi == 0)
     Phi = Phi + 0.000001;
 
-  jnts(JntType::HIP) = 2 * atan((Epsilon + sqrt(pow(Epsilon,2)
-      - Phi * (topology_->L2() * sin(jnts(JntType::KNEE)) - Delte))) / Phi);
+  jnts(JntType::HFE) = 2 * atan((Epsilon + sqrt(pow(Epsilon,2)
+      - Phi * (topology_->L2() * sin(jnts(JntType::KFE)) - Delte))) / Phi);
 }
 
 //void QrLeg::ik(const Eigen::Vector3d&, const Eigen::Quaterniond&, EVX& angle) {

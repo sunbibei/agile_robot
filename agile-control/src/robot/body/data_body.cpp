@@ -19,9 +19,9 @@ struct _ImuSensor {
   const Eigen::VectorXd* quat_;
   const Eigen::MatrixXd* quat_cov_;
 
-  _ImuSensor(const MiiString& tag) {
+  _ImuSensor(const std::string& tag) {
     auto cfg = MiiCfgReader::instance();
-    MiiVector<MiiString> strs;
+    std::vector<std::string> strs;
     cfg->get_value_fatal(tag, "quaternion", strs);
     quat_     = GET_RESOURCE(strs[0], const Eigen::VectorXd*);
     quat_cov_ = GET_RESOURCE(strs[1], const Eigen::MatrixXd*);
@@ -41,7 +41,7 @@ struct _BodyTopology {
   double height;
   double width;
 
-  _BodyTopology(const MiiString& tag) {
+  _BodyTopology(const std::string& tag) {
     auto cfg = MiiCfgReader::instance();
     cfg->get_value_fatal(tag, "length", length);
     cfg->get_value_fatal(tag, "height", height);
@@ -49,7 +49,7 @@ struct _BodyTopology {
   }
 };
 
-DataBody::DataBody(const MiiString& _l)
+DataBody::DataBody(const std::string& _l)
   : Label(_l), imu_sensor_(nullptr),
     body_size_(nullptr) {
   ;

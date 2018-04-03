@@ -18,7 +18,7 @@ struct ForceState {
   double data;
 };
 
-ForceSensor::ForceSensor(const MiiString& l)
+ForceSensor::ForceSensor(const std::string& l)
   : Label(l),leg_type_(LegType::UNKNOWN_LEG),
     td_state_(new ForceState),
     scale_(0), offset_(0) {

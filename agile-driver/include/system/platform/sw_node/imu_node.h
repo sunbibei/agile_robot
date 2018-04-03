@@ -14,7 +14,7 @@ namespace middleware {
 
 class ImuNode: public SWNode {
 public:
-  ImuNode(const MiiString& __l = Label::null);
+  ImuNode(const std::string& __l = Label::null);
   virtual bool auto_init() override;
 
   virtual ~ImuNode();

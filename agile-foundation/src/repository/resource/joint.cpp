@@ -51,7 +51,7 @@ struct JointCommand {
   }
 };
 
-Joint::Joint(const MiiString& l)
+Joint::Joint(const std::string& l)
   : Label(l), new_command_(false), jnt_type_(JntType::UNKNOWN_JNT),
     leg_type_(LegType::UNKNOWN_LEG), jnt_name_(""), joint_motor_(nullptr),/*msg_id_(INVALID_BYTE),*/
     joint_state_(nullptr), joint_command_(nullptr) {
@@ -80,7 +80,7 @@ bool Joint::auto_init() {
   joint_state_   = new JointState();
 
   double pos_min, pos_max;
-  MiiVector<double> limits;
+  std::vector<double> limits;
   cfg->get_value_fatal(getLabel(), "limits", limits);
   if (limits.size() < 2) {
     LOG_WARNING << "The attribute of " << getLabel() << " is wrong!"
@@ -95,7 +95,7 @@ bool Joint::auto_init() {
   return true;
 }
 
-const MiiString& Joint::joint_name() const { return jnt_name_; }
+const std::string& Joint::joint_name() const { return jnt_name_; }
 const JntType&   Joint::joint_type() const { return jnt_type_; }
 const LegType&   Joint::leg_type() const { return leg_type_; }
 

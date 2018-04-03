@@ -17,16 +17,16 @@ namespace middleware {
 #define DATA_SERVICE_THREAD "data-service"
 
 struct DataSources {
-  MiiVector<const double*> jnt_pos;
-  MiiVector<const double*> jnt_vel;
-  MiiVector<const double*> jnt_tor;
-  MiiVector<const double*> jnt_cmd;
-  MiiVector<const double*> leg_td;
+  std::vector<const double*> jnt_pos;
+  std::vector<const double*> jnt_vel;
+  std::vector<const double*> jnt_tor;
+  std::vector<const double*> jnt_cmd;
+  std::vector<const double*> leg_td;
 };
 
 const size_t DS_BUF_SIZE = 128;
 
-DataService::DataService(const MiiString& _l)
+DataService::DataService(const std::string& _l)
   : Label(_l), enable_(false), path_("."),
     ofn_(""), buffer_(nullptr),
     tick_alive_(false), tick_duration_(20),
@@ -34,13 +34,13 @@ DataService::DataService(const MiiString& _l)
   ;
 }
 
-MiiString __cvtJnt2Str(JntType t) {
+std::string __cvtJnt2Str(JntType t) {
   switch (t) {
-  case JntType::YAW:
+  case JntType::HAA:
     return "YAW";
-  case JntType::HIP:
+  case JntType::HFE:
     return "HIP";
-  case JntType::KNEE:
+  case JntType::KFE:
     return "KNEE";
   case JntType::N_JNTS:
     return "N_JNTS";
@@ -49,7 +49,7 @@ MiiString __cvtJnt2Str(JntType t) {
   }
 }
 
-MiiString __cvtLeg2Str(LegType t) {
+std::string __cvtLeg2Str(LegType t) {
   switch (t) {
   case LegType::FL:
     return "FL";
@@ -97,10 +97,10 @@ bool DataService::auto_init() {
 
   sources_ = new DataSources;
 
-  MiiString sub_tag = Label::make_label(getLabel(), "source");
-  MiiVector<MiiString> str;
+  std::string sub_tag = Label::make_label(getLabel(), "source");
+  std::vector<std::string> str;
   cfg->get_value(sub_tag, "joint_states", str);
-  MiiVector<LegType> legs;
+  std::vector<LegType> legs;
   cfg->get_value(sub_tag, "legs", legs);
   bool is_cmd = false;
   cfg->get_value(sub_tag, "joint_commands", is_cmd);
@@ -118,7 +118,7 @@ bool DataService::auto_init() {
   for (size_t i = 0; i < str.size(); ++i) {
     const auto& t = str[i];
     for (const auto& l : legs) {
-      for (const auto& j : {JntType::YAW, JntType::HIP, JntType::KNEE}) {
+      for (const auto& j : {JntType::HAA, JntType::HFE, JntType::KFE}) {
         auto jnt = _jnts->getJointHandle(l, j);
 
         if (0 == t.compare("position")) {

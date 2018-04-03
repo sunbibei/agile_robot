@@ -63,6 +63,10 @@ protected:
 /*!
  * These are the convenient helper methods for information display.
  */
+///! the helpers
+void __print_color_helper(LegType);
+///! the helpers
+void __print_color_helper(LegType, const Eigen::VectorXd&);
 ///! print joint position of the single leg
 void print_jnt_pos(LegType);
 ///! print the v.s. result and different between joint position of the single leg

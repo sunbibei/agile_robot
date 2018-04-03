@@ -37,7 +37,7 @@ struct __PrivateLinearParams {
   double offset;
 };
 
-LegNode::LegNode(const MiiString& __l)
+LegNode::LegNode(const std::string& __l)
   : SWNode(__l), leg_(LegType::UNKNOWN_LEG), td_(nullptr),
     jnt_mode_(JointManager::instance()->getJointCommandMode()) {
   for (auto& c : jnt_cmds_)
@@ -64,8 +64,8 @@ bool LegNode::auto_init() {
   jnts_by_type_.resize(JntType::N_JNTS);
   motors_by_type_.resize(JntType::N_JNTS);
   jnt_params_.resize(JntType::N_JNTS);
-  MiiString tag = Label::make_label(getLabel(), "joint_0");
-  MiiString tmp_str;
+  std::string tag = Label::make_label(getLabel(), "joint_0");
+  std::string tmp_str;
   while(cfg->get_value(tag, "label", tmp_str)) {
     Joint* jnt = Label::getHardwareByName<Joint>(tmp_str);
     // LOG_DEBUG << getLabel() << "'s joint_" << count
@@ -170,7 +170,7 @@ void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
   short count = 0;
   double pos  = 0.0;
   short counts[JntType::N_JNTS] = {0};
-  for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     memcpy(&count, __p + offset, sizeof(count));
     counts[type] = count;
     // angle = \frac{360 \pi \alpha}{180*4096} C - \frac{\pi}{18000}\alpha*\beta
@@ -185,17 +185,17 @@ void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
   if (false && LegType::FL == leg_)
 #ifdef  SAVE_MSG_TO_FILE
     fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg_),
-        counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+        counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 #else
     printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg_),
-        counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+        counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 #endif
   // if (LegType::HL == leg_) printf("%d: 0x%02X, 0x%02X", leg_, __p[offset], __p[offset + 1]);
   td_->updateForceCount((__p[offset] | (__p[offset + 1] << 8)));
 }
 
 void LegNode::__parse_motor_cmd_1(const unsigned char* __p) {
-  for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     // memcpy(&count, __p + offset, sizeof(count));
     motors_by_type_[type]->updateMotorPosition((__p[0] | (__p[1] << 8)));
     __p += sizeof(short); // each count will stand two bytes.
@@ -203,14 +203,14 @@ void LegNode::__parse_motor_cmd_1(const unsigned char* __p) {
 }
 
 void LegNode::__parse_motor_cmd_2(const unsigned char* __p) {
-  for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     // memcpy(&count, __p + offset, sizeof(count));
     motors_by_type_[type]->updateMotorVelocity((__p[0] | (__p[1] << 8)));
     __p += sizeof(short); // each count will stand two bytes.
   }
 }
 
-bool LegNode::generateCmd(MiiVector<Packet>& pkts) {
+bool LegNode::generateCmd(std::vector<Packet>& pkts) {
 
   bool is_any_valid = false;
   switch (jnt_mode_) {
@@ -237,7 +237,7 @@ bool LegNode::generateCmd(MiiVector<Packet>& pkts) {
 }
 
 
-bool LegNode::__fill_pos_cmd(MiiVector<Packet>& pkts) {
+bool LegNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
 //  double cmds[JntType::N_JNTS]  = {0};
 //  short counts[JntType::N_JNTS] = {0};
 
@@ -245,7 +245,7 @@ bool LegNode::__fill_pos_cmd(MiiVector<Packet>& pkts) {
   short count = 0;
   bool is_any_valid = false;
   Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_DATA_1, JNT_P_CMD_DSIZE, {0}};
-  for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     if (jnts_by_type_[type]->new_command_) {
       is_any_valid = true;
 //      if ((LegType::FL == leg_)/* && (JntType::HIP == type)*/)
@@ -276,24 +276,24 @@ bool LegNode::__fill_pos_cmd(MiiVector<Packet>& pkts) {
   return is_any_valid;
 }
 
-bool LegNode::__fill_vel_cmd(MiiVector<Packet>& pkts) {
+bool LegNode::__fill_vel_cmd(std::vector<Packet>& pkts) {
   // cmd = {INVALID_BYTE, node_id_, MII_MSG_MOTOR_CMD_1, JNT_P_CMD_DSIZE, {0}};
   LOG_ERROR << "No implement velocity command!";
   return false;
 }
 
-bool LegNode::__fill_tor_cmd(MiiVector<Packet>&) {
+bool LegNode::__fill_tor_cmd(std::vector<Packet>&) {
   LOG_ERROR << "No implement torque command!";
   return false;
 }
 
-bool LegNode::__fill_pos_vel_cmd(MiiVector<Packet>& pkts) {
+bool LegNode::__fill_pos_vel_cmd(std::vector<Packet>& pkts) {
   int offset  = 0;
   short count = 0;
   bool is_any_valid = false;
   Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_DATA_4, JNT_PV0_CMD_DSIZE, {0}};
 
-  for (const auto& type : {JntType::KNEE, JntType::HIP}) {
+  for (const auto& type : {JntType::KFE, JntType::HFE}) {
     if (jnts_by_type_[type]->new_command_) {
       is_any_valid = true;
       // printf("[%d] - (%d): %+01.04f %+01.04f\n", leg_, type, jnt_cmds_[type][0], jnt_cmds_[type][1]);
@@ -313,30 +313,30 @@ bool LegNode::__fill_pos_vel_cmd(MiiVector<Packet>& pkts) {
     offset += 2*sizeof(count); // Each count stand 2*two bytes.
   }
   if (is_any_valid) pkts.push_back(cmd);
-  if (!jnts_by_type_[JntType::YAW]->new_command_) return is_any_valid;
+  if (!jnts_by_type_[JntType::HAA]->new_command_) return is_any_valid;
 
   is_any_valid = true;
   cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_DATA_5, JNT_PV1_CMD_DSIZE, {0}};
   // printf("[%d] - (%d): %+01.04f %+01.04f\n", leg_, JntType::YAW, jnt_cmds_[JntType::YAW][0], jnt_cmds_[JntType::YAW][1]);
-  count = (jnt_cmds_[JntType::YAW][0] - jnt_params_[JntType::YAW]->offset)
-      / jnt_params_[JntType::YAW]->scale;
+  count = (jnt_cmds_[JntType::HAA][0] - jnt_params_[JntType::HAA]->offset)
+      / jnt_params_[JntType::HAA]->scale;
   memcpy(cmd.data, &count, sizeof(count));
   // printf("[%d] - (%d): %04d ", leg_, JntType::YAW, count);
 
-  count = (jnt_cmds_[JntType::YAW][1] - jnt_params_[JntType::YAW]->offset)
-      / jnt_params_[JntType::YAW]->scale;
+  count = (jnt_cmds_[JntType::HAA][1] - jnt_params_[JntType::HAA]->offset)
+      / jnt_params_[JntType::HAA]->scale;
   memcpy(cmd.data + sizeof(count), &count, sizeof(count));
-  jnts_by_type_[JntType::YAW]->new_command_ = false;
+  jnts_by_type_[JntType::HAA]->new_command_ = false;
   // printf("%d\n", count);
   pkts.push_back(cmd);
   return is_any_valid;
 }
 
-bool LegNode::__fill_motor_vel_cmd(MiiVector<Packet>& pkts) {
+bool LegNode::__fill_motor_vel_cmd(std::vector<Packet>& pkts) {
   int offset  = 0;
   bool is_any_valid = false;
   Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_MOTOR_CMD_2, JNT_P_CMD_DSIZE, {0}};
-  for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     if (motors_by_type_[type]->new_command_) {
       is_any_valid = true;
       // printf("Motor velocity: %04d ", *motor_cmds_[type]);

@@ -12,7 +12,7 @@
 
 namespace middleware {
 
-ImuNode::ImuNode(const MiiString& __l)
+ImuNode::ImuNode(const std::string& __l)
 : SWNode(__l), imu_sensor_(nullptr) {
 
 }
@@ -21,7 +21,7 @@ bool ImuNode::auto_init() {
   if (!SWNode::auto_init())     return false;
   auto cfg = MiiCfgReader::instance();
 
-  MiiString tmp_str;
+  std::string tmp_str;
   cfg->get_value_fatal(getLabel(), "label", tmp_str);
   imu_sensor_ = Label::getHardwareByName<ImuSensor>(tmp_str);
 

@@ -20,8 +20,8 @@ const unsigned int __RESERVE_SIZE = 16;
 template<class _Resource>
 class ResourceManager {
 public:
-  typedef typename MiiVector<_Resource*>::iterator  iterator;
-  typedef typename MiiVector<_Resource*>::reference reference;
+  typedef typename std::vector<_Resource*>::iterator  iterator;
+  typedef typename std::vector<_Resource*>::reference reference;
   /**
    * @brief Return the number of the registered resource.
    */
@@ -46,13 +46,13 @@ public:
   }
 
 protected:
-  ResourceManager() : res_list_(MiiVector<_Resource*>()) {
+  ResourceManager() : res_list_(std::vector<_Resource*>()) {
     res_list_.reserve(__RESERVE_SIZE);
   };
   virtual ~ResourceManager() { }
 
   // store all of the resource
-  MiiVector<_Resource*> res_list_;
+  std::vector<_Resource*> res_list_;
 };
 
 } /* namespace internal */

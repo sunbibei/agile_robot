@@ -27,7 +27,7 @@ RosRobotHW::~RosRobotHW() {
   }
 }
 
-RosRobotHW::RosRobotHW(ros::NodeHandle& nh, const MiiString& __tag)
+RosRobotHW::RosRobotHW(ros::NodeHandle& nh, const std::string& __tag)
   : nh_(nh), tag_(__tag), jnt_manager_(nullptr) {
   jnt_manager_ = JointManager::instance();
   // robot->getJointNames(joint_names_);
@@ -51,7 +51,7 @@ void RosRobotHW::initJointInterface() {
         << "did you load the proper yaml file?";
   }
 
-  MiiString jnt_name;
+  std::string jnt_name;
   const double *_pos, *_vel, *_tor;
   double* _cmd = nullptr;
   // Initialize controller
@@ -102,8 +102,8 @@ void RosRobotHW::initJointInterface() {
 void RosRobotHW::initForceSensorInterface() {
   auto cfg = MiiCfgReader::instance();
   int count = 0;
-  MiiString str = "";
-  MiiString tag = Label::make_label(tag_, "touchdown_0");
+  std::string str = "";
+  std::string tag = Label::make_label(tag_, "touchdown_0");
 
   while(cfg->get_value(tag, "label", str)) {
     ForceSensor* td = Label::getHardwareByName<ForceSensor>(str);
@@ -115,7 +115,7 @@ void RosRobotHW::initForceSensorInterface() {
       tag = Label::make_label(tag_, "touchdown_" + std::to_string(++count));
       continue;
     }
-    MiiString frame_id, name;
+    std::string frame_id, name;
     cfg->get_value_fatal(tag, "name", name);
     cfg->get_value_fatal(tag, "frame_id", frame_id);
     td_state_iface_.registerHandle(
@@ -130,10 +130,10 @@ void RosRobotHW::initForceSensorInterface() {
 
 void RosRobotHW::initImuSensorInterface() {
   auto cfg = MiiCfgReader::instance();
-  MiiString tag = Label::make_label(tag_, "imu");
+  std::string tag = Label::make_label(tag_, "imu");
   hardware_interface::ImuSensorHandle::Data data;
 
-  MiiString label;
+  std::string label;
   cfg->get_value_fatal(tag, "label",    label);
   cfg->get_value_fatal(tag, "name",     data.name);
   cfg->get_value_fatal(tag, "frame_id", data.frame_id);

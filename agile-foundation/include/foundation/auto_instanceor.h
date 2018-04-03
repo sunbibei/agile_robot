@@ -18,7 +18,7 @@
 // namespace middleware {
 
 class AutoInstanceor {
-  SINGLETON_DECLARE(AutoInstanceor, const MiiString&)
+  SINGLETON_DECLARE(AutoInstanceor, const std::string&)
 
 public:
   /*template<class _Base>
@@ -29,11 +29,11 @@ public:
    * @param __p    The tag which contains the type
    * @param __type The type of object to create
    */
-  bool make_instance(const MiiString& __p, const MiiString& __type);
+  bool make_instance(const std::string& __p, const std::string& __type);
   /*!
    * @brief Add a library into the AutoInstanceor.
    */
-  bool add_library(const MiiString& _l);
+  bool add_library(const std::string& _l);
 
   // Just for debug.
   void printAvailableClass();
@@ -43,7 +43,7 @@ protected:
   class_loader::ClassLoader** class_loader_;
   size_t                      n_library_;
   size_t                      N_loader_;
-  MiiMap<MiiString, int>      type_map_;
+  std::map<std::string, int>    type_map_;
 };
 
 //} /* namespace middleware */

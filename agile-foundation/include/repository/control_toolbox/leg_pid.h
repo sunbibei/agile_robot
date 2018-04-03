@@ -14,7 +14,7 @@ namespace middleware {
 
 class LegPid {
 public:
-  LegPid(const MiiString& prefix);
+  LegPid(const std::string& prefix);
   virtual ~LegPid();
 };
 

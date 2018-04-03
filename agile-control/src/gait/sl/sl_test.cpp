@@ -14,9 +14,24 @@
 #include "toolbox/time_control.h"
 #include "foundation/cfg_reader.h"
 
+#include <vector>
 #include <thread>
 
 namespace agile_control {
+
+struct WSParam {
+  ///! The foot step
+  std::vector<double>   floors;
+  ///! The height value when the robot stay stance.
+  std::vector<double>   ceilings;
+
+  WSParam(const std::string& _tag) {
+    auto cfg = MiiCfgReader::instance();
+    cfg->get_value(_tag, "floors",   floors);
+    cfg->get_value(_tag, "ceilings", ceilings);
+  }
+};
+
 
 struct LTParam {
     ///! The foot step
@@ -112,8 +127,8 @@ bool SlTest::auto_init() {
         LOG_FATAL << "The interface of RobotLeg " << LEGTYPE_TOSTRING(leg_type_) << " is null!";
   LOG_INFO << "get interface(LegType::" << LEGTYPE_TOSTRING(leg_type_) << "): " << leg_iface_;
 
-  MiiString _tag = Label::make_label(getLabel(), "trajectory");
-  params_ = new LTParam(_tag);
+  params_    = new LTParam(Label::make_label(getLabel(), "trajectory"));
+  ws_params_ = new WSParam(Label::make_label(getLabel(), "workspace"));
 
   init_foothold_ << -params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
   targ_foothold_ <<  params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
@@ -128,6 +143,7 @@ bool SlTest::starting() {
   auto _sm       = (StateMachine<LTestState>*)state_machine_;
   _sm->registerStateCallback(LTestState::LT_INIT_POSE, &SlTest::pose_init, this);
   _sm->registerStateCallback(LTestState::LT_SWING,     &SlTest::swing_leg, this);
+  _sm->registerStateCallback(LTestState::LT_WS_CALC,   &SlTest::ws_calc,   this);
   _sm->registerStateCallback(LTestState::LT_PROD_TRAJ, &SlTest::prod_traj, this);
 
   // current_state_ = LTestState::LT_INIT_POSE;
@@ -234,8 +250,8 @@ void SlTest::swing_leg() {
   leg_cmd_eef_ = eef_traj_->sample(t);
   leg_iface_->ik(leg_cmd_eef_, leg_cmd_->target);
   ///! Output the trajectory.
-  printf("%04ld - %+6.3f %+6.3f %+6.3f\n", span, leg_cmd_->target(JntType::YAW),
-      leg_cmd_->target(JntType::HIP), leg_cmd_->target(JntType::KNEE));
+  printf("%04ld - %+6.3f %+6.3f %+6.3f\n", span, leg_cmd_->target(JntType::HAA),
+      leg_cmd_->target(JntType::HFE), leg_cmd_->target(JntType::KFE));
 }
 
 bool SlTest::end_swing_leg() {
@@ -250,6 +266,10 @@ bool SlTest::end_swing_leg() {
        || (swing_timer_->span() > 2000*eef_traj_->ceiling()));
 }
 
+void SlTest::ws_calc() {
+  ;
+}
+
 void SlTest::prod_traj() {
   prog_eef_traj_poly(targ_foothold_, eef_traj_);
 
@@ -259,10 +279,10 @@ void SlTest::prod_traj() {
   for (double t = 0.00; t < 1.01; t += 0.01) {
     fpt = eef_traj_->sample(t);
     leg_iface_->ik(fpt, jnts);
-    print_jnt_pos(LegType::FL, jnts);
-//    printf("%4.2f - %6.4f %6.4f %6.4f\n", t,
-//        jnts(JntType::HIP), jnts(JntType::KNEE), jnts(JntType::YAW));
-    // LOG_INFO << t << ": " << jnts.transpose();
+
+    printf("%4.2f - ", t);
+    __print_color_helper(LegType::FL, jnts);
+    printf("\n");
   }
   PRESS_THEN_GO
 }

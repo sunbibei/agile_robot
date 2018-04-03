@@ -17,7 +17,7 @@ namespace middleware {
 class Propagate : public Label {
   friend class PropagateManager;
 public:
-  Propagate(const MiiString&);
+  Propagate(const std::string&);
   // 妥协方案
   virtual bool auto_init() override;
 
@@ -50,7 +50,7 @@ public:
 
 protected:
   unsigned char bus_id_;
-  MiiString     propa_name_;
+  std::string     propa_name_;
 };
 
 } /* namespace middleware */

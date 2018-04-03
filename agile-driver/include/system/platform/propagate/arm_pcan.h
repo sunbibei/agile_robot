@@ -14,7 +14,7 @@ namespace middleware {
 
 class ArmPcan: public PcanPropagate {
 public:
-  ArmPcan(const MiiString& l = "arm_pcan");
+  ArmPcan(const std::string& l = "arm_pcan");
 
   virtual ~ArmPcan();
 

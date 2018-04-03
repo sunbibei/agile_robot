@@ -25,7 +25,7 @@ bool DataLeg::auto_init() {
   auto cfg    = MiiCfgReader::instance();
   cfg->get_value_fatal(getLabel(), "leg", leg_type_);
 
-  MiiString tmp_str;
+  std::string tmp_str;
   cfg->get_value_fatal(getLabel(), "mode", tmp_str);
   jnt_mode_ = (JntCmdType*)GET_COMMAND_NO_FLAG(tmp_str, int*);
 

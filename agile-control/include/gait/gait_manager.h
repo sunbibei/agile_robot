@@ -33,7 +33,7 @@ public:
    * Change the active gait.
    * The string of 'null' means stop the running gait.
    */
-  void activate(const MiiString& gait_name);
+  void activate(const std::string& gait_name);
 
   // virtual void add(GaitBase*) override;
 
@@ -43,9 +43,9 @@ public:
 protected:
   GaitBase*                     running_gait_;
   GaitBase*                     actived_gait_;
-  MiiMap<MiiString, GaitBase*>  gait_list_by_name_;
+  std::map<std::string, GaitBase*>  gait_list_by_name_;
 
-  MiiString                     prefix_tag_;
+  std::string                     prefix_tag_;
 };
 
 } /* namespace qr_control */

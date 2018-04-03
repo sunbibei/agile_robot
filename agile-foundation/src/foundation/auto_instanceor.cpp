@@ -10,16 +10,16 @@
 // Cancel the namespace middleware
 // namespace middleware {
 
-// std::map<MiiString, Label::LabelPtr> AutoInstanceor::s_inst_table_;
+// std::map<std::string, Label::LabelPtr> AutoInstanceor::s_inst_table_;
 SINGLETON_IMPL_NO_CREATE(AutoInstanceor)
 
-void __updateTypeMap(class_loader::ClassLoader* _new_loader, int idx, MiiMap<MiiString, int>& _type_map) {
+void __updateTypeMap(class_loader::ClassLoader* _new_loader, int idx, std::map<std::string, int>& _type_map) {
   auto new_class_list = _new_loader->getAvailableClasses<Label>();
   for (const auto& c : new_class_list)
     _type_map[c] = idx;
 }
 
-AutoInstanceor* AutoInstanceor::create_instance(const MiiString& lib) {
+AutoInstanceor* AutoInstanceor::create_instance(const std::string& lib) {
   if (nullptr != instance_) {
     LOG_WARNING << "Create the AutoInstanceor instance twice!";
     // std::cout << "Create the AutoInstanceor instance twice!" << std::endl;
@@ -28,7 +28,7 @@ AutoInstanceor* AutoInstanceor::create_instance(const MiiString& lib) {
   return instance_;
 }
 
-AutoInstanceor::AutoInstanceor(const MiiString& lib_path)
+AutoInstanceor::AutoInstanceor(const std::string& lib_path)
   : class_loader_(nullptr), n_library_(0), N_loader_(4) {
   // class_loader_ = new class_loader::MultiLibraryClassLoader(true);
   // class_loader_->loadLibrary(lib_path);
@@ -41,7 +41,7 @@ AutoInstanceor::AutoInstanceor(const MiiString& lib_path)
   // printAvailableClass();
 }
 
-bool AutoInstanceor::add_library(const MiiString& _l) {
+bool AutoInstanceor::add_library(const std::string& _l) {
   if (n_library_ == N_loader_) {
     N_loader_ *= 2;
     auto tmp = new class_loader::ClassLoader*[N_loader_];
@@ -87,7 +87,7 @@ AutoInstanceor::~AutoInstanceor() {
   }
 }
 
-bool AutoInstanceor::make_instance(const MiiString& __p, const MiiString& __type) {
+bool AutoInstanceor::make_instance(const std::string& __p, const std::string& __type) {
   if (type_map_.end() == type_map_.find(__type)) return false;
 
   int idx = type_map_[__type];

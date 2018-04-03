@@ -21,12 +21,12 @@ namespace agile_control {
 
 SINGLETON_IMPL_NO_CREATE(MiiControl)
 
-void __auto_inst(const MiiString& _p, const MiiString& _type) {
+void __auto_inst(const std::string& _p, const std::string& _type) {
   if (!AutoInstanceor::instance()->make_instance(_p, _type))
     LOG_ERROR << "Create instance(" << _type << " " << _p << ") fail!";
 }
 
-MiiControl* MiiControl::create_instance(const MiiString& prefix) {
+MiiControl* MiiControl::create_instance(const std::string& prefix) {
   if (nullptr != instance_) {
     LOG_WARNING << "This method 'create_instance()' is called twice.";
   } else {
@@ -35,7 +35,7 @@ MiiControl* MiiControl::create_instance(const MiiString& prefix) {
   return instance_;
 }
 
-MiiControl::MiiControl(const MiiString& _prefix)
+MiiControl::MiiControl(const std::string& _prefix)
   : prefix_tag_(_prefix), alive_(true),
     tick_interval_(20) {
 }
@@ -67,7 +67,7 @@ bool MiiControl::init() {
 
   GaitManager::instance()->init();
 
-  MiiString act_gait;
+  std::string act_gait;
    if (cfg->get_value(Label::make_label(prefix_tag_, "gait"), "activate", act_gait))
      activate(act_gait);
 
@@ -75,7 +75,7 @@ bool MiiControl::init() {
   return true;
 }
 
-void MiiControl::activate(const MiiString& _n) {
+void MiiControl::activate(const std::string& _n) {
   GaitManager::instance()->activate(_n);
 }
 

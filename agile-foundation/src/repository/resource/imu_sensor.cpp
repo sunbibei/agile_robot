@@ -25,7 +25,7 @@ struct __PrivateImuData {
   double* linear_acceleration_covariance;
 };
 
-ImuSensor::ImuSensor(const MiiString& l)
+ImuSensor::ImuSensor(const std::string& l)
 : Label(l), imu_data_(new __PrivateImuData) {
 
 }

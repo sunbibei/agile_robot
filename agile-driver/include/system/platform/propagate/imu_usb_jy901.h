@@ -14,7 +14,7 @@ namespace middleware {
 
 class ImuJY901: public UsbPropagate {
 public:
-  ImuJY901(const MiiString& l = "usb_imu");
+  ImuJY901(const std::string& l = "usb_imu");
   virtual ~ImuJY901();
 
 public:

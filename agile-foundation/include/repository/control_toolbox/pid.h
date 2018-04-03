@@ -17,7 +17,7 @@ namespace middleware {
 
 class Pid {
 public:
-  Pid(const MiiString& prefix);
+  Pid(const std::string& prefix);
   virtual ~Pid();
 
 public:
@@ -63,7 +63,7 @@ protected:
 
 protected:
   ///! the name of PID controller
-  MiiString name_;
+  std::string name_;
   /*!
    * The gain of PID controller read from the configure file under the @prefix
    * tag when the constructor been called. The content of configure as follow:

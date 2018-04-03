@@ -65,7 +65,7 @@ struct WalkParam {
   ///! The minimum stability margin could to swing leg.
   double   MARGIN_THRES;
 
-  WalkParam(const MiiString& _tag)
+  WalkParam(const std::string& _tag)
     : THRES_COG(6.5),    FOOT_STEP(10),
       STANCE_HEIGHT(46), SWING_HEIGHT(5),
       FORWARD_ALPHA(0),  STOP_HEIGHT_SCALE(0.3),
@@ -102,7 +102,7 @@ struct TdParam {
   ///! The Kp
   double   TD_KP;
 
-  TdParam(const MiiString& _tag)
+  TdParam(const std::string& _tag)
   : STANCE_DELTA(0.1), STANCE_FLOOR(45), STANCE_CEILING(49),
     TD_KP(0.01) {
     auto cfg = MiiCfgReader::instance();
@@ -112,7 +112,7 @@ struct TdParam {
     cfg->get_value(_tag, "stance_ceiling",   STANCE_CEILING);
     cfg->get_value(_tag, "k_p",              TD_KP);
 
-    MiiVector<double> targets;
+    std::vector<double> targets;
     cfg->get_value_fatal(_tag, "targets", targets);
     if (LegType::N_LEGS != targets.size()) {
       LOG_FATAL << "The size of touchdown parameters is wrong!";
@@ -199,7 +199,7 @@ bool Walk::auto_init() {
   cfg->get_value(getLabel(), "hang",     _s_is_hang);
   cfg->get_value(getLabel(), "interval", post_tick_interval_);
 
-  MiiString _tag = Label::make_label(getLabel(), "coefficient");
+  std::string _tag = Label::make_label(getLabel(), "coefficient");
   wk_params_ = new WalkParam(_tag);
 
   _tag = Label::make_label(getLabel(), "touchdown");
@@ -568,7 +568,7 @@ void Walk::post_tick() {
     for (const auto& l : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
       auto& cmds = leg_cmds_[l]->target;
       leg_ifaces_[l]->ik(leg_cmd_eefs_[l], cmds);
-      for (const auto& j : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+      for (const auto& j : {JntType::KFE, JntType::HFE, JntType::HAA}) {
         cmd_pub_->msg_.data.push_back(cmds(j));
       }
     }

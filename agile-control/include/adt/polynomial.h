@@ -51,7 +51,7 @@ public:
   /*!
    * @brief The constructor from the configure file at special tag _prefix.
    */
-  Polynomial(const MiiString& _prefix);
+  Polynomial(const std::string& _prefix);
   /*!
    * @brief The constructor.
    * @param coeff The list of coefficient.
@@ -61,7 +61,7 @@ public:
    * @brief The constructor.
    * @param coeff The list of coefficient.
    */
-  Polynomial(const MiiVector<_DataType>&);
+  Polynomial(const std::vector<_DataType>&);
   /*!
    * @brief The copy constructor.
    * @param coeff The list of coefficient.
@@ -80,7 +80,7 @@ public:
 public:
   ///! This method will set the coefficients.
   void reset(const CoeffMat&);
-  void reset(const MiiVector<_DataType>&);
+  void reset(const std::vector<_DataType>&);
 public:
   ///! This method will clear the trajectory.
   virtual void clear() override;
@@ -183,7 +183,7 @@ void Polynomial<_DataType, _Dim_X>::reset(const CoeffMat& _new_coeff) {
 }
 
 template<typename _DataType, int _Dim_X>
-void Polynomial<_DataType, _Dim_X>::reset(const MiiVector<_DataType>& _coeff) {
+void Polynomial<_DataType, _Dim_X>::reset(const std::vector<_DataType>& _coeff) {
   assert(0 == (_coeff.size()%_Dim_X));
   dim_exp_ = _coeff.size() / _Dim_X;
   coeffs_.resize(_Dim_X, dim_exp_);

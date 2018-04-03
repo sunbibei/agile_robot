@@ -14,11 +14,11 @@
 namespace middleware {
 
 struct __PrivateThreadVar {
-  MiiString    thread_name_;
+  std::string    thread_name_;
   bool         thread_alive_;
   std::thread* thread_handle_;
   std::function<void()> thread_func_;
-  __PrivateThreadVar(const MiiString& _n, std::function<void()>& _f)
+  __PrivateThreadVar(const std::string& _n, std::function<void()>& _f)
   : thread_name_(_n),        thread_alive_(false),
     thread_handle_(nullptr), thread_func_(_f) { }
 };
@@ -32,7 +32,7 @@ ThreadPool::~ThreadPool() {
   stop();
 }
 
-void ThreadPool::__register_thread_task(const MiiString& __n, std::function<void()>& __f) {
+void ThreadPool::__register_thread_task(const std::string& __n, std::function<void()>& __f) {
   if (thread_vars_.end() != thread_vars_.find(__n))
     LOG_WARNING << "The named thread(" << __n << ") task function "
       << "has inserted into the function list. It will be replaced.";
@@ -67,7 +67,7 @@ bool ThreadPool::start() {
   return ret;
 }
 
-bool ThreadPool::start(const MiiString& __n) {
+bool ThreadPool::start(const std::string& __n) {
   // LOG_DEBUG << "This thread is starting -- " << __n;
   // start the specific named threads
   auto iter = thread_vars_.find(__n);
@@ -100,7 +100,7 @@ void ThreadPool::stop() {
   thread_vars_.clear();
 }
 
-void ThreadPool::stop(const MiiString& __n) {
+void ThreadPool::stop(const std::string& __n) {
   auto var = thread_vars_.find(__n);
   if (thread_vars_.end() == var) {
     LOG_WARNING << "These is not exist the named thread('" << __n
@@ -121,7 +121,7 @@ void ThreadPool::stop(const MiiString& __n) {
   thread_vars_.erase(var);
 }
 
-bool ThreadPool::is_running(const MiiString& __n) {
+bool ThreadPool::is_running(const std::string& __n) {
   return ((thread_vars_.end() != thread_vars_.find(__n))
       && (thread_vars_.find(__n)->second->thread_alive_));
 }

@@ -43,7 +43,7 @@ public:
   ///! This method remove a segmented trajectory
   // void remove(Trajectory<_DataType, _Dim_X>*);
   ///! A especial method for save the trajectory to local file.
-  void save(const MiiString&);
+  void save(const std::string&);
 
 public:
   template<typename _T1, int _T2>
@@ -89,7 +89,7 @@ void Discrete<_DataType, _Dim_X>::clear() {
 }
 
 template<typename _DataType, int _Dim_X>
-void Discrete<_DataType, _Dim_X>::save(const MiiString& _fn) {
+void Discrete<_DataType, _Dim_X>::save(const std::string& _fn) {
   std::ofstream _ofd(_fn);
   if (!_ofd.is_open()) {
     LOG_ERROR << "Open the file " << _fn << "fail!";

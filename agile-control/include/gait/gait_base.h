@@ -44,7 +44,7 @@ public:
 
 protected:
   const _State&            current_state_;
-  MiiMap<_State, CallBack> cb_map_;
+  std::map<_State, CallBack> cb_map_;
 };
 
 
@@ -54,7 +54,7 @@ protected:
 class GaitBase: public Label {
   friend class GaitManager;
 public:
-  GaitBase(const MiiString& _l = "gait-base");
+  GaitBase(const std::string& _l = "gait-base");
   ///! For auto-instance
   virtual bool auto_init() override;
 
@@ -64,7 +64,7 @@ public:
   /*!
    * @brief The name of gait.
    */
-  const MiiString& name() const { return gait_name_;  }
+  const std::string& name() const { return gait_name_;  }
 
   /**
    * @brief The interface that get the current state. This method
@@ -126,7 +126,7 @@ protected:
   // void update();
 
 protected:
-  MiiString           gait_name_;
+  std::string           gait_name_;
   StateMachineBase*   state_machine_;
 };
 

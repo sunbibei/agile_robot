@@ -25,7 +25,7 @@ using namespace middleware;
 class RosRobotHW: public hardware_interface::RobotHW {
 public:
   virtual ~RosRobotHW();
-  RosRobotHW(ros::NodeHandle&, const MiiString&);
+  RosRobotHW(ros::NodeHandle&, const std::string&);
 
   /// \brief Initialize the hardware interface
   virtual void init();
@@ -56,7 +56,7 @@ protected:
   // Startup and shutdown of the internal node inside a roscpp program
   ros::NodeHandle nh_;
   ///! The tag of the configure file
-  MiiString       tag_;
+  std::string       tag_;
   // Joint API
   JointManager* jnt_manager_;
   // Interfaces
@@ -72,13 +72,13 @@ protected:
   bool position_interface_running_;
   bool effort_interface_running_;
 
-  MiiVector<std::string> joint_names_;
+  std::vector<std::string> joint_names_;
   size_t num_joints_;
 
   // Shared memory
-  MiiMap<MiiString, double*> jnt_pos_cmds_;
-  MiiMap<MiiString, double*> jnt_vel_cmds_;
-  MiiMap<MiiString, double*> jnt_tor_cmds_;
+  std::map<std::string, double*> jnt_pos_cmds_;
+  std::map<std::string, double*> jnt_vel_cmds_;
+  std::map<std::string, double*> jnt_tor_cmds_;
 
 };
 

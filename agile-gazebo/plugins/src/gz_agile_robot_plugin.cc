@@ -405,7 +405,7 @@ void GzAgileRobotPlugin::__update_robot_stats() {
     double pos  = 0;
     short count = 0;
     int offset  = 0;
-    for (const auto& jnt : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+    for (const auto& jnt : {JntType::KFE, JntType::HFE, JntType::HAA}) {
       pos   = joints_[leg][jnt]->Position();
       count = (pos - linear_params_[leg][jnt].offset) / linear_params_[leg][jnt].scale;
       //if (true && LegType::FL == leg) count = g_TEST_COUNT[jnt];
@@ -431,7 +431,7 @@ void GzAgileRobotPlugin::__update_robot_stats() {
 #ifdef SAVE_MSG_TO_FILE
     if (false && LegType::FL == leg)
       fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
-          counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+          counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 #else
 //    if (false && LegType::FL == leg)
 //      printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
@@ -440,7 +440,7 @@ void GzAgileRobotPlugin::__update_robot_stats() {
 
     if (true && LegType::FL == leg)
       printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg),
-          poss[JntType::KNEE], poss[JntType::HIP], poss[JntType::YAW]);
+          poss[JntType::KFE], poss[JntType::HFE], poss[JntType::HAA]);
     ///! write the robot state into the message queue.
     write(pkt);
   }
@@ -486,7 +486,7 @@ void GzAgileRobotPlugin::__write_command_to_sim(const Packet& pkt) {
 
   double cmds[JntType::N_JNTS]  = {0};
   short counts[JntType::N_JNTS] = {0};
-  for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     memcpy(&count, pkt.data + offset, sizeof(count));
     cmd = linear_params_[leg][type].scale * count + linear_params_[leg][type].offset;
     cmds[type]   = cmd;
@@ -503,11 +503,11 @@ void GzAgileRobotPlugin::__write_command_to_sim(const Packet& pkt) {
   }
   if (false && LegType::FL == leg)
     printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
-        counts[JntType::KNEE], counts[JntType::HIP], counts[JntType::YAW]);
+        counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 
   if (false && LegType::FL == leg)
     printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg),
-        cmds[JntType::KNEE], cmds[JntType::HIP], cmds[JntType::YAW]);
+        cmds[JntType::KFE], cmds[JntType::HFE], cmds[JntType::HAA]);
 }
 
 inline void __parse_jnt_name(const std::string& _n, LegType& _l, JntType& _j) {
@@ -524,11 +524,11 @@ inline void __parse_jnt_name(const std::string& _n, LegType& _l, JntType& _j) {
     }
 
     if (std::string::npos != _n.find("yaw")) {
-        _j = JntType::YAW;
+        _j = JntType::HAA;
     } else if (std::string::npos != _n.find("hip")) {
-        _j = JntType::HIP;
+        _j = JntType::HFE;
     } else if (std::string::npos != _n.find("knee")) {
-        _j = JntType::KNEE;
+        _j = JntType::KFE;
     } else {
         _j = JntType::UNKNOWN_JNT;
     }

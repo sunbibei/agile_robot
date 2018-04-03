@@ -53,7 +53,7 @@ bool SWNodeManager::init() {
   return true;
 }
 
-void SWNodeManager::handleMsg(const MiiVector<Packet>& pkts) {
+void SWNodeManager::handleMsg(const std::vector<Packet>& pkts) {
   for (const auto& pkt : pkts) {
     if ((hw_list_by_id_.size() <= pkt.node_id)
       || (nullptr == hw_list_by_id_[pkt.node_id])) {
@@ -65,7 +65,7 @@ void SWNodeManager::handleMsg(const MiiVector<Packet>& pkts) {
   }
 }
 
-void SWNodeManager::generateCmd(MiiVector<Packet>& pkts) {
+void SWNodeManager::generateCmd(std::vector<Packet>& pkts) {
   for (auto& node : hw_list_by_cmd_) {
     if (node->generateCmd(pkts))
       ; //LOG_DEBUG << "SW Node: " << node->getLabel() << " generate the command.";

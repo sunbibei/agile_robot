@@ -10,10 +10,10 @@
 
 namespace middleware {
 
-const MiiString FAKE_PID_THREAD = "fake-pid";
+const std::string FAKE_PID_THREAD = "fake-pid";
 
 
-MotorPcan::MotorPcan(const MiiString& l)
+MotorPcan::MotorPcan(const std::string& l)
   : ArmPcan(l), new_command_(false), pid_hijack_(false) {
   pids_.resize(MAX_NODE_NUM);
   for (auto& pid : pids_)
@@ -26,7 +26,7 @@ bool MotorPcan::auto_init() {
 
   int count = 0;
   unsigned char node_id = INVALID_BYTE;
-  MiiString tag = Label::make_label(getLabel(), "pid_" + std::to_string(count));
+  std::string tag = Label::make_label(getLabel(), "pid_" + std::to_string(count));
   while(MiiCfgReader::instance()->get_value(tag, "node_id", node_id)) {
     auto_inst_pid(tag);
     tag = Label::make_label(getLabel(), "pid_" + std::to_string(++count));
@@ -45,7 +45,7 @@ MotorPcan::~MotorPcan() {
 bool MotorPcan::write(const Packet& pkt) {
   if (MII_MSG_COMMON_DATA_1 == pkt.msg_id) {
     int offset = 0;
-    for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+    for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
       if ((INVALID_BYTE == pkt.data[offset]) && (INVALID_BYTE == pkt.data[offset + 1])) {
         offset += sizeof(short);
         continue;
@@ -74,7 +74,7 @@ bool MotorPcan::read(Packet& pkt) {
     memcpy(&(X_[pkt.node_id][JntType::HIP]),  pkt.data + 2, sizeof(short));
     memcpy(&(X_[pkt.node_id][JntType::YAW]),  pkt.data + 4, sizeof(short));*/
     int offset = 0;
-    for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+    for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
       memcpy(&(X_[pkt.node_id][type]), pkt.data + offset, sizeof(short));
       offset += sizeof(short);
     }
@@ -88,7 +88,7 @@ void MotorPcan::updatePID(unsigned char node_id) {
   Packet pkt = {bus_id_, node_id, MII_MSG_MOTOR_CMD_2, 6, {0}};
 
   int offset = 0;
-  for (const auto& type : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     if (pids_[node_id][type]->control(X_[node_id][type], U_[node_id][type])) {
       memcpy(pkt.data + offset, U_[node_id] + type, sizeof(short));
     } else {
@@ -100,7 +100,7 @@ void MotorPcan::updatePID(unsigned char node_id) {
   ArmPcan::write(pkt);
 }
 
-void MotorPcan::auto_inst_pid(const MiiString& __p) {
+void MotorPcan::auto_inst_pid(const std::string& __p) {
   unsigned char node_id = INVALID_BYTE;
   auto cfg = MiiCfgReader::instance();
   cfg->get_value_fatal(__p, "node_id", node_id);

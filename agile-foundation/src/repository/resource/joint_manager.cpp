@@ -43,7 +43,7 @@ void JointManager::add(Joint* _res) {
   // LOG_DEBUG << "JointManager has received a joint -- " << _res->getLabel();
 }
 
-JointManager::iterator JointManager::find(const MiiString& _n) {
+JointManager::iterator JointManager::find(const std::string& _n) {
   for (JointManager::iterator itr = JointManager::res_list_.begin();
       itr != JointManager::res_list_.end(); ++itr) {
 
@@ -58,7 +58,7 @@ void JointManager::addJointCommand(LegType owner, JntType type, double val) {
     jnt_list_by_type_[owner][type]->updateJointCommand(val);
 }
 
-void JointManager::addJointCommand(const MiiString& name, double val) {
+void JointManager::addJointCommand(const std::string& name, double val) {
   if (jnt_list_by_name_.end() != jnt_list_by_name_.find(name))
     jnt_list_by_name_[name]->updateJointCommand(val);
 }
@@ -67,7 +67,7 @@ Joint* JointManager::getJointHandle(LegType owner, JntType type) {
   return jnt_list_by_type_[owner][type];
 }
 
-Joint* JointManager::getJointHandle(const MiiString& _jn) {
+Joint* JointManager::getJointHandle(const std::string& _jn) {
   auto itr = jnt_list_by_name_.find(_jn);
   if (jnt_list_by_name_.end() == itr)
     return nullptr;
@@ -104,43 +104,43 @@ void JointManager::joint_torque_const_pointer  (LegType _owner, JntType _type, c
   _c_p = jnt_list_by_type_[_owner][_type]->joint_torque_const_pointer();
 }
 // override
-void JointManager::joint_position_const_pointer(const MiiString& _n, const double* & _c_p) {
+void JointManager::joint_position_const_pointer(const std::string& _n, const double* & _c_p) {
   _c_p = jnt_list_by_name_[_n]->joint_position_const_pointer();
 }
-void JointManager::joint_velocity_const_pointer(const MiiString& _n, const double* & _c_p) {
+void JointManager::joint_velocity_const_pointer(const std::string& _n, const double* & _c_p) {
   _c_p = jnt_list_by_name_[_n]->joint_velocity_const_pointer();
 }
-void JointManager::joint_torque_const_pointer(const MiiString& _n, const double* & _c_p) {
+void JointManager::joint_torque_const_pointer(const std::string& _n, const double* & _c_p) {
   _c_p = jnt_list_by_name_[_n]->joint_torque_const_pointer();
 }
 
-void JointManager::joint_names(MiiVector<MiiString>& names) {
+void JointManager::joint_names(std::vector<std::string>& names) {
   names.clear();
   for (auto jnt : res_list_) {
     names.push_back(jnt->joint_name());
   }
 }
 // override
-void JointManager::joint_position_const_pointer(MiiVector<const double*>& _c_ps) {
+void JointManager::joint_position_const_pointer(std::vector<const double*>& _c_ps) {
   _c_ps.clear();
   for (auto jnt : res_list_) {
     _c_ps.push_back(jnt->joint_position_const_pointer());
   }
 }
-void JointManager::joint_velocity_const_pointer(MiiVector<const double*>& _c_ps) {
+void JointManager::joint_velocity_const_pointer(std::vector<const double*>& _c_ps) {
   _c_ps.clear();
   for (auto jnt : res_list_) {
     _c_ps.push_back(jnt->joint_velocity_const_pointer());
   }
 }
-void JointManager::joint_torque_const_pointer(MiiVector<const double*>& _c_ps) {
+void JointManager::joint_torque_const_pointer(std::vector<const double*>& _c_ps) {
   _c_ps.clear();
   for (auto jnt : res_list_) {
     _c_ps.push_back(jnt->joint_torque_const_pointer());
   }
 }
 
-/*JointManager::iterator JointManager::find(const MiiString& _n) {
+/*JointManager::iterator JointManager::find(const std::string& _n) {
   for (auto itr = res_list_.begin(); itr != res_list_.end(); ++itr) {
     if (itr->joint_name() == _n) return itr;
   }

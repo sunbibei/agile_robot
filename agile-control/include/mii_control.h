@@ -14,7 +14,7 @@
 namespace agile_control {
 
 class MiiControl {
-  SINGLETON_DECLARE(MiiControl, const MiiString&)
+  SINGLETON_DECLARE(MiiControl, const std::string&)
 
 public:
   /*!
@@ -33,7 +33,7 @@ public:
    *        ready queue, and switch will be completed in a appropriate opportunity.
    * @param The default value "null" mean to stop the running gait.
    */
-  virtual void activate(const MiiString& _gn = "null");
+  virtual void activate(const std::string& _gn = "null");
 
 protected:
   /*!
@@ -42,7 +42,7 @@ protected:
   virtual void create_system_instance();
 
 protected:
-  MiiString prefix_tag_;
+  std::string prefix_tag_;
 
   bool alive_;
   std::chrono::milliseconds tick_interval_;
