@@ -16,7 +16,7 @@
 #include <boost/variant.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "system/platform/protocol/qr_protocol.h"
+#include <platform/protocol/agile_protol.h>
 #include "foundation/label.h"
 
 namespace middleware {

@@ -108,8 +108,8 @@ bool PcanFake::write(const Packet& pkt) {
         send_msg_.DATA[4], send_msg_.DATA[5], send_msg_.DATA[6],
         send_msg_.DATA[7]);
 
-  if (MII_MSG_COMMON_DATA_1 == pkt.msg_id) {
-    send_msg_.ID  = MII_MSG_FILL_TO_HOST_MSG(pkt.node_id, MII_MSG_HEARTBEAT_MSG_1);
+  if (MII_MSG_COMMON_1 == pkt.msg_id) {
+    send_msg_.ID  = MII_MSG_FILL_TO_HOST_MSG(pkt.node_id, MII_MSG_HEARTBEAT_1);
     send_msg_.LEN = 0x08;
     // buf_lock_.lock();
     swap_buffer_->push(send_msg_);

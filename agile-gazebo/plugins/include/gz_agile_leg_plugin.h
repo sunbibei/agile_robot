@@ -8,7 +8,6 @@
 #ifndef PLUGINS_INCLUDE_GZ_AGILE_LEG_PLUGIN_H_
 #define PLUGINS_INCLUDE_GZ_AGILE_LEG_PLUGIN_H_
 
-#include "system/platform/protocol/qr_protocol.h"
 #include "foundation/utf.h"
 #include "foundation/thread/threadpool.h"
 
@@ -20,6 +19,7 @@
 
 #include <vector>
 #include <boost/lockfree/queue.hpp>
+#include <system/platform/protocol/agile_protol.h>
 
 //! The default style is msgq.
 // #define USE_SHM

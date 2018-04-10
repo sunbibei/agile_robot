@@ -14,10 +14,9 @@
 #include "repository/resource/motor.h"
 
 #include "system/platform/sw_node/leg_node.h"
-#include "system/platform/protocol/qr_protocol.h"
-
 #include <iomanip>
 #include <boost/algorithm/string.hpp>
+#include <platform/protocol/agile_protol.h>
 
 namespace middleware {
 
@@ -130,7 +129,7 @@ void LegNode::handleMsg(const Packet& pkt) {
   }
 
   switch (pkt.msg_id) {
-  case MII_MSG_HEARTBEAT_MSG_1:
+  case MII_MSG_HEARTBEAT_1:
     if (8 != pkt.size) {
       LOG_ERROR << "The data size of MII_MSG_HEARTBEAT_MSG_1 message does not match!"
           << ", the expect size is 8, but the real size is " << pkt.size;
@@ -139,7 +138,7 @@ void LegNode::handleMsg(const Packet& pkt) {
     // parse the joint state and touchdown data
     __parse_heart_beat_1(pkt.data);
     break;
-  case MII_MSG_MOTOR_CMD_1:
+  case MII_MSG_MOTOR_1:
     if (6 != pkt.size) {
       LOG_ERROR << "The data size of MII_MSG_MOTOR_CMD_1 message does not match!"
           << ", the expect size is 6, but the real size is " << pkt.size;
@@ -148,7 +147,7 @@ void LegNode::handleMsg(const Packet& pkt) {
     // PRESS_THEN_GO
     __parse_motor_cmd_1(pkt.data);
     break;
-  case MII_MSG_MOTOR_CMD_2:
+  case MII_MSG_MOTOR_2:
     if (6 != pkt.size) {
       LOG_ERROR << "The data size of MII_MSG_MOTOR_CMD_2 message does not match!"
           << ", the expect size is 6, but the real size is " << pkt.size;
@@ -244,7 +243,7 @@ bool LegNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
   int offset  = 0;
   short count = 0;
   bool is_any_valid = false;
-  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_DATA_1, JNT_P_CMD_DSIZE, {0}};
+  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_1, JNT_P_CMD_DSIZE, {0}};
   for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     if (jnts_by_type_[type]->new_command_) {
       is_any_valid = true;
@@ -335,7 +334,7 @@ bool LegNode::__fill_pos_vel_cmd(std::vector<Packet>& pkts) {
 bool LegNode::__fill_motor_vel_cmd(std::vector<Packet>& pkts) {
   int offset  = 0;
   bool is_any_valid = false;
-  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_MOTOR_CMD_2, JNT_P_CMD_DSIZE, {0}};
+  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_MOTOR_2, JNT_P_CMD_DSIZE, {0}};
   for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
     if (motors_by_type_[type]->new_command_) {
       is_any_valid = true;

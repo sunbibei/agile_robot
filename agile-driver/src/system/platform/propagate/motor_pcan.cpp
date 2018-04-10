@@ -43,7 +43,7 @@ MotorPcan::~MotorPcan() {
 }
 
 bool MotorPcan::write(const Packet& pkt) {
-  if (MII_MSG_COMMON_DATA_1 == pkt.msg_id) {
+  if (MII_MSG_COMMON_1 == pkt.msg_id) {
     int offset = 0;
     for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
       if ((INVALID_BYTE == pkt.data[offset]) && (INVALID_BYTE == pkt.data[offset + 1])) {
@@ -69,7 +69,7 @@ bool MotorPcan::write(const Packet& pkt) {
 bool MotorPcan::read(Packet& pkt) {
   if (!ArmPcan::read(pkt)) return false;
 
-  if (MII_MSG_HEARTBEAT_MSG_1 == pkt.msg_id) {
+  if (MII_MSG_HEARTBEAT_1 == pkt.msg_id) {
     /*memcpy(&(X_[pkt.node_id][JntType::KNEE]), pkt.data + 0, sizeof(short));
     memcpy(&(X_[pkt.node_id][JntType::HIP]),  pkt.data + 2, sizeof(short));
     memcpy(&(X_[pkt.node_id][JntType::YAW]),  pkt.data + 4, sizeof(short));*/
@@ -85,7 +85,7 @@ bool MotorPcan::read(Packet& pkt) {
 }
 
 void MotorPcan::updatePID(unsigned char node_id) {
-  Packet pkt = {bus_id_, node_id, MII_MSG_MOTOR_CMD_2, 6, {0}};
+  Packet pkt = {bus_id_, node_id, MII_MSG_MOTOR_2, 6, {0}};
 
   int offset = 0;
   for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {

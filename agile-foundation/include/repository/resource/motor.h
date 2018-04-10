@@ -27,9 +27,9 @@ public:
 public:
   const std::string&  motor_name() const;
   const std::string&  joint_name() const;
-  const JntType&    joint_type() const;
-  const LegType&    leg_type()   const;
-  const JntCmdType& cmd_mode()   const;
+  const JntType&      joint_type() const;
+  const LegType&      leg_type()   const;
+  const JntCmdType&   cmd_mode()   const;
 
 public:
   ///! About the state of motor
@@ -59,7 +59,7 @@ protected:
   void updateMotorTorque  (short);
 
 protected:
-  std::string           motor_name_;
+  std::string         motor_name_;
   class Joint*        joint_handle_;
   class MotorState*   motor_state_;
   class MotorCommand* motor_cmd_;

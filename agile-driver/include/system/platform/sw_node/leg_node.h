@@ -20,14 +20,14 @@ public:
 
   virtual ~LegNode();
 
-  virtual void handleMsg(const Packet&)        override;
+  virtual void handleMsg(const Packet&)          override;
   virtual bool generateCmd(std::vector<Packet>&) override;
 
 protected:
   // there are three joint in each leg
   LegType                                leg_;
-  std::vector<class Joint*>                jnts_by_type_;
-  std::vector<class Motor*>                motors_by_type_;
+  std::vector<class Joint*>              jnts_by_type_;
+  std::vector<class Motor*>              motors_by_type_;
   class ForceSensor*                     td_;
 
   // The order match the @joints_by_type_

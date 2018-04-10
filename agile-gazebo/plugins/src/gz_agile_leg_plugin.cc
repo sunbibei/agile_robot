@@ -442,7 +442,7 @@ void GzAgileLegPlugin::__update_robot_stats() {
   double poss[JntType::N_JNTS]  = {0};
 //  short counts[JntType::N_JNTS] = {0};
 
-  Packet pkt = {GZ_BUS_ID, leg_id_, MII_MSG_HEARTBEAT_MSG_1, ROBOT_STATES_PKG_SIZE, {0}};
+  Packet pkt = {GZ_BUS_ID, leg_id_, MII_MSG_HEARTBEAT_1, ROBOT_STATES_PKG_SIZE, {0}};
   double pos  = 0;
   short count = 0;
   int offset  = 0;
@@ -499,16 +499,16 @@ void GzAgileLegPlugin::__parse_command_pkg(const Packet& pkt) {
   }
 
   switch (pkt.msg_id) {
-  case MII_MSG_COMMON_DATA_1: // JOINT POS CMD
-  case MII_MSG_COMMON_DATA_2: // JOINT VEL CMD
-  case MII_MSG_COMMON_DATA_3: // JOINT TOR CMD
+  case MII_MSG_COMMON_1: // JOINT POS CMD
+  case MII_MSG_COMMON_2: // JOINT VEL CMD
+  case MII_MSG_COMMON_3: // JOINT TOR CMD
     __write_command_to_sim(pkt);
     break;
   case MII_MSG_COMMON_DATA_4: // POS-VEL CMD (knee and hip)
   case MII_MSG_COMMON_DATA_5: // POS-VEL CMD (yaw)
-  case MII_MSG_MOTOR_CMD_1:   // MOTOR VEL CMD
-  case MII_MSG_MOTOR_CMD_2:   // MOTOR VEL CMD
-  case MII_MSG_MOTOR_CMD_3:   // MOTOR TOR CMD
+  case MII_MSG_MOTOR_1:   // MOTOR VEL CMD
+  case MII_MSG_MOTOR_2:   // MOTOR VEL CMD
+  case MII_MSG_MOTOR_3:   // MOTOR TOR CMD
     LOG_ERROR << "Using the NO IMPLEMENTED mode of control.";
     break;
   }
@@ -541,9 +541,9 @@ void GzAgileLegPlugin::__write_command_to_sim(const Packet& pkt) {
     cmds[type]   = cmd;
     counts[type] = count;
     switch (pkt.msg_id) {
-    case MII_MSG_COMMON_DATA_1: joints_target_[type]->type = JntCmdType::CMD_POS; break;
-    case MII_MSG_COMMON_DATA_2: joints_target_[type]->type = JntCmdType::CMD_VEL; break;
-    case MII_MSG_COMMON_DATA_3: joints_target_[type]->type = JntCmdType::CMD_TOR; break;
+    case MII_MSG_COMMON_1: joints_target_[type]->type = JntCmdType::CMD_POS; break;
+    case MII_MSG_COMMON_2: joints_target_[type]->type = JntCmdType::CMD_VEL; break;
+    case MII_MSG_COMMON_3: joints_target_[type]->type = JntCmdType::CMD_TOR; break;
     default:
       gzerr << "ERROR msg_id";
       joints_target_[type]->type = JntCmdType::UNKNOWN_CMD_TYPE;

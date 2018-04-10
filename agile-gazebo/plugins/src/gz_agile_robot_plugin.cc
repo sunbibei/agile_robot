@@ -401,7 +401,7 @@ void GzAgileRobotPlugin::__update_robot_stats() {
 
   Packet pkt;
   FOR_EACH_LEG(leg) {
-    pkt = {INVALID_BYTE, leg_2_id_lut_[leg], MII_MSG_HEARTBEAT_MSG_1, 8, {0}};
+    pkt = {INVALID_BYTE, leg_2_id_lut_[leg], MII_MSG_HEARTBEAT_1, 8, {0}};
     double pos  = 0;
     short count = 0;
     int offset  = 0;
@@ -456,16 +456,16 @@ void GzAgileRobotPlugin::__parse_command_pkg(const Packet& pkt) {
   }
 
   switch (pkt.msg_id) {
-  case MII_MSG_COMMON_DATA_1: // JOINT POS CMD
-  case MII_MSG_COMMON_DATA_2: // JOINT VEL CMD
-  case MII_MSG_COMMON_DATA_3: // JOINT TOR CMD
+  case MII_MSG_COMMON_1: // JOINT POS CMD
+  case MII_MSG_COMMON_2: // JOINT VEL CMD
+  case MII_MSG_COMMON_3: // JOINT TOR CMD
     __write_command_to_sim(pkt);
     break;
   case MII_MSG_COMMON_DATA_4: // POS-VEL CMD (knee and hip)
   case MII_MSG_COMMON_DATA_5: // POS-VEL CMD (yaw)
-  case MII_MSG_MOTOR_CMD_1:   // MOTOR VEL CMD
-  case MII_MSG_MOTOR_CMD_2:   // MOTOR VEL CMD
-  case MII_MSG_MOTOR_CMD_3:   // MOTOR TOR CMD
+  case MII_MSG_MOTOR_1:   // MOTOR VEL CMD
+  case MII_MSG_MOTOR_2:   // MOTOR VEL CMD
+  case MII_MSG_MOTOR_3:   // MOTOR TOR CMD
     LOG_ERROR << "Using the NO IMPLEMENTED mode of control.";
     break;
   }
@@ -492,9 +492,9 @@ void GzAgileRobotPlugin::__write_command_to_sim(const Packet& pkt) {
     cmds[type]   = cmd;
     counts[type] = count;
     switch (pkt.msg_id) {
-    case MII_MSG_COMMON_DATA_1: joints_[leg][type]->SetPosition(0, cmd); break;
-    case MII_MSG_COMMON_DATA_2: joints_[leg][type]->SetVelocity(0, cmd); break;
-    case MII_MSG_COMMON_DATA_3: joints_[leg][type]->SetForce(0,    cmd); break;
+    case MII_MSG_COMMON_1: joints_[leg][type]->SetPosition(0, cmd); break;
+    case MII_MSG_COMMON_2: joints_[leg][type]->SetVelocity(0, cmd); break;
+    case MII_MSG_COMMON_3: joints_[leg][type]->SetForce(0,    cmd); break;
     default:
       gzerr << "ERROR msg_id";
     }
