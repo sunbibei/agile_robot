@@ -13,12 +13,13 @@
 #include "repository/resource/joint.h"
 #include "repository/resource/motor.h"
 
+#include "system/platform/proto/agile_proto.h"
 #include "system/platform/sw_node/leg_node.h"
+
 #include <iomanip>
 #include <boost/algorithm/string.hpp>
-#include <platform/protocol/agile_protol.h>
 
-namespace middleware {
+namespace agile_robot {
 
 // #define SAVE_MSG_TO_FILE
 #ifdef  SAVE_MSG_TO_FILE
@@ -183,10 +184,10 @@ void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
 
   if (false && LegType::FL == leg_)
 #ifdef  SAVE_MSG_TO_FILE
-    fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg_),
+    fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE2STR(leg_),
         counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 #else
-    printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg_),
+    printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE2STR(leg_),
         counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 #endif
   // if (LegType::HL == leg_) printf("%d: 0x%02X, 0x%02X", leg_, __p[offset], __p[offset + 1]);
@@ -290,7 +291,7 @@ bool LegNode::__fill_pos_vel_cmd(std::vector<Packet>& pkts) {
   int offset  = 0;
   short count = 0;
   bool is_any_valid = false;
-  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_DATA_4, JNT_PV0_CMD_DSIZE, {0}};
+  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_4, JNT_PV0_CMD_DSIZE, {0}};
 
   for (const auto& type : {JntType::KFE, JntType::HFE}) {
     if (jnts_by_type_[type]->new_command_) {
@@ -315,7 +316,7 @@ bool LegNode::__fill_pos_vel_cmd(std::vector<Packet>& pkts) {
   if (!jnts_by_type_[JntType::HAA]->new_command_) return is_any_valid;
 
   is_any_valid = true;
-  cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_DATA_5, JNT_PV1_CMD_DSIZE, {0}};
+  cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_5, JNT_PV1_CMD_DSIZE, {0}};
   // printf("[%d] - (%d): %+01.04f %+01.04f\n", leg_, JntType::YAW, jnt_cmds_[JntType::YAW][0], jnt_cmds_[JntType::YAW][1]);
   count = (jnt_cmds_[JntType::HAA][0] - jnt_params_[JntType::HAA]->offset)
       / jnt_params_[JntType::HAA]->scale;
@@ -355,4 +356,4 @@ bool LegNode::__fill_motor_vel_cmd(std::vector<Packet>& pkts) {
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::LegNode, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::LegNode, Label)

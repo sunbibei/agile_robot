@@ -8,13 +8,13 @@
 #ifndef INCLUDE_SYSTEM_ROBOT_PROPAGATE_MANAGER_H_
 #define INCLUDE_SYSTEM_ROBOT_PROPAGATE_MANAGER_H_
 
-#include <platform/protocol/agile_protol.h>
+#include "system/platform/proto/agile_proto.h"
 #include "foundation/internal/resource_manager.h"
 #include "system/platform/propagate/propagate.h"
 
 #include <mutex>
 
-namespace middleware {
+namespace agile_robot {
 class PropagateManager: public internal::ResourceManager<Propagate> {
   SINGLETON_DECLARE(PropagateManager)
 public:
@@ -48,8 +48,8 @@ protected:
   std::chrono::milliseconds  propa_interval_;
   bool                       thread_alive_;
   // size_t                     pkts_queue_size;
-  std::mutex          lock_4_send_;
-  std::mutex          lock_4_recv_;
+  std::mutex            lock_4_send_;
+  std::mutex            lock_4_recv_;
   std::vector<Packet>   pkts_queue_4_send_;
   std::vector<Packet>   pkts_queue_4_recv_;
 };

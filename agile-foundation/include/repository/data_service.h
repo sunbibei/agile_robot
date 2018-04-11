@@ -13,7 +13,7 @@
 
 #include <fstream>
 
-namespace middleware {
+namespace agile_robot {
 
 class DataService: public Label {
 public:

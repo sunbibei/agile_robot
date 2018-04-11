@@ -28,7 +28,7 @@
 #include <repository/resource/joint.h>
 #endif
 
-using namespace middleware;
+using namespace agile_robot;
 
 class RosWrapper : public MiiRobot {
 SINGLETON_DECLARE(RosWrapper, const std::string&)

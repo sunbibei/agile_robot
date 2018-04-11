@@ -20,7 +20,7 @@
 #include <repository/resource/joint_manager.h>
 #include "foundation/utf.h"
 
-using namespace middleware;
+using namespace agile_robot;
 
 class RosRobotHW: public hardware_interface::RobotHW {
 public:

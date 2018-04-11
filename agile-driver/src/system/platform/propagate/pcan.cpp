@@ -5,29 +5,28 @@
  *      Author: silence
  */
 
-#include <platform/protocol/agile_protol.h>
 #include "system/platform/propagate/pcan.h"
-
+#include "system/platform/proto/agile_proto.h"
 #include "foundation/cfg_reader.h"
 
-namespace middleware {
+namespace agile_robot {
 
 const unsigned int MAX_TRY_TIMES = 10;
 unsigned int       g_times_count = 0;
 
-PcanPropagate::PcanPropagate(const std::string& l)
+PCanPropa::PCanPropa(const std::string& l)
   : Propagate(l), connected_(false),
     tmp_pcan_status_(PCAN_ERROR_OK) {
   pcan_config_ = {PCAN_USBBUS1, PCAN_BAUD_500K, 0, 0, 0};
 
 }
 
-PcanPropagate::~PcanPropagate() {
+PCanPropa::~PCanPropa() {
   stop();
   ;//  Nothing need to dealloc
 }
 
-bool PcanPropagate::auto_init() {
+bool PCanPropa::auto_init() {
   if (!Propagate::auto_init()) return false;
 
   auto cfg = MiiCfgReader::instance();
@@ -42,7 +41,7 @@ bool PcanPropagate::auto_init() {
   return true;
 }
 
-bool PcanPropagate::start() {
+bool PCanPropa::start() {
   connected_ = false;
   // try to 10 times
   for (g_times_count = 0; g_times_count < MAX_TRY_TIMES; ++g_times_count) {
@@ -66,7 +65,7 @@ bool PcanPropagate::start() {
   return connected_;
 }
 
-void PcanPropagate::stop() {
+void PCanPropa::stop() {
   if (!connected_) return;
 
   // try to 10 times
@@ -88,7 +87,7 @@ void PcanPropagate::stop() {
   LOG_ERROR << "Uninitialize CAN FAIL!!!";
 }
 
-} /* namespace middleware */
+} /* namespace agile_robot */
 
 /*#include <class_loader/class_loader_register_macro.h>
 CLASS_LOADER_REGISTER_CLASS(middleware::PcanPropagate, middleware::Label)

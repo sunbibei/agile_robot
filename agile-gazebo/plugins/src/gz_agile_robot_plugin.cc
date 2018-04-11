@@ -104,8 +104,8 @@ GzAgileRobotPlugin::~GzAgileRobotPlugin() {
 
 
   rw_thread_alive_ = false;
-  middleware::ThreadPool::instance()->stop();
-  middleware::ThreadPool::destroy_instance();
+  agile_robot::ThreadPool::instance()->stop();
+  agile_robot::ThreadPool::destroy_instance();
 
   delete swap_r_buffer_;
   delete swap_w_buffer_;
@@ -142,8 +142,8 @@ void GzAgileRobotPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       continue;
     }
 
-    std::cout << "Parse the joint[" << JNTTYPE_TOSTRING(jnt)
-      << "]\tfrom leg[" << LEGTYPE_TOSTRING(leg) << "]." << std::endl;
+    std::cout << "Parse the joint[" << JNTTYPE2STR(jnt)
+      << "]\tfrom leg[" << LEGTYPE2STR(leg) << "]." << std::endl;
     joints_[leg][jnt] = _j;
   }
 
@@ -158,8 +158,8 @@ void GzAgileRobotPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   // initialize leg_2_id_lut_  from _sdf
   id_2_leg_lut_.resize(MAX_NODE_NUM);
   leg_2_id_lut_.resize(LegType::N_LEGS);
-  FOR_EACH_LEG(l) {
-    std::string _tag = LEGTYPE_TOSTRING(l);
+  FOREACH_LEG(l) {
+    std::string _tag = LEGTYPE2STR(l);
     _tag += "_node_id";
     auto _attr = cfg->GetElement(_tag);
     if (nullptr == _attr) {
@@ -182,12 +182,12 @@ void GzAgileRobotPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   }
 
   // initialize linear_params_ from _sdf
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     linear_params_[l] = new LinearParams[JntType::N_JNTS];
-    FOR_EACH_JNT(j) {
-      std::string _tag = LEGTYPE_TOSTRING(l);
+    FOREACH_JNT(j) {
+      std::string _tag = LEGTYPE2STR(l);
       _tag += "_";
-      _tag += JNTTYPE_TOSTRING(j);
+      _tag += JNTTYPE2STR(j);
       double alpha = cfg->GetElement(_tag + "_linear_scale")->Get<double>();
       double beta  = cfg->GetElement(_tag + "_linear_offset")->Get<double>();
       linear_params_[l][j].scale  = alpha * 0.001533981;
@@ -197,9 +197,9 @@ void GzAgileRobotPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 
   if (false) {
     std::cout << "The configure of joint list as follow:" << std::endl;
-    FOR_EACH_LEG(l) {
-      printf("%s[0x%02X]:\n", LEGTYPE_TOSTRING(l), leg_2_id_lut_[l]);
-      FOR_EACH_JNT(j) {
+    FOREACH_LEG(l) {
+      printf("%s[0x%02X]:\n", LEGTYPE2STR(l), leg_2_id_lut_[l]);
+      FOREACH_JNT(j) {
         printf("\t%s\t-> %+11.8f : %+8.5f\n", joints_[l][j]->GetName().c_str(),
             linear_params_[l][j].scale, linear_params_[l][j].offset);
       }
@@ -229,7 +229,7 @@ void GzAgileRobotPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 #endif
 
   ///! Launch threads.
-  auto thread_pool = middleware::ThreadPool::create_instance();
+  auto thread_pool = agile_robot::ThreadPool::create_instance();
   thread_pool->add(GZ_R_THREAD_NAME, &GzAgileRobotPlugin::msg_r_update, this);
   thread_pool->add(GZ_W_THREAD_NAME, &GzAgileRobotPlugin::msg_w_update, this);
   thread_pool->start(GZ_R_THREAD_NAME);
@@ -255,8 +255,8 @@ void GzAgileRobotPlugin::event_update() {
 //  static size_t count = 0;
 //  if (0 == ++count%10000)
 //    std::cout << "update ..." << std::endl;
-  FOR_EACH_LEG(l) {
-    FOR_EACH_JNT(j) {
+  FOREACH_LEG(l) {
+    FOREACH_JNT(j) {
       // joints_[l][j]->SetPosition(0, _g_init_pose[l][j]);
       joints_[l][j]->SetPosition(0, 0);
     }
@@ -340,7 +340,7 @@ void GzAgileRobotPlugin::msg_r_update() {
   TIMER_INIT
   while (rw_thread_alive_) {
 #ifdef USE_SHM
-    FOR_EACH_LEG(l) {
+    FOREACH_LEG(l) {
       _start = l * sizeof(Packet);
       memcpy(&_pkg, shm_r_buf_ + _start, sizeof(Packet));
       swap_r_buffer_->push(_pkg);
@@ -400,7 +400,7 @@ void GzAgileRobotPlugin::__update_robot_stats() {
 //  short counts[JntType::N_JNTS] = {0};
 
   Packet pkt;
-  FOR_EACH_LEG(leg) {
+  FOREACH_LEG(leg) {
     pkt = {INVALID_BYTE, leg_2_id_lut_[leg], MII_MSG_HEARTBEAT_1, 8, {0}};
     double pos  = 0;
     short count = 0;
@@ -430,7 +430,7 @@ void GzAgileRobotPlugin::__update_robot_stats() {
 
 #ifdef SAVE_MSG_TO_FILE
     if (false && LegType::FL == leg)
-      fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
+      fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE2STR(leg),
           counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 #else
 //    if (false && LegType::FL == leg)
@@ -439,7 +439,7 @@ void GzAgileRobotPlugin::__update_robot_stats() {
 #endif
 
     if (true && LegType::FL == leg)
-      printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg),
+      printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE2STR(leg),
           poss[JntType::KFE], poss[JntType::HFE], poss[JntType::HAA]);
     ///! write the robot state into the message queue.
     write(pkt);
@@ -461,8 +461,8 @@ void GzAgileRobotPlugin::__parse_command_pkg(const Packet& pkt) {
   case MII_MSG_COMMON_3: // JOINT TOR CMD
     __write_command_to_sim(pkt);
     break;
-  case MII_MSG_COMMON_DATA_4: // POS-VEL CMD (knee and hip)
-  case MII_MSG_COMMON_DATA_5: // POS-VEL CMD (yaw)
+  case MII_MSG_COMMON_4: // POS-VEL CMD (knee and hip)
+  case MII_MSG_COMMON_5: // POS-VEL CMD (yaw)
   case MII_MSG_MOTOR_1:   // MOTOR VEL CMD
   case MII_MSG_MOTOR_2:   // MOTOR VEL CMD
   case MII_MSG_MOTOR_3:   // MOTOR TOR CMD
@@ -502,11 +502,11 @@ void GzAgileRobotPlugin::__write_command_to_sim(const Packet& pkt) {
     offset += sizeof(count);
   }
   if (false && LegType::FL == leg)
-    printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE_TOSTRING(leg),
+    printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE2STR(leg),
         counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 
   if (false && LegType::FL == leg)
-    printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg),
+    printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE2STR(leg),
         cmds[JntType::KFE], cmds[JntType::HFE], cmds[JntType::HAA]);
 }
 

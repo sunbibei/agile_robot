@@ -13,7 +13,7 @@
 #include <functional>
 #include <thread>
 
-namespace middleware {
+namespace agile_robot {
 
 class ThreadPool {
   SINGLETON_DECLARE(ThreadPool)

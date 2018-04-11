@@ -12,7 +12,7 @@
 #include <repository/resource/force_sensor.h>
 #include <stdio.h>
 
-namespace middleware {
+namespace agile_robot {
 
 #define DATA_SERVICE_THREAD "data-service"
 
@@ -200,4 +200,4 @@ void DataService::tick() {
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::DataService, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::DataService, Label)

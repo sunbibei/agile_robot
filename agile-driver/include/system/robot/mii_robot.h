@@ -14,7 +14,7 @@
 
 #include "foundation/utf.h"
 
-namespace middleware {
+namespace agile_robot {
 
 class MiiRobot {
 public:

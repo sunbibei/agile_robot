@@ -8,7 +8,7 @@
 #include "system/platform/sw_node/sw_node_manager.h"
 #include <iomanip>
 
-namespace middleware {
+namespace agile_robot {
 
 SINGLETON_IMPL(SWNodeManager)
 

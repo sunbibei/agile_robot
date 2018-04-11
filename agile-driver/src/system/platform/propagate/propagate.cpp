@@ -12,7 +12,7 @@
 
 #include "system/platform/propagate/propagate.h"
 
-namespace middleware {
+namespace agile_robot {
 
 #define PROPA_TAG_NAME  ("propagates")
 

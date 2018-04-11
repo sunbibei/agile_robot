@@ -8,7 +8,7 @@
 #include "repository/resource/power.h"
 #include "foundation/cfg_reader.h"
 
-namespace middleware {
+namespace agile_robot {
 
 const double INVALID_CURRNET         = 0x88;
 const size_t MAX_POWER_NODE_SIZE     = 3;
@@ -95,4 +95,4 @@ void Power::updatePowerInfo(size_t w, double c) {
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::Power, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::Power, Label)

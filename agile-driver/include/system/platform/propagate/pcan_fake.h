@@ -14,7 +14,7 @@
 // #include <mutex>
 #include <list>
 
-namespace middleware {
+namespace agile_robot {
 
 class PcanFake: public ArmPcan {
 public:

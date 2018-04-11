@@ -21,7 +21,7 @@
 
 #include <atomic>
 
-namespace middleware {
+namespace agile_robot {
 
 #define OWNER_CTRL_THREAD  ("mii-control-support")
 

@@ -7,7 +7,7 @@
 
 #include "repository/resource/joint_manager.h"
 
-namespace middleware {
+namespace agile_robot {
 
 SINGLETON_IMPL(JointManager)
 

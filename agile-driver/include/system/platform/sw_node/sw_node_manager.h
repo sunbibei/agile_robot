@@ -13,7 +13,7 @@
 
 #include "foundation/utf.h"
 
-namespace middleware {
+namespace agile_robot {
 
 class SWNodeManager: public internal::ResourceManager<SWNode> {
   SINGLETON_DECLARE(SWNodeManager)

@@ -9,7 +9,7 @@
 #include "foundation/cfg_reader.h"
 #include "repository/resource/power.h"
 
-namespace middleware {
+namespace agile_robot {
 
 PowerNode::PowerNode(const std::string& __l)
   : SWNode(__l), power_info_(nullptr) {
@@ -69,4 +69,4 @@ bool PowerNode::requireCmdDeliver() {
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::PowerNode, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::PowerNode, Label)

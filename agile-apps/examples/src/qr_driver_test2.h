@@ -32,9 +32,9 @@ public:
   void cbForReset(const std_msgs::BoolConstPtr&);
 
 private:
-  std::vector<middleware::Joint*>             joint_handles_;
-  std::vector<middleware::ForceSensor*>       td_handles_;
-  middleware::ImuSensor*                      imu_handle_;
+  std::vector<agile_robot::Joint*>             joint_handles_;
+  std::vector<agile_robot::ForceSensor*>       td_handles_;
+  agile_robot::ImuSensor*                      imu_handle_;
 
   ros::Subscriber reset_sub_;
   bool is_control_;

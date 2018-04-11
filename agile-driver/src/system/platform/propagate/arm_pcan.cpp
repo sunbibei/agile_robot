@@ -8,12 +8,12 @@
 #include "system/platform/propagate/arm_pcan.h"
 #include "foundation/cfg_reader.h"
 
-namespace middleware {
+namespace agile_robot {
 
 const int MAX_COUNT = 10;
 
 ArmPcan::ArmPcan(const std::string& l)
-  : PcanPropagate(l) {
+  : PCanPropa(l) {
   send_msg_.MSGTYPE = PCAN_MESSAGE_STANDARD;
 }
 
@@ -27,7 +27,7 @@ bool ArmPcan::write(const Packet& pkt) {
     return false;
   }
   send_msg_.MSGTYPE = PCAN_MESSAGE_STANDARD;
-  send_msg_.ID      = MII_MSG_FILL_TO_NODE_MSG(pkt.node_id, pkt.msg_id);
+  send_msg_.ID      = MII_MSG_FILL_2NODE_MSG(pkt.node_id, pkt.msg_id);
   send_msg_.LEN     = pkt.size;
   memset(send_msg_.DATA, '\0', 8 * sizeof(BYTE));
   memcpy(send_msg_.DATA, pkt.data, send_msg_.LEN * sizeof(BYTE));
@@ -88,7 +88,7 @@ bool ArmPcan::read(Packet& pkt) {
   // when the odd message is coming.
   counter = 0;
   int reset_count = 0;
-  while (!MII_MSG_IS_TO_HOST(recv_msg_.ID)) {
+  while (!MII_MSG_IS_2HOST(recv_msg_.ID)) {
     // LOG_ERROR << "test2";
     // This is a compromise way that to compatible with the old protocol.
     if (recv_msg_.ID == 0x8) {
@@ -132,8 +132,8 @@ bool ArmPcan::read(Packet& pkt) {
       (int)recv_msg_.DATA[6], (int)recv_msg_.DATA[7]);
 
   pkt.bus_id  = bus_id_;
-  pkt.node_id = MII_MSG_EXTRACT_NODE_ID(recv_msg_.ID);
-  pkt.msg_id  = MII_MSG_EXTRACT_MSG_ID(recv_msg_.ID);
+  pkt.node_id = MII_MSG_SPLIT_NODEID(recv_msg_.ID);
+  pkt.msg_id  = MII_MSG_SPLIT_MSGID(recv_msg_.ID);
   pkt.size    = recv_msg_.LEN;
   memset(pkt.data, '\0', 8 * sizeof(char));
   memcpy(pkt.data, recv_msg_.DATA, pkt.size * sizeof(char));
@@ -143,4 +143,4 @@ bool ArmPcan::read(Packet& pkt) {
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::ArmPcan, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::ArmPcan, Label)

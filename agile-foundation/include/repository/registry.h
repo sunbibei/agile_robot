@@ -15,25 +15,25 @@
 #include <Eigen/Dense>
 #include <atomic>
 
-namespace middleware {
+namespace agile_robot {
 
 #define REG_RESOURCE(_n, _var)  \
-  ( middleware::Registry::instance()->registerResource((_n), (_var)) )
+  ( agile_robot::Registry::instance()->registerResource((_n), (_var)) )
 
 #define REG_COMMAND(_n, _var, _flag)   \
-  ( middleware::Registry::instance()->registerCommand ((_n), (_var), (_flag)) )
+  ( agile_robot::Registry::instance()->registerCommand ((_n), (_var), (_flag)) )
 
 #define REG_COMMAND_NO_FLAG(_n, _var)   \
-  ( middleware::Registry::instance()->registerCommand ((_n), (_var)) )
+  ( agile_robot::Registry::instance()->registerCommand ((_n), (_var)) )
 
 #define GET_RESOURCE(_n, _type) \
-  ( middleware::Registry::instance()->resource< _type >(_n) )
+  ( agile_robot::Registry::instance()->resource< _type >(_n) )
 
 #define GET_COMMAND(_n, _flag, _type) \
-  ( middleware::Registry::instance()->command< _type >(_n, _flag) )
+  ( agile_robot::Registry::instance()->command< _type >(_n, _flag) )
 
 #define GET_COMMAND_NO_FLAG(_n, _type) \
-  ( middleware::Registry::instance()->command< _type >(_n) )
+  ( agile_robot::Registry::instance()->command< _type >(_n) )
 
 template <typename _T>
 using MiiPtr = boost::shared_ptr<_T>;

@@ -11,7 +11,7 @@
 #include "foundation/label.h"
 #include <atomic>
 
-namespace middleware {
+namespace agile_robot {
 
 class Motor: public Label {
   friend class LegNode;

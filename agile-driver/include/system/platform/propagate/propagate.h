@@ -8,11 +8,11 @@
 #ifndef INCLUDE_MIDDLEWARE_PROPAGATE_PROPAGATE_H_
 #define INCLUDE_MIDDLEWARE_PROPAGATE_PROPAGATE_H_
 
-#include <platform/protocol/agile_protol.h>
+#include "system/platform/proto/agile_proto.h"
 #include "foundation/label.h"
 #include <vector>
 
-namespace middleware {
+namespace agile_robot {
 
 class Propagate : public Label {
   friend class PropagateManager;

@@ -15,7 +15,7 @@
 class MsgQueue;
 class SharedMem;
 
-namespace middleware {
+namespace agile_robot {
 
 class GzPropagateP : public Propagate {
 public:

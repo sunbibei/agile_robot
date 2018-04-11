@@ -16,10 +16,10 @@
 #include <boost/variant.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <platform/protocol/agile_protol.h>
+#include <system/platform/proto/agile_proto.h>
 #include "foundation/label.h"
 
-namespace middleware {
+namespace agile_robot {
 
 /**
  * @brief Each HwUnit associate to the real hardware in the robot,

@@ -11,7 +11,7 @@
 #include "system/platform/sw_node/sw_node.h"
 #include "foundation/utf.h"
 
-namespace middleware {
+namespace agile_robot {
 
 class LegNode: public SWNode {
 public:

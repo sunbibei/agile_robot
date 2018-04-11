@@ -19,7 +19,7 @@
 
 #include <vector>
 #include <boost/lockfree/queue.hpp>
-#include <system/platform/protocol/agile_protol.h>
+#include <system/platform/proto/agile_proto.h>
 
 //! The default style is msgq.
 // #define USE_SHM

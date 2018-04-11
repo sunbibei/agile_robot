@@ -11,7 +11,7 @@
 #include <boost/algorithm/string.hpp>
 #include <tinyxml.h>
 
-namespace middleware {
+namespace agile_robot {
 
 struct ForceState {
   ForceState(double d = 0) : data(0) {}
@@ -67,4 +67,4 @@ const LegType& ForceSensor::leg_type() const
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::ForceSensor, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::ForceSensor, Label)

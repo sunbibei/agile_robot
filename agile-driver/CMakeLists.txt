@@ -47,7 +47,6 @@ set(SRC_SYS_UTILS       ${SRC_SYS}/utils)
 set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/sw_node/sw_node_manager.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/sw_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/leg_node.cpp
-                        ${SRC_SYS_PLATFORM}/sw_node/imu_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/power_node.cpp
 
                         ${SRC_SYS_PLATFORM}/propagate/propagate_manager.cpp
@@ -57,8 +56,6 @@ set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/sw_node/sw_node_manager.cpp
                         ${SRC_SYS_PLATFORM}/propagate/arm_pcan.cpp
                         ${SRC_SYS_PLATFORM}/propagate/motor_pcan.cpp
                         ${SRC_SYS_PLATFORM}/propagate/usb.cpp
-                        ${SRC_SYS_PLATFORM}/propagate/imu_usb_jy61p.cpp
-                        ${SRC_SYS_PLATFORM}/propagate/imu_usb_jy901.cpp
                         ${SRC_SYS_PLATFORM}/propagate/gazebo_propagate.cpp
 
                         ${SRC_SYS_PLATFORM}/master.cpp

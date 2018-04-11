@@ -16,7 +16,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/clamp.hpp>
 
-namespace middleware {
+namespace agile_robot {
 struct JointState {
   JointState(double pos = 0, double vel = 0, double s = 0, double o = 0)
   : pos_(pos), vel_(vel), tor_(0)
@@ -243,4 +243,4 @@ const double* Joint::joint_command_const_pointer() const {
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::Joint, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::Joint, Label)

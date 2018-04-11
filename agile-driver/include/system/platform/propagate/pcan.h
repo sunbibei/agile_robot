@@ -16,12 +16,12 @@
 
 #include <PCANBasic.h>
 
-namespace middleware {
+namespace agile_robot {
 
-class PcanPropagate: public Propagate {
+class PCanPropa: public Propagate {
 public:
-  PcanPropagate(const std::string& l = "pcan");
-  virtual ~PcanPropagate();
+  PCanPropa(const std::string& l = "pcan");
+  virtual ~PCanPropa();
   virtual bool auto_init() override;
 
   virtual bool start() override;

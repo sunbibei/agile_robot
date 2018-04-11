@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-namespace middleware {
+namespace agile_robot {
 
 SINGLETON_IMPL(Registry)
 

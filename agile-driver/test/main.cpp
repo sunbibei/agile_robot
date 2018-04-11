@@ -12,7 +12,7 @@
 #include <foundation/cfg_reader.h>
 #include <foundation/auto_instanceor.h>
 
-class TestMiiRobot : middleware::MiiRobot {
+class TestMiiRobot : agile_robot::MiiRobot {
   SINGLETON_DECLARE(TestMiiRobot, const std::string&)
 
   public:

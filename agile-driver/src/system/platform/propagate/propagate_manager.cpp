@@ -8,7 +8,7 @@
 #include "system/platform/propagate/propagate_manager.h"
 #include "foundation/thread/threadpool.h"
 
-namespace middleware {
+namespace agile_robot {
 
 const size_t  MAX_BUS_NUM = 10;
 

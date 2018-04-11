@@ -8,7 +8,7 @@
 #include "repository/resource/imu_sensor.h"
 #include "foundation/cfg_reader.h"
 
-namespace middleware {
+namespace agile_robot {
 
 struct __PrivateImuData {
   ///< A pointer to the storage of the orientation value: a quaternion (x,y,z,w)
@@ -128,4 +128,4 @@ void ImuSensor::updateAngVel(double x, double y, double z) {
 
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::ImuSensor, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::ImuSensor, Label)

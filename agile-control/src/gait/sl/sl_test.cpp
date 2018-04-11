@@ -97,6 +97,7 @@ SlTest::SlTest()
   : current_state_(LTestState::UNKNOWN_LT_STATE),
     leg_type_(LegType::UNKNOWN_LEG), leg_iface_(nullptr),
     leg_cmd_(nullptr), swing_timer_(nullptr),
+    ws_params_(nullptr),
     params_(nullptr),  thread_alive_(false) {
   ;
 }
@@ -120,21 +121,21 @@ bool SlTest::auto_init() {
   if (LegType::UNKNOWN_LEG == leg_type_) {
     leg_type_ = LegType::FL;
     LOG_WARNING << "No define the leg type, using the default value "
-        << LEGTYPE_TOSTRING(leg_type_);
+        << LEGTYPE2STR(leg_type_);
   }
   leg_iface_ = ifaces->robot_leg(leg_type_);
   if (!leg_iface_)
-        LOG_FATAL << "The interface of RobotLeg " << LEGTYPE_TOSTRING(leg_type_) << " is null!";
-  LOG_INFO << "get interface(LegType::" << LEGTYPE_TOSTRING(leg_type_) << "): " << leg_iface_;
+        LOG_FATAL << "The interface of RobotLeg " << LEGTYPE2STR(leg_type_) << " is null!";
+  LOG_INFO << "get interface(LegType::" << LEGTYPE2STR(leg_type_) << "): " << leg_iface_;
 
   params_    = new LTParam(Label::make_label(getLabel(), "trajectory"));
   ws_params_ = new WSParam(Label::make_label(getLabel(), "workspace"));
 
   init_foothold_ << -params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
-  targ_foothold_ <<  params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
+  goal_foothold_ <<  params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
 
   std::cout << "init: " << init_foothold_.transpose() << std::endl;
-  std::cout << "trag: " << targ_foothold_.transpose() << std::endl;
+  std::cout << "goal: " << goal_foothold_.transpose() << std::endl;
   return true;
 }
 
@@ -146,8 +147,8 @@ bool SlTest::starting() {
   _sm->registerStateCallback(LTestState::LT_WS_CALC,   &SlTest::ws_calc,   this);
   _sm->registerStateCallback(LTestState::LT_PROD_TRAJ, &SlTest::prod_traj, this);
 
-  // current_state_ = LTestState::LT_INIT_POSE;
-  current_state_ = LTestState::LT_PROD_TRAJ;
+  current_state_ = LTestState::LT_INIT_POSE;
+  // current_state_ = LTestState::LT_PROD_TRAJ;
 
   leg_cmd_   = new LegTarget;
   leg_cmd_->cmd_type = JntCmdType::CMD_POS;
@@ -191,6 +192,7 @@ void SlTest::checkState() {
   {
     if (!end_pose_init()) return;
 
+    LOG_INFO << "Arrival the initialization pose.";
     PRESS_THEN_GO
     current_state_ = LTestState::LT_SWING;
     break;
@@ -199,6 +201,7 @@ void SlTest::checkState() {
   {
     if (!end_swing_leg()) return;
 
+    LOG_INFO << "Finished swing leg.";
     PRESS_THEN_GO
     swing_timer_->stop();
     current_state_ = LTestState::LT_INIT_POSE;
@@ -216,7 +219,11 @@ void SlTest::pose_init() {
 }
 
 bool SlTest::end_pose_init() {
-  const static double _epsilon = 0.1;
+  const static double _epsilon = 1;
+  print_eef_pos(leg_type_, init_foothold_);
+  Eigen::VectorXd angles;
+  leg_iface_->ik(init_foothold_, angles);
+  print_jnt_pos(leg_type_, angles);
   return ((leg_iface_->eef() - init_foothold_).norm() < _epsilon);
 }
 
@@ -231,7 +238,7 @@ void SlTest::swing_leg() {
 //    else
 //      prog_eef_traj_seg(targ_foothold_, eef_traj_);
 
-    prog_eef_traj_poly(targ_foothold_, eef_traj_);
+    prog_eef_traj_poly(goal_foothold_, eef_traj_);
     swing_timer_->start();
   }
 
@@ -271,7 +278,7 @@ void SlTest::ws_calc() {
 }
 
 void SlTest::prod_traj() {
-  prog_eef_traj_poly(targ_foothold_, eef_traj_);
+  prog_eef_traj_poly(goal_foothold_, eef_traj_);
 
   PRESS_THEN_GO
   Eigen::Vector3d fpt;

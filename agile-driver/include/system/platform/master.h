@@ -15,7 +15,7 @@
 #include <chrono>
 #include <foundation/internal/resource_manager.h>
 
-namespace middleware {
+namespace agile_robot {
 
 class Master : public internal::ResourceManager<SWNode> {
   SINGLETON_DECLARE(Master)

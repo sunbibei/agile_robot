@@ -1,6 +1,6 @@
 #include "repository/estimator/SimpleTDEstimator.h"
 
-namespace middleware {
+namespace agile_robot {
 
 SimpleTDEstimator::SimpleTDEstimator()
 {

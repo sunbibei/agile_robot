@@ -11,7 +11,7 @@
 #include "foundation/label.h"
 #include "foundation/utf.h"
 
-namespace middleware {
+namespace agile_robot {
 
 class TouchdownEstimator : public Label {
 public:

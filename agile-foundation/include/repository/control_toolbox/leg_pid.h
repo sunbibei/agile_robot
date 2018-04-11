@@ -10,7 +10,7 @@
 
 #include "foundation/utf.h"
 
-namespace middleware {
+namespace agile_robot {
 
 class LegPid {
 public:

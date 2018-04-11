@@ -20,7 +20,7 @@ QrDriverTestController2::~QrDriverTestController2() {
 
 bool QrDriverTestController2::init(hardware_interface::PositionJointInterface*, ros::NodeHandle &n) {
 
-  auto jnt_manager = middleware::JointManager::instance();
+  auto jnt_manager = agile_robot::JointManager::instance();
 
   int count = 0;
   while(true) {
@@ -45,7 +45,7 @@ bool QrDriverTestController2::init(hardware_interface::PositionJointInterface*, 
       std::string param_name = std::string("touchdown_" + std::to_string(count));
       if (ros::param::get(param_name.c_str(), td_label)) {
           std::cout << "Get Touchdown Name: " << td_label << std::endl;
-          auto td = Label::getHardwareByName<middleware::ForceSensor>(td_label);
+          auto td = Label::getHardwareByName<agile_robot::ForceSensor>(td_label);
           if (nullptr == td)
             std::cout << "The named '" << td_label << "' joint does not exist!" << std::endl;
           else
@@ -58,7 +58,7 @@ bool QrDriverTestController2::init(hardware_interface::PositionJointInterface*, 
 
     std::string imu_label;
     if (ros::param::get("imu", imu_label)) {
-      imu_handle_ = Label::getHardwareByName<middleware::ImuSensor>(imu_label);
+      imu_handle_ = Label::getHardwareByName<agile_robot::ImuSensor>(imu_label);
       if (nullptr == imu_handle_)
         std::cout << "The named '" << imu_label << "' joint does not exist!" << std::endl;
     }

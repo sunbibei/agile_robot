@@ -12,7 +12,7 @@
 
 #include <boost/algorithm/clamp.hpp>
 
-namespace middleware {
+namespace agile_robot {
 
 struct MotorState {
   short position;
@@ -184,4 +184,4 @@ void Motor::updateMotorTorque(short s) {
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::Motor, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::Motor, Label)

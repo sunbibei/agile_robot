@@ -3,7 +3,7 @@
 
 #include "touchdown_estimator.h"
 
-namespace middleware {
+namespace agile_robot {
 
 class SimpleTDEstimator : public TouchdownEstimator {
 public:

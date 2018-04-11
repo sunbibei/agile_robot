@@ -10,7 +10,7 @@
 
 #include "foundation/label.h"
 
-namespace middleware {
+namespace agile_robot {
 
 class Power: public Label {
   friend class PowerNode;

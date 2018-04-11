@@ -49,9 +49,9 @@ RobotBody* LegRobot::robot_body() {
 }
 
 inline void __print_color_helper(LegType l) {
-  FOR_EACH_JNT(j) {
+  FOREACH_JNT(j) {
 #ifdef DIS_JNT_LIMIT
-    static auto _jnts  = middleware::JointManager::instance();
+    static auto _jnts  = agile_robot::JointManager::instance();
     const auto _jnt   = _jnts->getJointHandle(LegType(l), JntType(j));
     double _min = _jnt->joint_position_min();
     double _max = _jnt->joint_position_max();
@@ -68,9 +68,9 @@ inline void __print_color_helper(LegType l) {
 }
 
 inline void __print_color_helper(LegType l, const Eigen::VectorXd& jnt) {
-  FOR_EACH_JNT(j) {
+  FOREACH_JNT(j) {
 #ifdef DIS_JNT_LIMIT
-    static auto _jnts  = middleware::JointManager::instance();
+    static auto _jnts  = agile_robot::JointManager::instance();
     const auto _jnt   = _jnts->getJointHandle(LegType(l), JntType(j));
     double _min = _jnt->joint_position_min();
     double _max = _jnt->joint_position_max();
@@ -99,11 +99,12 @@ void print_jnt_pos(LegType l) {
 void print_jnt_pos(LegType l, const Eigen::VectorXd& _tjnt) {
   auto _jnt = LegRobot::instance()->robot_leg(l)->joint_position_const_ref();
   printf("___________________________________________\n");
-  printf("|    -|   YAW  |   HIP  |  KNEE  |  ERROR |\n");
+  printf("|LEG -|   YAW  |   HIP  |  KNEE  |  ERROR |\n");
 //printf("|LEG -| +0.0000| +0.0000| +0.0000| +0.0000|\n");
   printf("|    -"); __print_color_helper(l); printf("\n");
   printf("|    =| %+7.04f| %+7.04f| %+7.04f| %+7.04f|\n",
       _tjnt(JntType::HAA), _tjnt(JntType::HFE), _tjnt(JntType::KFE), (_tjnt - _jnt).norm());
+  printf("\n-----------------------------------------\n");
 }
 ///! print the joint position of the all of leg.
 void print_jnt_pos() {
@@ -147,7 +148,7 @@ void print_eef_pos(LegType l) {
 //printf("LEG -| +00.0000| +00.0000| +00.0000|\n");
   auto eef = LegRobot::instance()->robot_leg(l)->eef();
   printf("| %s -| %+8.04f| %+8.04f| %+8.04f|\n",
-      LEGTYPE_TOSTRING(l), eef.x(), eef.y(), eef.z());
+      LEGTYPE2STR(l), eef.x(), eef.y(), eef.z());
   printf("------------------------------------\n");
 }
 ///! print the v.s. result and different between FPT or COG
@@ -157,9 +158,9 @@ void print_eef_pos(LegType l, const Eigen::Vector3d& teef) {
 //printf("|LEG  | +00.0000| +00.0000| +00.0000|+00.0000 |\n");
   Eigen::Vector3d eef = LegRobot::instance()->robot_leg(l)->eef();
   printf("| %s -| %+8.04f| %+8.04f| %+8.04f|    -    |\n",
-      LEGTYPE_TOSTRING(l), eef.x(), eef.y(), eef.z());
+      LEGTYPE2STR(l), eef.x(), eef.y(), eef.z());
   printf("| %s -| %+8.04f| %+8.04f| %+8.04f|%+8.04f |\n",
-      LEGTYPE_TOSTRING(l), teef.x(), teef.y(), teef.z(), (teef - eef).norm());
+      LEGTYPE2STR(l), teef.x(), teef.y(), teef.z(), (teef - eef).norm());
   printf("-----------------------------------------------\n");
 }
 
@@ -172,12 +173,12 @@ void print_eef_pos() {
   for (const auto& l : {LegType::FL, LegType::HL}) {
     LegRobot::instance()->robot_leg(l)->eef(eef);
     printf("| %s -| %+8.04f| %+8.04f| %+8.04f|",
-        LEGTYPE_TOSTRING(l), eef.x(), eef.y(), eef.z());
+        LEGTYPE2STR(l), eef.x(), eef.y(), eef.z());
 
     auto sl = LEGTYPE_SL(l);
     LegRobot::instance()->robot_leg(sl)->eef(eef);
     printf(" %s -| %+8.04f| %+8.04f| %+8.04f|\n",
-        LEGTYPE_TOSTRING(sl), eef.x(), eef.y(), eef.z());
+        LEGTYPE2STR(sl), eef.x(), eef.y(), eef.z());
   }
   printf("------------------------------------------------------------------------\n");
 }
@@ -198,20 +199,20 @@ void print_eef_pos(const Eigen::Vector3d& fl, const Eigen::Vector3d& fr,
     auto diff1 = (teefs[l] - eef).norm();
 
     printf("| %s -| %+8.04f| %+8.04f| %+8.04f|    -    |",
-        LEGTYPE_TOSTRING(l), eef.x(), eef.y(), eef.z());
+        LEGTYPE2STR(l), eef.x(), eef.y(), eef.z());
 
     LegRobot::instance()->robot_leg(sl)->eef(eef);
     auto diff2 = (teefs[sl] - eef).norm();
 
     printf(" %s -| %+8.04f| %+8.04f| %+8.04f|    -    |\n",
-        LEGTYPE_TOSTRING(sl), eef.x(), eef.y(), eef.z());
+        LEGTYPE2STR(sl), eef.x(), eef.y(), eef.z());
 
 
     printf("| %s =| %+8.04f| %+8.04f| %+8.04f|%+8.04f |",
-        LEGTYPE_TOSTRING(l), teefs[l].x(), teefs[l].y(), teefs[l].z(), diff1);
+        LEGTYPE2STR(l), teefs[l].x(), teefs[l].y(), teefs[l].z(), diff1);
     LegRobot::instance()->robot_leg(sl)->eef(eef);
     printf(" %s =| %+8.04f| %+8.04f| %+8.04f|%+8.04f |\n",
-        LEGTYPE_TOSTRING(sl), teefs[sl].x(), teefs[sl].y(), teefs[sl].z(), diff2);
+        LEGTYPE2STR(sl), teefs[sl].x(), teefs[sl].y(), teefs[sl].z(), diff2);
   }
   printf("---------------------------------------------------------------------------------------------\n");
 }

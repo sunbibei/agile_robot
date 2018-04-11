@@ -11,7 +11,7 @@
 #include <chrono>
 #include <thread>
 
-namespace middleware {
+namespace agile_robot {
 
 struct __PrivateThreadVar {
   std::string    thread_name_;

@@ -10,7 +10,7 @@
 
 #include "system/platform/sw_node/sw_node.h"
 
-namespace middleware {
+namespace agile_robot {
 
 class PowerNode: public SWNode {
 public:

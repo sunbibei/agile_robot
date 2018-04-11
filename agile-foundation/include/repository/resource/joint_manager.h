@@ -15,7 +15,7 @@
 #include <string>
 #include <map>
 
-namespace middleware {
+namespace agile_robot {
 
 class JointManager: public internal::ResourceManager<Joint> {
   SINGLETON_DECLARE(JointManager)

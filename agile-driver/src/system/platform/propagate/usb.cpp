@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <termios.h>
 
-namespace middleware {
+namespace agile_robot {
 
 int       g_counter     = 0;
 const int MAX_TRY_TIMES = 10;
@@ -46,7 +46,7 @@ void __set_speed(int fd, int speed){
   tcflush(fd,TCIOFLUSH);
 }
 
-void __set_others(int fd, const UsbPropagate::UsbConfig& cfg) {
+void __set_others(int fd, const UsbPropa::UsbConfig& cfg) {
   struct termios options;
   if  ( tcgetattr(fd, &options)  !=  0) {
     LOG_ERROR << ("SetupSerial 1");
@@ -114,20 +114,20 @@ void __set_others(int fd, const UsbPropagate::UsbConfig& cfg) {
   options.c_oflag  &= ~OPOST;   /*Output*/
 }
 
-void __config_usb(int fd, const UsbPropagate::UsbConfig& cfg) {
+void __config_usb(int fd, const UsbPropa::UsbConfig& cfg) {
   if (fd < 0) return;
   LOG_INFO << "Ready to configure the USB.";
   __set_speed (fd, cfg.baud_rate);
   __set_others(fd, cfg);
 }
 
-UsbPropagate::UsbPropagate(const std::string& l)
+UsbPropa::UsbPropa(const std::string& l)
 : Propagate(l), opened_(false),
   usb_fd_(-1), node_id_(0xFF) {
   ; // Nothing to do here.
 }
 
-bool UsbPropagate::auto_init() {
+bool UsbPropa::auto_init() {
   if (!Propagate::auto_init()) return false;
 
   auto cfg = MiiCfgReader::instance();
@@ -141,11 +141,11 @@ bool UsbPropagate::auto_init() {
   return true;
 }
 
-UsbPropagate::~UsbPropagate() {
+UsbPropa::~UsbPropa() {
   stop();
 }
 
-bool UsbPropagate::start() {
+bool UsbPropa::start() {
   opened_ = false;
   // try to 10 times
   for (g_counter = 0; g_counter < MAX_TRY_TIMES; ++g_counter) {
@@ -168,7 +168,7 @@ bool UsbPropagate::start() {
   return opened_;
 }
 
-void UsbPropagate::stop() {
+void UsbPropa::stop() {
   if ((-1 == usb_fd_) || !opened_) return;
 
   // try to 10 times

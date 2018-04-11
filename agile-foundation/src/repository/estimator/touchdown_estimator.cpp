@@ -8,7 +8,7 @@
 #include "repository/estimator/touchdown_estimator.h"
 #include "foundation/cfg_reader.h"
 
-namespace middleware {
+namespace agile_robot {
 
 TouchdownEstimator::TouchdownEstimator(const std::string& _l)
   : Label(_l) {

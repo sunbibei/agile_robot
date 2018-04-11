@@ -181,10 +181,10 @@ bool Walk::auto_init() {
   if (!body_iface_)
     LOG_FATAL << "The interface of RobotBody is null!";
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     leg_ifaces_[l] = ifaces->robot_leg(l);
     if (!leg_ifaces_[l])
-      LOG_FATAL << "The interface of RobotLeg" << LEGTYPE_TOSTRING(l) << " is null!";
+      LOG_FATAL << "The interface of RobotLeg" << LEGTYPE2STR(l) << " is null!";
   }
 
   if (false) {
@@ -235,7 +235,7 @@ bool Walk::starting() {
   for (auto& t : cog2eef_traj_)
     t.reset(new PolyTraj3d);
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     leg_cmds_[l]   = new LegTarget;
     leg_cmds_[l]->cmd_type = JntCmdType::CMD_POS;
     leg_cmds_[l]->target.resize(3);
@@ -253,7 +253,7 @@ void Walk::stopping() {
   }
   eef_traj_.reset();
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     delete leg_cmds_[l];
     leg_cmds_[l] = nullptr;
   }
@@ -355,7 +355,7 @@ void Walk::checkState() {
     ///! the begin of WK_INIT_POS
     if (!timer_->running()) {
       // Eigen::Vector3d _tmp(0, 0, -params_->STANCE_HEIGHT);
-      FOR_EACH_LEG(l) {
+      FOREACH_LEG(l) {
         leg_cmd_eefs_[l] << 0.0, 0.0, -wk_params_->STANCE_HEIGHT;
         // leg_ifaces_[l]->ik(_tmp, leg_cmds_[l]->target);
       }
@@ -515,7 +515,7 @@ void Walk::post_tick() {
   if (_s_sum_interval < post_tick_interval_) return;
   _s_sum_interval = 0;
 
-  FOR_EACH_LEG(leg) {
+  FOREACH_LEG(leg) {
     ///! Modify the target to keep the stance stability
     if (!_s_is_hang) {
       Eigen::Vector3d _eef = leg_ifaces_[leg]->eef();
@@ -552,7 +552,7 @@ void Walk::post_tick() {
 #ifdef RECORDER_EEF_TRAJ
     Discrete<double, 14>::StateVec vec;
     int idx = 0;
-    FOR_EACH_LEG(l) {
+    FOREACH_LEG(l) {
       vec.head(idx + 3).tail(3) = leg_ifaces_[l]->eef();
       idx += 3;
     }
@@ -584,7 +584,7 @@ void Walk::pose_init() {
 }
 
 bool Walk::end_pose_init() {
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     auto diff = (leg_ifaces_[l]->eef()
         - leg_cmd_eefs_[l]).norm();
     ///! The different of any leg is bigger than 0.1 is considered as
@@ -615,7 +615,7 @@ void Walk::move_cog() {
   if (!timer_->running())
     return;
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     leg_ifaces_[l]->ik(
         cog2eef_traj_[l]->sample((double)timer_->span()/wk_params_->COG_TIME),
         leg_cmds_[l]->target);
@@ -635,7 +635,7 @@ bool Walk::end_move_cog() {
 
 Eigen::Vector3d Walk::stability_margin(LegType sl) {
   static Eigen::Vector3d _eefs[LegType::N_LEGS];
-  FOR_EACH_LEG(leg) {
+  FOREACH_LEG(leg) {
     _eefs[leg] = leg_ifaces_[leg]->eef() + body_iface_->leg_base(leg);
   }
 
@@ -737,7 +737,7 @@ void Walk::walk() {
   }
 
   if (cog_timer_->running()) {
-    FOR_EACH_LEG(l) {
+    FOREACH_LEG(l) {
       if (!swing_timer_->running() || swing_leg_ != l) {
         leg_cmd_eefs_[l] = cog2eef_traj_[l]->sample((double)cog_timer_->span()/wk_params_->COG_TIME);
   //      leg_ifaces_[l]->ik(
@@ -780,7 +780,7 @@ void Walk::stance() {
 bool Walk::end_stance() {
   Eigen::Vector3d _tmp(0.0, 0.0, wk_params_->STANCE_HEIGHT);
   // ;
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     auto diff  = (cog2eef_traj_[l]->sample(1) - leg_ifaces_[l]->eef()).norm();
     if (diff > 0.1) return false;
   }
@@ -971,7 +971,7 @@ void Walk::prog_cog_traj(const Eigen::Vector2d& _next_cog) {
   Eigen::Vector3d _p1(0.0, 0.0, -wk_params_->STANCE_HEIGHT);
   // Eigen::Vector2d _tmp_next_cog = prog_next_cog(swing_leg_);
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     _p0 = leg_ifaces_[l]->eef();
     _p1.head(2) = _p0.head(2) - _next_cog.head(2);
     _p1.tail(1) = _p0.tail(1);
@@ -1013,7 +1013,7 @@ Eigen::Vector2d Walk::prog_next_cog(LegType _fsl) {
   Eigen::Vector2d _last_cog_proj(0.0, 0.0), _lwp[LegType::N_LEGS];
   _last_cog_proj = body_iface_->cog().head(2);
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     if (l != _fsl)
       _lwp[l] = (leg_ifaces_[l]->eef() + body_iface_->leg_base(l)).head(2);
     else

@@ -8,11 +8,11 @@
 #ifndef INCLUDE_SYSTEM_PLATFORM_PROPAGATE_ARM_PCAN_H_
 #define INCLUDE_SYSTEM_PLATFORM_PROPAGATE_ARM_PCAN_H_
 
-#include "system/platform/propagate/pcan.h"
+#include "pcan.h"
 
-namespace middleware {
+namespace agile_robot {
 
-class ArmPcan: public PcanPropagate {
+class ArmPcan: public PCanPropa {
 public:
   ArmPcan(const std::string& l = "arm_pcan");
 

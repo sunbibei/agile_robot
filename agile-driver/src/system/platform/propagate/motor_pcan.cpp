@@ -8,7 +8,7 @@
 #include "system/platform/propagate/motor_pcan.h"
 #include "foundation/cfg_reader.h"
 
-namespace middleware {
+namespace agile_robot {
 
 const std::string FAKE_PID_THREAD = "fake-pid";
 
@@ -117,4 +117,4 @@ void MotorPcan::auto_inst_pid(const std::string& __p) {
 } /* namespace middleware */
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::MotorPcan, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::MotorPcan, Label)

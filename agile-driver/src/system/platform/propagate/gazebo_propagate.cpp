@@ -12,7 +12,7 @@
 
 #include <chrono>
 
-namespace middleware {
+namespace agile_robot {
 
 struct MsgqPacket : public MsgBase {
   Packet  pkg;
@@ -186,4 +186,4 @@ bool GzPropagateP::read (Packet& _pkg) {
 
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::GzPropagateP, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::GzPropagateP, Label)

@@ -14,7 +14,7 @@
 #include <atomic>
 #include <chrono>
 
-namespace middleware {
+namespace agile_robot {
 
 class MotorPcan: public ArmPcan {
 public:

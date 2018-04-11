@@ -13,7 +13,7 @@
 #include <boost/shared_ptr.hpp>
 #include <system/utils/utf.h>
 
-namespace middleware {
+namespace agile_robot {
 /**
  * 完成组合模式的基类.
  * 组合模式以名称为标识符

@@ -599,7 +599,7 @@
       </collision>
     </link>
 
-    <joint name='hip' type='revolute'>
+    <joint name='hfe' type='revolute'>
       <parent>leg_base</parent>
       <child>thigh</child>
       <pose frame=''>0 0 0.23 0 0 0</pose>
@@ -633,7 +633,7 @@
       </physics>
     </joint>
 
-    <joint name='knee' type='revolute'>
+    <joint name='kfe' type='revolute'>
       <parent>thigh</parent>
       <child>shank</child>
       <pose frame=''>0 0 0.23 0 0 0</pose>
@@ -667,7 +667,7 @@
       </physics>
     </joint>
 
-    <joint name='yaw' type='fixed'>
+    <joint name='haa' type='fixed'>
       <parent>base</parent>
       <child>leg_base</child>
       <pose frame=''>0 0 0 0 -0 0</pose>

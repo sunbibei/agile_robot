@@ -10,14 +10,14 @@
 
 #include "system/platform/propagate/propagate.h"
 
-namespace middleware {
+namespace agile_robot {
 
-class UsbPropagate: public Propagate {
+class UsbPropa: public Propagate {
 public:
-  UsbPropagate(const std::string& l = "usb");
+  UsbPropa(const std::string& l = "usb");
   virtual bool auto_init() override;
 
-  virtual ~UsbPropagate();
+  virtual ~UsbPropa();
 
   struct UsbConfig {
     std::string file_name;

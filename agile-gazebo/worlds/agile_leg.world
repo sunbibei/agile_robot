@@ -30,17 +30,17 @@
           <node_id>0x02</node_id>
 
           <!-- The linear coefficients -->
-          <YAW_linear_scale>1</YAW_linear_scale>
-          <YAW_linear_offset>16290</YAW_linear_offset>
-          <YAW_pid_gains>0 0 0</YAW_pid_gains>
+          <HAA_linear_scale>1</HAA_linear_scale>
+          <HAA_linear_offset>16290</HAA_linear_offset>
+          <HAA_pid_gains>0 0 0</HAA_pid_gains>
 
-          <HIP_linear_scale>-1</HIP_linear_scale>
-          <HIP_linear_offset>23079</HIP_linear_offset>
-          <HIP_pid_gains>100 10 0</HIP_pid_gains>
+          <HFE_linear_scale>-1</HFE_linear_scale>
+          <HFE_linear_offset>23079</HFE_linear_offset>
+          <HFE_pid_gains>20 0 0</HFE_pid_gains>
 
-          <KNEE_linear_scale>1</KNEE_linear_scale>
-          <KNEE_linear_offset>28734</KNEE_linear_offset>
-          <KNEE_pid_gains>100 10 0</KNEE_pid_gains>
+          <KFE_linear_scale>1</KFE_linear_scale>
+          <KFE_linear_offset>28734</KFE_linear_offset>
+          <KFE_pid_gains>20 0 0</KFE_pid_gains>
         </config>
       </plugin>
 

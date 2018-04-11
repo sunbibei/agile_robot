@@ -12,7 +12,7 @@
 #include <fstream>
 #include <cmath>
 
-namespace middleware {
+namespace agile_robot {
 
 const short INVALID_VALUE = 0x8888;
 

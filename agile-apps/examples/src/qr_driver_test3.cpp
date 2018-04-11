@@ -23,7 +23,7 @@ QrDriverTestController3::~QrDriverTestController3() {
 **************************************************************************/
 bool QrDriverTestController3::init(hardware_interface::PositionJointInterface*, ros::NodeHandle &n) {
 
-  auto jnt_manager = middleware::JointManager::instance();
+  auto jnt_manager = agile_robot::JointManager::instance();
   for (const auto& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR})
     for (const auto& jnt : {JntType::KFE, JntType::HFE, JntType::HAA})
       joint_handles_.push_back(jnt_manager->getJointHandle(leg, jnt));
@@ -36,7 +36,7 @@ bool QrDriverTestController3::init(hardware_interface::PositionJointInterface*, 
       std::string param_name = std::string("touchdown_" + std::to_string(count));
       if (ros::param::get(param_name.c_str(), td_label)) {
           std::cout << "Get Touchdown Name: " << td_label << std::endl;
-          auto td = Label::getHardwareByName<middleware::ForceSensor>(td_label);
+          auto td = Label::getHardwareByName<agile_robot::ForceSensor>(td_label);
           if (nullptr == td)
             LOG_ERROR << "The named '" << td_label << "' joint does not exist!";
           else
@@ -49,7 +49,7 @@ bool QrDriverTestController3::init(hardware_interface::PositionJointInterface*, 
 
   std::string imu_label;
   if (ros::param::get("imu", imu_label)) {
-    imu_handle_ = Label::getHardwareByName<middleware::ImuSensor>(imu_label);
+    imu_handle_ = Label::getHardwareByName<agile_robot::ImuSensor>(imu_label);
     if (nullptr == imu_handle_)
       LOG_ERROR << "The named '" << imu_label << "' joint does not exist!";
   }
@@ -66,7 +66,7 @@ void QrDriverTestController3::__initAllofData() {
   jnt_tors_.reserve(LegType::N_LEGS * JntType::N_JNTS);
   td_datas_.reserve(LegType::N_LEGS);
 
-  auto jnt_manager = middleware::JointManager::instance();
+  auto jnt_manager = agile_robot::JointManager::instance();
   for (const auto& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
     td_datas_.push_back(td_handles_[leg]->force_data_const_pointer());
     for (const auto& jnt : {JntType::KFE, JntType::HFE, JntType::HAA}) {

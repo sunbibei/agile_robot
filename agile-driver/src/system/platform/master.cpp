@@ -12,7 +12,7 @@
 #include "foundation/thread/threadpool.h"
 #include "foundation/utf.h"
 
-namespace middleware {
+namespace agile_robot {
 
 #define MASTER_R_THREAD ("master-r")
 #define MASTER_W_THREAD ("master-w")

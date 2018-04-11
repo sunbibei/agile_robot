@@ -7,7 +7,7 @@
 
 #include "repository/control_toolbox/leg_pid.h"
 
-namespace middleware {
+namespace agile_robot {
 
 LegPid::LegPid(const std::string& prefix) {
   // TODO Auto-generated constructor stub

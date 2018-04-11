@@ -93,7 +93,7 @@ protected:
   ///! The initialize position
   Eigen::Vector3d           init_foothold_;
   ///! The position of foothold.
-  Eigen::Vector3d           targ_foothold_;
+  Eigen::Vector3d           goal_foothold_;
   ///! The swing timer
   TimeControl*              swing_timer_;
   ///! The trajectory for swing leg

@@ -11,7 +11,7 @@
 #include "system/platform/sw_node/sw_node_manager.h"
 #include "system/platform/sw_node/sw_node.h"
 
-namespace middleware {
+namespace agile_robot {
 
 SWNode::SWNode(const std::string& l)
 : Label(l), node_id_(INVALID_BYTE) {

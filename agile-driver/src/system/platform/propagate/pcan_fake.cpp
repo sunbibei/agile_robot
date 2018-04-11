@@ -13,7 +13,7 @@
 #include <ctime>
 #include <iomanip>
 
-namespace middleware {
+namespace agile_robot {
 
 FILE*   g_r_fd   = nullptr;
 FILE*   g_w_fd   = nullptr;
@@ -51,7 +51,7 @@ bool PcanFake::auto_init() {
 //  w_tm_     = new tm;
 
   swap_buffer_ = new boost::lockfree::queue<TPCANMsg>(1024);
-  return PcanPropagate::auto_init();
+  return PCanPropa::auto_init();
 }
 
 PcanFake::~PcanFake() {
@@ -85,7 +85,7 @@ bool PcanFake::write(const Packet& pkt) {
   // This code aims to compatible with the old protocol
   // TODO It should be updated.
   send_msg_.MSGTYPE = PCAN_MESSAGE_STANDARD;
-  send_msg_.ID      = MII_MSG_FILL_TO_NODE_MSG(pkt.node_id, pkt.msg_id);
+  send_msg_.ID      = MII_MSG_FILL_2NODE_MSG(pkt.node_id, pkt.msg_id);
   send_msg_.LEN     = pkt.size;
   memset(send_msg_.DATA, '\0', 8 * sizeof(BYTE));
   memcpy(send_msg_.DATA, pkt.data, send_msg_.LEN * sizeof(BYTE));
@@ -109,7 +109,7 @@ bool PcanFake::write(const Packet& pkt) {
         send_msg_.DATA[7]);
 
   if (MII_MSG_COMMON_1 == pkt.msg_id) {
-    send_msg_.ID  = MII_MSG_FILL_TO_HOST_MSG(pkt.node_id, MII_MSG_HEARTBEAT_1);
+    send_msg_.ID  = MII_MSG_FILL_2HOST_MSG(pkt.node_id, MII_MSG_HEARTBEAT_1);
     send_msg_.LEN = 0x08;
     // buf_lock_.lock();
     swap_buffer_->push(send_msg_);
@@ -154,8 +154,8 @@ bool PcanFake::read(Packet& pkt) {
       recv_msg_.DATA[4], recv_msg_.DATA[5], recv_msg_.DATA[6], recv_msg_.DATA[7]);
 
   pkt.bus_id  = bus_id_;
-  pkt.node_id = MII_MSG_EXTRACT_NODE_ID(recv_msg_.ID);
-  pkt.msg_id  = MII_MSG_EXTRACT_MSG_ID(recv_msg_.ID);
+  pkt.node_id = MII_MSG_SPLIT_NODEID(recv_msg_.ID);
+  pkt.msg_id  = MII_MSG_SPLIT_MSGID(recv_msg_.ID);
   pkt.size    = recv_msg_.LEN;
   memset(pkt.data, '\0', 8 * sizeof(char));
   memcpy(pkt.data, recv_msg_.DATA, pkt.size * sizeof(char));
@@ -166,5 +166,5 @@ bool PcanFake::read(Packet& pkt) {
 
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(middleware::PcanFake, Label)
-CLASS_LOADER_REGISTER_CLASS(middleware::PcanFake, middleware::Propagate)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::PcanFake, Label)
+CLASS_LOADER_REGISTER_CLASS(agile_robot::PcanFake, agile_robot::Propagate)

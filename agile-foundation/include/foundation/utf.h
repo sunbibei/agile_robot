@@ -122,7 +122,7 @@ enum JntCmdType {
   CMD_MOTOR_VEL,
   N_JNT_CMD_TYPES,
 };
-#define JNTCMDTYPE_TOSTRING(l) \
+#define JNTCMDTYPE2STR(l) \
     ( ( (const char*[]{"UNKNOWN_CMD_TYPE", "CMD_POS", "CMD_VEL", "CMD_TOR", "CMD_POS_VEL", "CMD_MOTOR_VEL", "N_JNT_CMD_TYPES"} )[(l) + 1] )
 
 enum JntDataType {
@@ -132,7 +132,7 @@ enum JntDataType {
   TOR = 2,
   N_JNT_DATA_TYPES = 3
 };
-#define JNTDATATYPE_TOSTRING(l) \
+#define JNTDATATYPE2STR(l) \
     ( ( (const char*[]{"UNKNOWN_TYPE", "POS", "VEL", "TOR", "N_JNT_DATA_TYPES"} )[(l) + 1] )
 
 enum LegType {
@@ -143,9 +143,9 @@ enum LegType {
   HR = 3,
   N_LEGS = 4
 };
-#define FOR_EACH_LEG(l) for (const auto& l : {LegType::FL, LegType::FR, LegType::HL, LegType::HR})
+#define FOREACH_LEG(l) for (const auto& l : {LegType::FL, LegType::FR, LegType::HL, LegType::HR})
 
-#define LEGTYPE_TOSTRING(l) \
+#define LEGTYPE2STR(l) \
     ( ( (const char*[]){"UNKNOWN_LEG", "FL", "FR", "HL", "HR", "N_LEGS"} )[(l) + 1] )
 
 ///! whether is belong to front legs
@@ -195,9 +195,9 @@ enum JntType {
   N_JNTS = 3
 };
 
-#define FOR_EACH_JNT(j) for (const auto& j : {JntType::HAA, JntType::HFE, JntType::KFE})
+#define FOREACH_JNT(j) for (const auto& j : {JntType::HAA, JntType::HFE, JntType::KFE})
 
-#define JNTTYPE_TOSTRING(l) \
+#define JNTTYPE2STR(l) \
     ( ( (const char*[]){"UNKNOWN_JNT", "HAA", "HFE", "KFE", "N_JNTS"} )[(l) + 1] )
 
 #define _DEBUG_INFO_FLAG (true)

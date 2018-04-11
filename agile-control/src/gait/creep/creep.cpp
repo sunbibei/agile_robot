@@ -92,10 +92,10 @@ bool Creep::auto_init() {
   if (!body_iface_)
     LOG_FATAL << "The interface of RobotBody is null!";
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     leg_ifaces_[l] = ifaces->robot_leg(l);
     if (!leg_ifaces_[l])
-      LOG_FATAL << "The interface of RobotLeg" << LEGTYPE_TOSTRING(l) << " is null!";
+      LOG_FATAL << "The interface of RobotLeg" << LEGTYPE2STR(l) << " is null!";
   }
 
   if (false) {
@@ -177,7 +177,7 @@ void Creep::checkState() {
   switch(current_state_) {
   case CreepState::CP_INIT_POSE:
   {
-    FOR_EACH_LEG(l) {
+    FOREACH_LEG(l) {
       auto diff = (leg_ifaces_[l]->eef() - eef_cmds_[l]).norm();
       if (diff > 0.3) return;
     }
@@ -208,7 +208,7 @@ void Creep::checkState() {
     timer_->stop(&_s_tmp_span);
     LOG_WARNING << "*******----READY " << " (" << _s_tmp_span << "ms)----*******";
 
-    FOR_EACH_LEG(l) {
+    FOREACH_LEG(l) {
       balance_fpts_(l) = leg_ifaces_[l]->eef().z();
     }
 
@@ -227,14 +227,14 @@ void Creep::checkState() {
 
     ///! the end of WK_INIT_POS
     timer_->stop(&_s_tmp_span);
-    LOG_WARNING << "*******----SWING " << LEGTYPE_TOSTRING(swing_leg_)
+    LOG_WARNING << "*******----SWING " << LEGTYPE2STR(swing_leg_)
         << " (" << _s_tmp_span << "ms)----*******";
 
 #ifdef TEST_TIME
   t_time_.push_back(_s_tmp_span);
   double trans = std::abs(leg_ifaces_[LEGTYPE_DL(swing_leg_)]->eef().x() - t_last_stance_pos_);
   t_translation_.push_back(trans);
-  LOG_WARNING << "TRANS - " << LEGTYPE_TOSTRING(swing_leg_) << ": " << trans;
+  LOG_WARNING << "TRANS - " << LEGTYPE2STR(swing_leg_) << ": " << trans;
   LOG_WARNING << "VELOS - " << trans * 1000.0 / _s_tmp_span << " cm/s";
 #else
     PRESS_THEN_GO
@@ -270,7 +270,7 @@ void Creep::post_tick() {
   if (_s_sum_interval < post_tick_interval_) return;
   _s_sum_interval = 0;
 
-  FOR_EACH_LEG(leg) {
+  FOREACH_LEG(leg) {
     ///! Modify the target to keep the stance stability
     if (!is_hang_ && CreepState::CP_INIT_POSE != current_state_
         && CreepState::CP_READY != current_state_) {
@@ -312,7 +312,7 @@ void Creep::post_tick() {
 
 void Creep::pose_init() {
   if (!timer_->running()) {
-    FOR_EACH_LEG(l) {
+    FOREACH_LEG(l) {
       eef_cmds_[l] << 0.0, 0.0, -cp_params_->STANCE_HEIGHT;
     }
 
@@ -329,7 +329,7 @@ void Creep::ready() {
     timer_->start();
   }
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     if (LegState::TD_STATE != leg_ifaces_[l]->leg_state())
       eef_cmds_[l].z() = boost::algorithm::clamp(eef_cmds_[l].z() - 0.3,
           -cp_params_->STANCE_HEIGHT - 10, -cp_params_->STANCE_HEIGHT + 5);
@@ -337,7 +337,7 @@ void Creep::ready() {
 }
 
 bool Creep::end_ready() {
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     if (LegState::TD_STATE != leg_ifaces_[l]->leg_state())
       return false;
   }
@@ -429,7 +429,7 @@ void Creep::swing_hind() {
 
   ///! If the cog_timer is running, control to move the CoG.
   if (cog_timer_->running()) {
-    FOR_EACH_LEG(l) {
+    FOREACH_LEG(l) {
 #ifdef CONTINUE_GAIT
       if (swing_leg_ != l) {
 #else
@@ -534,7 +534,7 @@ void Creep::swing_front() {
 
   ///! If the cog_timer is running, control to move the CoG.
   if (cog_timer_->running()) {
-    FOR_EACH_LEG(l) {
+    FOREACH_LEG(l) {
       if (swing_leg_ != l) {
         eef_cmds_[l] = cog2eef_traj_[l]->sample((double)cog_timer_->span()/cp_params_->COG_TIME);
       }
@@ -580,7 +580,7 @@ LegType Creep::next_leg(const LegType curr) {
 
 Eigen::Vector3d Creep::stability_margin(LegType sl) {
   static Eigen::Vector3d _eefs[LegType::N_LEGS];
-  FOR_EACH_LEG(leg) {
+  FOREACH_LEG(leg) {
     _eefs[leg] = leg_ifaces_[leg]->eef() + body_iface_->leg_base(leg);
   }
 
@@ -612,7 +612,7 @@ void Creep::prog_cog_traj(const Eigen::Vector2d& _next_cog) {
   Eigen::Vector3d _p1(0.0, 0.0, -cp_params_->STANCE_HEIGHT);
   // Eigen::Vector2d _tmp_next_cog = prog_next_cog(swing_leg_);
 
-  FOR_EACH_LEG(l) {
+  FOREACH_LEG(l) {
     _p0 = leg_ifaces_[l]->eef();
     _p1.head(2) = _p0.head(2) - _next_cog.head(2);
     _p1.tail(1) = _p0.tail(1);
