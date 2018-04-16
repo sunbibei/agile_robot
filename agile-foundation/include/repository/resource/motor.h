@@ -14,9 +14,10 @@
 namespace agile_robot {
 
 class Motor: public Label {
-  friend class LegNode;
+  // friend class LegNode;
+  friend class MotorNode;
 public:
-  Motor(const std::string& _l = "motor");
+  Motor();
   virtual bool auto_init() override;
 
   virtual ~Motor();

@@ -38,7 +38,7 @@ include_directories(
 set(SRC_ROOT            src)
 set(SRC_TEST_ROOT       test)
 
-set(SRC_SYS             ${SRC_ROOT}/system)
+set(SRC_SYS             ${SRC_ROOT})
 set(SRC_SYS_PLATFORM    ${SRC_SYS}/platform)
 set(SRC_SYS_ROBOT       ${SRC_SYS}/robot)
 set(SRC_SYS_UTILS       ${SRC_SYS}/utils)
@@ -47,6 +47,7 @@ set(SRC_SYS_UTILS       ${SRC_SYS}/utils)
 set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/sw_node/sw_node_manager.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/sw_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/leg_node.cpp
+                        ${SRC_SYS_PLATFORM}/sw_node/motor_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/power_node.cpp
 
                         ${SRC_SYS_PLATFORM}/propagate/propagate_manager.cpp

@@ -88,29 +88,29 @@ inline void __print_color_helper(LegType l, const Eigen::VectorXd& jnt) {
 ///! print joint position of the single leg
 void print_jnt_pos(LegType l) {
   printf("___________________________________________\n");
-  printf("|    -|   YAW  |   HIP  |  KNEE  |\n");
-//printf("|LEG -| +0.0000| +0.0000| +0.0000|\n");
-  printf("|    -");
+  printf("| LEG |   HAA  |   HFE  |   KFE  |\n");
+//printf("| LEG | +0.0000| +0.0000| +0.0000|\n");
+  printf("| %s -", LEGTYPE2STR(l));
   __print_color_helper(l);
-  printf("\n-------------------------------------------\n");
+  printf("-------------------------------------------\n");
 }
 
 ///! print the v.s. result and different between joint position of the single leg
 void print_jnt_pos(LegType l, const Eigen::VectorXd& _tjnt) {
   auto _jnt = LegRobot::instance()->robot_leg(l)->joint_position_const_ref();
   printf("___________________________________________\n");
-  printf("|LEG -|   YAW  |   HIP  |  KNEE  |  ERROR |\n");
-//printf("|LEG -| +0.0000| +0.0000| +0.0000| +0.0000|\n");
-  printf("|    -"); __print_color_helper(l); printf("\n");
-  printf("|    =| %+7.04f| %+7.04f| %+7.04f| %+7.04f|\n",
+  printf("| LEG |   HAA  |   HFE  |   KFE  |  ERROR |\n");
+//printf("| LEG | +0.0000| +0.0000| +0.0000| +0.0000|\n");
+  printf("| %s -", LEGTYPE2STR(l)); __print_color_helper(l);printf("  ---   |\n");
+  printf("| %s =| %+7.04f| %+7.04f| %+7.04f| %+7.04f|\n", LEGTYPE2STR(l),
       _tjnt(JntType::HAA), _tjnt(JntType::HFE), _tjnt(JntType::KFE), (_tjnt - _jnt).norm());
-  printf("\n-----------------------------------------\n");
+  printf("-------------------------------------------\n");
 }
 ///! print the joint position of the all of leg.
 void print_jnt_pos() {
   printf("___________________________________________________________________\n");
-  printf("|LEG -|   YAW  |   HIP  |  KNEE  |LEG -|   YAW  |   HIP  |  KNEE  |\n");
-//printf("LEG -| +0.0000| +0.0000| +0.0000|LEG -| +0.0000| +0.0000| +0.0000|\n");
+  printf("| LEG |   HAA  |   HFE  |   KFE  |LEG -|   HAA  |   HFE  |   KFE  |\n");
+//printf("| LEG | +0.0000| +0.0000| +0.0000|LEG -| +0.0000| +0.0000| +0.0000|\n");
   printf("| FL -"); __print_color_helper(LegType::FL);
   printf( " FR -"); __print_color_helper(LegType::FR); printf("\n");
 
@@ -122,18 +122,18 @@ void print_jnt_pos() {
 void print_jnt_pos(const Eigen::VectorXd& fl, const Eigen::VectorXd& fr,
     const Eigen::VectorXd& hl, const Eigen::VectorXd& hr) {
   printf("_____________________________________________________________________________________\n");
-  printf("|LEG -|   YAW  |   HIP  |  KNEE  |  ERROR |LEG -|   YAW  |   HIP  |  KNEE  |  ERROR |\n");
-//printf("|LEG  | +0.0000| +0.0000| +0.0000| +0.0000|LEG  | +0.0000| +0.0000| +0.0000| +0.0000|\n");
-  printf("| FL -"); __print_color_helper(LegType::FL);     printf("    -   |");
-  printf( " FR -"); __print_color_helper(LegType::FR);     printf("    -   |\n");
+  printf("| LEG |   HAA  |   HFE  |   KFE  |  ERROR | LEG |   HAA  |   HFE  |   KFE  |  ERROR |\n");
+//printf("| LEG | +0.0000| +0.0000| +0.0000| +0.0000| LEG | +0.0000| +0.0000| +0.0000| +0.0000|\n");
+  printf("| FL -"); __print_color_helper(LegType::FL);     printf("   ---  |");
+  printf( " FR -"); __print_color_helper(LegType::FR);     printf("   ---  |\n");
 
   printf("| FL ="); __print_color_helper(LegType::FL, fl);
   printf("%+8.04f|", (fl - LegRobot::instance()->robot_leg(LegType::FL)->joint_position_const_ref()).norm());
   printf( " FR ="); __print_color_helper(LegType::FR, fr);
   printf("%+8.04f|\n", (fr - LegRobot::instance()->robot_leg(LegType::FR)->joint_position_const_ref()).norm());
 
-  printf("| HL -"); __print_color_helper(LegType::HL);     printf("    -   |");
-  printf( " HR -"); __print_color_helper(LegType::HR);     printf("    -   |\n");
+  printf("| HL -"); __print_color_helper(LegType::HL);     printf("   ---  |");
+  printf( " HR -"); __print_color_helper(LegType::HR);     printf("   ---  |\n");
 
   printf("| HL ="); __print_color_helper(LegType::HL, hl);
   printf("%+8.04f|", (hl - LegRobot::instance()->robot_leg(LegType::HL)->joint_position_const_ref()).norm());
@@ -144,8 +144,8 @@ void print_jnt_pos(const Eigen::VectorXd& fl, const Eigen::VectorXd& fr,
 ///! print FPT(foot point) coordinate of the special leg.
 void print_eef_pos(LegType l) {
   printf("____________________________________\n");
-  printf("|LEG -|    X   |    Y    |    Z    |\n");
-//printf("LEG -| +00.0000| +00.0000| +00.0000|\n");
+  printf("| LEG |    X    |    Y    |    Z    |\n");
+//printf("| LEG | +00.0000| +00.0000| +00.0000|\n");
   auto eef = LegRobot::instance()->robot_leg(l)->eef();
   printf("| %s -| %+8.04f| %+8.04f| %+8.04f|\n",
       LEGTYPE2STR(l), eef.x(), eef.y(), eef.z());
@@ -154,10 +154,10 @@ void print_eef_pos(LegType l) {
 ///! print the v.s. result and different between FPT or COG
 void print_eef_pos(LegType l, const Eigen::Vector3d& teef) {
   printf("_______________________________________________\n");
-  printf("|LEG  |    X    |    Y    |    Z    |  ERROR  |\n");
-//printf("|LEG  | +00.0000| +00.0000| +00.0000|+00.0000 |\n");
+  printf("| LEG |    X    |    Y    |    Z    |  ERROR  |\n");
+//printf("| LEG | +00.0000| +00.0000| +00.0000|+00.0000 |\n");
   Eigen::Vector3d eef = LegRobot::instance()->robot_leg(l)->eef();
-  printf("| %s -| %+8.04f| %+8.04f| %+8.04f|    -    |\n",
+  printf("| %s -| %+8.04f| %+8.04f| %+8.04f|   ---   |\n",
       LEGTYPE2STR(l), eef.x(), eef.y(), eef.z());
   printf("| %s -| %+8.04f| %+8.04f| %+8.04f|%+8.04f |\n",
       LEGTYPE2STR(l), teef.x(), teef.y(), teef.z(), (teef - eef).norm());
@@ -167,8 +167,8 @@ void print_eef_pos(LegType l, const Eigen::Vector3d& teef) {
 ///! print the PFT of the all of leg.
 void print_eef_pos() {
   printf("________________________________________________________________________\n");
-  printf("|LEG -|    X    |    Y    |    Z    |LEG  |    X    |    Y    |    Z    |\n");
-//printf("|LEG -| +00.0000| +00.0000| +00.0000|LEG -| +00.0000| +00.0000| +00.0000|\n");
+  printf("| LEG |    X    |    Y    |    Z    | LEG |    X    |    Y    |    Z    |\n");
+//printf("| LEG | +00.0000| +00.0000| +00.0000| LEG | +00.0000| +00.0000| +00.0000|\n");
   Eigen::Vector3d eef(0.0, 0.0, 0.0);
   for (const auto& l : {LegType::FL, LegType::HL}) {
     LegRobot::instance()->robot_leg(l)->eef(eef);
@@ -187,8 +187,8 @@ void print_eef_pos() {
 void print_eef_pos(const Eigen::Vector3d& fl, const Eigen::Vector3d& fr,
     const Eigen::Vector3d& hl, const Eigen::Vector3d& hr) {
   printf("_____________________________________________________________________________________________\n");
-  printf("|LEG  |    X    |    Y    |    Z    |  ERROR  |LEG  |    X    |    Y    |    Z    |  ERROR  |\n");
-//printf("|LEG  | +00.0000| +00.0000| +00.0000|+00.0000 |LEG  | +00.0000| +00.0000| +00.0000|+00.0000 |\n");
+  printf("| LEG |    X    |    Y    |    Z    |  ERROR  | LEG |    X    |    Y    |    Z    |  ERROR  |\n");
+//printf("| LEG | +00.0000| +00.0000| +00.0000|+00.0000 | LEG | +00.0000| +00.0000| +00.0000|+00.0000 |\n");
   Eigen::Vector3d eef(0.0, 0.0, 0.0);
   Eigen::Vector3d teefs[LegType::N_LEGS];
   teefs[LegType::FL] = fl; teefs[LegType::FR] = fr;
@@ -198,13 +198,13 @@ void print_eef_pos(const Eigen::Vector3d& fl, const Eigen::Vector3d& fr,
     LegRobot::instance()->robot_leg(l)->eef(eef);
     auto diff1 = (teefs[l] - eef).norm();
 
-    printf("| %s -| %+8.04f| %+8.04f| %+8.04f|    -    |",
+    printf("| %s -| %+8.04f| %+8.04f| %+8.04f|   ---   |",
         LEGTYPE2STR(l), eef.x(), eef.y(), eef.z());
 
     LegRobot::instance()->robot_leg(sl)->eef(eef);
     auto diff2 = (teefs[sl] - eef).norm();
 
-    printf(" %s -| %+8.04f| %+8.04f| %+8.04f|    -    |\n",
+    printf(" %s -| %+8.04f| %+8.04f| %+8.04f|   ---   |\n",
         LEGTYPE2STR(sl), eef.x(), eef.y(), eef.z());
 
 

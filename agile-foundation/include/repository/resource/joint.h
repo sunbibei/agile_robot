@@ -17,14 +17,16 @@ class Joint : public Label {
   friend class LegNode;
   friend class Motor;
 public:
-  Joint(const std::string& l = Label::null);
-  // 妥协方案
+  Joint();
   virtual bool auto_init() override;
-  ~Joint();
+
+  virtual ~Joint();
 
   const std::string&   joint_name() const;
-  const JntType&     joint_type() const;
-  const LegType&     leg_type()   const;
+  const JntType&       joint_type() const;
+  const LegType&       leg_type()   const;
+
+  class Motor*         joint_motor() { return joint_motor_; }
   /**
    * Interface for user layer.
    */
@@ -77,7 +79,7 @@ protected:
 protected:
   JntType             jnt_type_;
   LegType             leg_type_;
-  std::string           jnt_name_;
+  std::string         jnt_name_;
   class Motor*        joint_motor_;
   // The private data structure
   class JointState*   joint_state_;

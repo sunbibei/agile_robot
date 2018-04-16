@@ -123,7 +123,7 @@ enum JntCmdType {
   N_JNT_CMD_TYPES,
 };
 #define JNTCMDTYPE2STR(l) \
-    ( ( (const char*[]{"UNKNOWN_CMD_TYPE", "CMD_POS", "CMD_VEL", "CMD_TOR", "CMD_POS_VEL", "CMD_MOTOR_VEL", "N_JNT_CMD_TYPES"} )[(l) + 1] )
+    ( ( (const char*[]){"UNKNOWN_CMD_TYPE", "CMD_POS", "CMD_VEL", "CMD_TOR", "CMD_POS_VEL", "CMD_MOTOR_VEL", "N_JNT_CMD_TYPES"} )[(l) + 1] )
 
 enum JntDataType {
   UNKNOWN_TYPE = -1,
@@ -133,7 +133,7 @@ enum JntDataType {
   N_JNT_DATA_TYPES = 3
 };
 #define JNTDATATYPE2STR(l) \
-    ( ( (const char*[]{"UNKNOWN_TYPE", "POS", "VEL", "TOR", "N_JNT_DATA_TYPES"} )[(l) + 1] )
+    ( ( (const char*[]){"UNKNOWN_TYPE", "POS", "VEL", "TOR", "N_JNT_DATA_TYPES"} )[(l) + 1] )
 
 enum LegType {
   UNKNOWN_LEG = -1,

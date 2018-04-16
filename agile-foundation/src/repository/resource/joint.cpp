@@ -51,8 +51,8 @@ struct JointCommand {
   }
 };
 
-Joint::Joint(const std::string& l)
-  : Label(l), new_command_(false), jnt_type_(JntType::UNKNOWN_JNT),
+Joint::Joint()
+  : Label(Label::null), new_command_(false), jnt_type_(JntType::UNKNOWN_JNT),
     leg_type_(LegType::UNKNOWN_LEG), jnt_name_(""), joint_motor_(nullptr),/*msg_id_(INVALID_BYTE),*/
     joint_state_(nullptr), joint_command_(nullptr) {
   // The code as follow should be here.

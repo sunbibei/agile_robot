@@ -365,17 +365,18 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std:
   if (!get_value(p, attr, vals_str)) return false;
 
   for (auto str : vals_str) {
-    boost::to_lower(str);
+    boost::to_upper(str);
+    // boost::to_lower(str);
     JntType type = JntType::UNKNOWN_JNT;
-    if (0 == str.compare("yaw")) {
+    if (0 == str.compare(JNTTYPE2STR(JntType::HAA))) {
       type = JntType::HAA;
-    } else if (0 == str.compare("hip")) {
+    } else if (0 == str.compare(JNTTYPE2STR(JntType::HFE))) {
       type = JntType::HFE;
-    } else if (0 == str.compare("knee")) {
+    } else if (0 == str.compare(JNTTYPE2STR(JntType::KFE))) {
       type = JntType::KFE;
     } else {
       LOG_WARNING << "Error the 'jnt' TAG(" << str << ") in the 'joint' TAG, "
-          << "require 'yaw', 'knee' or 'hip'";
+          << "require 'haa', 'hfe' or 'kfe'";
     }
 
     vals.push_back(type);
@@ -389,15 +390,16 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std:
   if (!get_value(p, attr, vals_str)) return false;
 
   for (auto str : vals_str) {
-    boost::to_lower(str);
+    // boost::to_lower(str);
+    boost::to_upper(str);
     LegType type = LegType::UNKNOWN_LEG;
-    if (0 == str.compare("fl")) {
+    if (0 == str.compare(LEGTYPE2STR(LegType::FL))) {
       type = LegType::FL;
-    } else if (0 == str.compare("fr")) {
+    } else if (0 == str.compare(LEGTYPE2STR(LegType::FR))) {
       type = LegType::FR;
-    } else if (0 == str.compare("hl")) {
+    } else if (0 == str.compare(LEGTYPE2STR(LegType::HL))) {
       type = LegType::HL;
-    } else if (0 == str.compare("hr")) {
+    } else if (0 == str.compare(LEGTYPE2STR(LegType::HR))) {
       type = LegType::HR;
     } else {
       LOG_WARNING << "Error the 'leg' TAG(" << str << ") in the 'joint' TAG, "

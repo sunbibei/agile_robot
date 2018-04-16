@@ -37,8 +37,8 @@ struct MotorCommand {
   /*const*/ short   MAX_VEL;
 };
 
-Motor::Motor(const std::string& _l)
-  : Label(_l), joint_handle_(nullptr), motor_state_(nullptr),
+Motor::Motor()
+  : Label("motor"), joint_handle_(nullptr), motor_state_(nullptr),
     motor_cmd_(nullptr), new_command_(false) {
   ;
 }

@@ -19,7 +19,7 @@
 #include <chrono>
 #include <boost/scoped_ptr.hpp>
 
-#include "system/robot/mii_robot.h"
+#include "robot/mii_robot.h"
 ///! qr-next-control
 #include <mii_control.h>
 

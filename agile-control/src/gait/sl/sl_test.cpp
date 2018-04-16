@@ -496,7 +496,7 @@ void SlTest::prog_eef_traj_poly(const Eigen::Vector3d& _next_fpt, Traj3dSp& _tra
 //  std::cout << "appr - b:\n" << b << std::endl;
   if (0 == A.determinant()) {
     x = A.householderQr().solve(b);
-    std::cout << "NO trajectory results, Using this result: " << x.transpose() << std::endl;
+    LOG_WARNING << "NO trajectory results, Using this result: " << x.transpose();
   } else {
     x = A.partialPivLu().solve(b);
   }
@@ -506,8 +506,8 @@ void SlTest::prog_eef_traj_poly(const Eigen::Vector3d& _next_fpt, Traj3dSp& _tra
   _traj->range(0, 1);
 
   ///! Just for debug information
-  std::cout << "Swing Trajectory: " << std::endl;
-  std::cout << " - Rise phase: " << *traj << std::endl;
+  LOG_INFO << "Swing Trajectory: ";
+  LOG_INFO << " - Rise phase: " << *traj;
 }
 
 //void SlTest::prog_eef_traj_tri(const Eigen::Vector3d& _next_fpt, Traj3dSp& _traj) {

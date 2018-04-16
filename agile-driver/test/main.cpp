@@ -6,7 +6,7 @@
  */
 
 #include <iostream>
-#include <system/robot/mii_robot.h>
+#include <robot/mii_robot.h>
 
 #include <foundation/utf.h>
 #include <foundation/cfg_reader.h>
