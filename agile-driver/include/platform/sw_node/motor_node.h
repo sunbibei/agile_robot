@@ -27,9 +27,10 @@ protected:
   LegType                   leg_;
   ///! update each motor, this vector order by the type of joint.
   std::vector<class Motor*> motors_by_type_;
+
+
   ///! the source of command, this vector order by the type of joint.
   std::vector<class Joint*> joints_by_type_;
-
   // The constant pointer of the joint command
   const JntCmdType&         jnt_mode_;
   const double*             jnt_cmds_[JntType::N_JNTS];

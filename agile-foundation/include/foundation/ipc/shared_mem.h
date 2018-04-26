@@ -9,6 +9,8 @@
 #define SHARED_MEM_H_
 
 #include "../utf.h"
+#include "ipc.h"
+
 #include <sys/shm.h>
 
 class SharedMem {

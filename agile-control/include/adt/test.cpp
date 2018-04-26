@@ -9,14 +9,39 @@
 #ifdef  TEST_TRAJ
 
 #include "polynomial.h"
-#include <adt/segmented.h>
-#include <adt/discrete.h>
+#include "segmented.h"
+#include "discrete.h"
+#include "fourier.h"
 
 #include <iostream>
 
-using namespace qr_control;
+using namespace agile_control;
 
 int main() {
+  Fourier3d* fourier = new Fourier3d();
+
+  Fourier3d::CoeffMat _c;
+  _c.resize(Eigen::NoChange, 2);
+  _c << 1, 2,
+      10, 20,
+      100, 200;
+  Fourier3d::CoeffMat _s;
+  _s.resize(Eigen::NoChange, 2);
+  _s << 0.1, 0.2,
+      0.010, 0.020,
+      0.00100, 0.00200;
+
+  fourier->reset(_c, _s, 3.14*0.5);
+
+  std::cout << *fourier << std::endl;
+
+  std::cout << "Fourier test:" << std::endl;
+  ///! sample(-4) :  -215 -21.5 -2.15
+  std::cout << "sample(0.5) : "  << fourier->sample(0.5).transpose()  << std::endl;
+  ///! sample(0.1):   1.234  0.1234 0.01234
+  std::cout << "sample(0): "  << fourier->sample(0).transpose() << std::endl;
+
+  return 0;
   // Traj3dSp traj;
 
   PolyTraj3dSp poly1(new PolyTraj3d);

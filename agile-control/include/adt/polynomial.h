@@ -389,8 +389,8 @@ using PolyTraj##SizeSuffix##TypeSuffix     = Polynomial<Type, Size>;
 //POLY_MAKE_TYPEDEFS_ALL_SIZES(float,  f)
 POLY_MAKE_TYPEDEFS_ALL_SIZES(double, d)
 
-#undef SEG_TRAJ_MAKE_TYPEDEFS_ALL_SIZES
-#undef SEG_TRAJ_MAKE_TYPEDEFS
+#undef POLY_MAKE_TYPEDEFS_ALL_SIZES
+#undef POLY_MAKE_TYPEDEFS
 
 } /* namespace qr_control */
 

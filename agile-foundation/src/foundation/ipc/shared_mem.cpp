@@ -13,7 +13,7 @@ using namespace internal;
 SINGLETON_IMPL(SharedMem)
 
 void SharedMem::clear() {
-  __clear(IPC_TYPE::SHM);
+  __clear(IpcType::IPC_SHM);
 }
 
 void SharedMem::printAllSharedMem() {
@@ -58,7 +58,7 @@ SharedMem::~SharedMem() {
 bool SharedMem::create_shm(const std::string& _n, size_t _s) {
   if (key_map_.end() != key_map_.find(_n)) return true;
 
-  key_t _key = __find_ava_key(_n, IPC_TYPE::SHM);
+  key_t _key = __find_ava_key(_n, IpcType::IPC_SHM);
   ///! First, try to find the memory.
   int   _shm_id = shmget(_key, 0, 0);
   if (-1 == _shm_id) { // Could not found.
@@ -68,7 +68,7 @@ bool SharedMem::create_shm(const std::string& _n, size_t _s) {
       return false;
     } else {
       LOG_INFO << "Create the named shared memory '" << _n << "'";
-      __add_key_map(_n, _key, _shm_id, IPC_TYPE::SHM);
+      __add_key_map(_n, _key, _shm_id, IpcType::IPC_SHM);
     }
   } else { // Found
     ; // Nothing to do here.

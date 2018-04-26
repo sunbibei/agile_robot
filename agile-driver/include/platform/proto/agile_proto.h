@@ -35,6 +35,9 @@ struct Packet {
   unsigned char data[DATA_SIZE];
 };
 
+#define ARM_BUS          (0x01)
+#define MOTOR_BUS        (0x02)
+
 /*////////////////////////////////////////////////////////
 The CAN message id define:
         10 09 08 07 06 05 04 03 02 01 00
@@ -42,6 +45,8 @@ to Node  0| 0|    NODE ID|        MSG ID|
 to Group 0| 1|   GROUP ID|        MSG ID|
 to Host  1| X|    NODE ID|        MSG ID|
 ////////////////////////////////////////////////////////*/
+#define MII_GRUP_ALL_NODE     (0x01)
+
 #define MII_MSGID_N_BITS      (11)
 #define MII_MSGID_N_BYTE      (2)
 ///! The template of to node , to group and to host message

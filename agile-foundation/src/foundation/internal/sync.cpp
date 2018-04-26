@@ -30,7 +30,7 @@ bool __init_key_map() {
       return false;
     } else {
       __LOG("Create the sync shared memory '" << SYNC_IDENTIFY << "'");
-      __add_key_map(SYNC_IDENTIFY, KEY_MAP_OF_KEY, _shm_id, IPC_TYPE::SHM);
+      __add_key_map(SYNC_IDENTIFY, KEY_MAP_OF_KEY, _shm_id, IpcType::IPC_SHM);
     }
   } else { // Found
     ; // Nothing to do here.
@@ -40,7 +40,7 @@ bool __init_key_map() {
   return true;
 }
 
-bool __add_key_map(const std::string& _n, key_t _key, int _id, IPC_TYPE _type) {
+bool __add_key_map(const std::string& _n, key_t _key, int _id, IpcType _type) {
   auto _addr = shmat(shmget(KEY_MAP_OF_KEY, 0, 0), NULL, 0);
   if (nullptr == _addr) return false;
   _PrivateKeyMap* _key_map = (_PrivateKeyMap*) _addr;
@@ -50,7 +50,7 @@ bool __add_key_map(const std::string& _n, key_t _key, int _id, IPC_TYPE _type) {
     LOG_DEBUG << "Initialize the all of key_map";
     size_t off = 0;
     strcpy(_key_map[off].name, _n.c_str());
-    _key_map[off].type   = SHM;
+    _key_map[off].type   = IPC_SHM;
     _key_map[off].key    = _key;
     _key_map[off].id     = _id;
     _key_map[off].count  = 0;
@@ -59,7 +59,7 @@ bool __add_key_map(const std::string& _n, key_t _key, int _id, IPC_TYPE _type) {
     for (; off < MAX_SHM_SIZE; ++off) {
       memset(_key_map[off].name, 0x00, MAX_NAME_SIZE * sizeof(char));
       _key_map[off].key    = IPC_PRIVATE;
-      _key_map[off].type   = UNKNOWN;
+      _key_map[off].type   = UNKNOWN_IPC;
       _key_map[off].id     = -1;
       _key_map[off].count  = 0;
     }
@@ -125,16 +125,16 @@ bool __sub_count_key_map(const std::string& _n) {
       if (0 == _key_map[offset].count) {
         LOG_DEBUG << "remove the shared memory -> '" << _n << "'";
         if (-1 != _key_map[offset].id) {
-          if (SHM == _key_map[offset].type)
+          if (IPC_SHM == _key_map[offset].type)
             shmctl(_key_map[offset].id, IPC_RMID, NULL);
-          else if (MSG_QUEUE == _key_map[offset].type)
+          else if (IPC_MSGQ == _key_map[offset].type)
             msgctl(_key_map[offset].id, IPC_RMID, NULL);
           else
             LOG_ERROR << "What fucking code."; // unreached code
         }
         memset(_key_map[offset].name, 0x00, MAX_NAME_SIZE * sizeof(char));
         _key_map[offset].key    = IPC_PRIVATE;
-        _key_map[offset].type   = UNKNOWN;
+        _key_map[offset].type   = UNKNOWN_IPC;
         _key_map[offset].id     = -1;
         _key_map[offset].count  = 0;
       }
@@ -150,7 +150,7 @@ bool __sub_count_key_map(const std::string& _n) {
   return false;
 }
 
-key_t __find_ava_key(const std::string& _n, IPC_TYPE type) {
+key_t __find_ava_key(const std::string& _n, IpcType type) {
   auto _addr = shmat(shmget(KEY_MAP_OF_KEY, 0, 0), NULL, 0);
   if (nullptr == _addr) return false;
   _PrivateKeyMap* _key_map = (_PrivateKeyMap*) _addr;
@@ -163,12 +163,12 @@ key_t __find_ava_key(const std::string& _n, IPC_TYPE type) {
 
   for (key_t key = KEY_MAP_OF_KEY + 0x01; key < KEY_MAP_OF_KEY + MAX_SHM_SIZE; key += 0x01) {
     switch (type) {
-    case IPC_TYPE::SHM:
+    case IpcType::IPC_SHM:
       if (-1 == shmget(key, 0, 0))
         return key;
 
       break;
-    case IPC_TYPE::MSG_QUEUE:
+    case IpcType::IPC_MSGQ:
       if (-1 == msgget(key, IPC_EXCL))
         return key;
 
@@ -181,8 +181,8 @@ key_t __find_ava_key(const std::string& _n, IPC_TYPE type) {
   return IPC_PRIVATE;
 }
 
-void __clear(IPC_TYPE type) {
-  if ((IPC_TYPE::SHM == type) || (IPC_TYPE::N_IPC == type)) {
+void __clear(IpcType type) {
+  if ((IpcType::IPC_SHM == type) || (IpcType::N_IPC == type)) {
     for (key_t key = KEY_MAP_OF_KEY; key < KEY_MAP_OF_KEY + MAX_SHM_SIZE; key += 0x01) {
       int _shm_id = shmget(key, 0, 0);
       if (-1 != _shm_id) {
@@ -192,7 +192,7 @@ void __clear(IPC_TYPE type) {
     }
   }
 
-  if ((IPC_TYPE::MSG_QUEUE == type) || (IPC_TYPE::N_IPC == type)) {
+  if ((IpcType::IPC_MSGQ == type) || (IpcType::N_IPC == type)) {
     int _shm_id = shmget(KEY_MAP_OF_KEY, 0, 0);
     if (-1 != _shm_id) {
       LOG_INFO << "remove the shared memory: " << _shm_id;

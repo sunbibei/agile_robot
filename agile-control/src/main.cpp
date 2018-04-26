@@ -39,7 +39,7 @@ void create_system_instance() {
   Label::printfEveryInstance();
 }
 
-int main(int argc, char* argv[]) {
+int main1(int argc, char* argv[]) {
   ros::init(argc, argv, "test_qr");
   ros::NodeHandle nh;
 

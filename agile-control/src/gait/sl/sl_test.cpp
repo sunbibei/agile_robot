@@ -274,7 +274,7 @@ bool SlTest::end_swing_leg() {
 }
 
 void SlTest::ws_calc() {
-  ;
+  print_eef_pos();
 }
 
 void SlTest::prod_traj() {

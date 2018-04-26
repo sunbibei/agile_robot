@@ -30,22 +30,22 @@ struct SWNode : public Label {
   friend class SWNodeManager;
   SWNode(const std::string& __l = Label::null);
   virtual bool auto_init() override;
+
   virtual ~SWNode();
 
-  /**
-   * 该类是否会产生命令下发给机器人
-   * 若发回true, 则会每次询问是否有指令下发
+  /*!
+   * @brief Return true if you need to generate the command, or return false.
    */
   virtual bool requireCmdDeliver();
-  /**
-   * Propagate接收到的所有Message，通过handleMsg职责链完成解析
-   * 因此，将所有数据解析工作延迟到每个具体的硬件子类中进行实现
+
+  /*!
+   * @brief The sub-class must be complete this method, parse the Packet.
    */
   virtual void handleMsg(const Packet&);
-  /**
-   * 某些硬件类型或许会有命令需要下发
-   * The new command packet will be pushed back into queue;
-   * if generate the Command packet, return true. Or return false.
+
+  /*!
+   * @brief The new command packet will be pushed back into queue;
+   *        If generate the Command packet, return true. Or return false.
    */
   virtual bool generateCmd(std::vector<Packet>&);
 

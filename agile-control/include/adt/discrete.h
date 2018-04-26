@@ -50,8 +50,8 @@ public:
   friend std::ostream& operator<<(std::ostream&, const Discrete<_T1, _T2>& traj);
 
 protected:
-  MiiMap<_DataType, typename Trajectory<_DataType, _Dim_X>::StateVec> seqs_;
-  MiiVector<_DataType> sorted_t_set_;
+  std::map<_DataType, typename Trajectory<_DataType, _Dim_X>::StateVec> seqs_;
+  std::vector<_DataType> sorted_t_set_;
 };
 
 

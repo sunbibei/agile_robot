@@ -9,6 +9,7 @@
 #define MSG_QUEUE_H_
 
 #include "../utf.h"
+#include "ipc.h"
 #include <sys/msg.h>
 
 typedef struct {

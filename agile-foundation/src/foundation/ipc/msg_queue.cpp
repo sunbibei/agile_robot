@@ -29,7 +29,7 @@ MsgQueue::~MsgQueue() {
 bool MsgQueue::create_msgq(const std::string& _n) {
   if (key_map_.end() != key_map_.find(_n)) return true;
 
-  key_t _key = __find_ava_key(_n, IPC_TYPE::MSG_QUEUE);
+  key_t _key = __find_ava_key(_n, IpcType::IPC_MSGQ);
   // if (IPC_PRIVATE == _key)
   ///! First, try to find the memory.
   int _msg_id = msgget(_key, IPC_EXCL);
@@ -40,7 +40,7 @@ bool MsgQueue::create_msgq(const std::string& _n) {
       return false;
     } else {
       LOG_INFO << "Create the named message queue '" << _n << "'";
-      __add_key_map(_n, _key, _msg_id, IPC_TYPE::MSG_QUEUE);
+      __add_key_map(_n, _key, _msg_id, IpcType::IPC_MSGQ);
     }
   } else { // Found
     ; // Nothing to do here.
@@ -92,5 +92,5 @@ int MsgQueue::get_msgq_id(const std::string& _n) {
 }
 
 void MsgQueue::clear() {
-  __clear(IPC_TYPE::MSG_QUEUE);
+  __clear(IpcType::IPC_MSGQ);
 }

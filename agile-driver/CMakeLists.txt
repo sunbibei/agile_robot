@@ -49,13 +49,14 @@ set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/sw_node/sw_node_manager.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/leg_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/motor_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/power_node.cpp
+                        ${SRC_SYS_PLATFORM}/sw_node/test_node.cpp
 
                         ${SRC_SYS_PLATFORM}/propagate/propagate_manager.cpp
                         ${SRC_SYS_PLATFORM}/propagate/propagate.cpp
-                        ${SRC_SYS_PLATFORM}/propagate/pcan_fake.cpp
-                        ${SRC_SYS_PLATFORM}/propagate/pcan.cpp
-                        ${SRC_SYS_PLATFORM}/propagate/arm_pcan.cpp
-                        ${SRC_SYS_PLATFORM}/propagate/motor_pcan.cpp
+                        # ${SRC_SYS_PLATFORM}/propagate/pcan_fake.cpp
+                        # ${SRC_SYS_PLATFORM}/propagate/pcan.cpp
+                        # ${SRC_SYS_PLATFORM}/propagate/arm_pcan.cpp
+                        # ${SRC_SYS_PLATFORM}/propagate/motor_pcan.cpp
                         ${SRC_SYS_PLATFORM}/propagate/usb.cpp
                         ${SRC_SYS_PLATFORM}/propagate/gazebo_propagate.cpp
 
@@ -82,7 +83,7 @@ target_link_libraries(${PROJECT_NAME}_sys_platform
   ${EIGEN3_LIBRARIES}
   agile_foundation
   agile_foundation_repository
-  pcanbasic
+  # pcanbasic
 )
 
 target_link_libraries(${PROJECT_NAME}_sys_robot

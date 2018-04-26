@@ -8,7 +8,7 @@ int main() {
   google::SetStderrLogging(google::GLOG_INFO);
 
   LOG_INFO << "Starting to clear shm and msgq... ...";
-  internal::__clear(internal::IPC_TYPE::N_IPC);
+  internal::__clear(internal::IpcType::N_IPC);
 
   google::ShutdownGoogleLogging();
   return 0;
