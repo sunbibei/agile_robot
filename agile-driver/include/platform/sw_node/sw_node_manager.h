@@ -25,11 +25,11 @@ public:
 
 protected:
   // store all of the hw_unit which order by id
-  std::vector<SWNode*>             hw_list_by_id_;
+  std::vector<std::vector<SWNode*>> hw_list_by_id_;
   // store all of the hw_unit which require to send some command
-  std::vector<SWNode*>             hw_list_by_cmd_;
+  std::vector<SWNode*>              hw_list_by_cmd_;
   // store all of the hw_unit which order by name
-  std::map<std::string, SWNode*>   hw_list_by_name_;
+  std::map<std::string, SWNode*>    hw_list_by_name_;
 };
 
 } /* namespace middleware */

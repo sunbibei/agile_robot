@@ -49,6 +49,7 @@ void TestNode::handleMsg(const Packet& pkt) {
     if (MII_MSG_DEBUG_1 == pkt.msg_id) {
       debug_status_ = DebugStatus::DS_RECV_READY;
       t0_     = std::chrono::high_resolution_clock::now();
+      LOG_WARNING << "I'm ready to recv";
     }
     break;
   case DebugStatus::DS_RECV_READY:
@@ -56,12 +57,16 @@ void TestNode::handleMsg(const Packet& pkt) {
       debug_status_ = DebugStatus::DS_DATA_SAVE_READY;
 
       node_pkt_list_.reserve(pkt_list_.size());
+
+      LOG_WARNING << "I'm ready to recv feedback";
     } else if (MII_MSG_DEBUG_1 == pkt.msg_id) {
       debug_status_ = DebugStatus::DS_READY_END;
     } else {
       curr_t_ = std::chrono::high_resolution_clock::now();
       loop_dt = std::chrono::duration_cast<std::chrono::milliseconds>
           (curr_t_ - t0_).count();
+
+      LOG_EVERY_N(WARNING, 100) << "recv...";
 
       pkt_list_.push_back({loop_dt, pkt});
     }
@@ -70,6 +75,8 @@ void TestNode::handleMsg(const Packet& pkt) {
     if (MII_MSG_DEBUG_2 == pkt.msg_id) {
       debug_status_ = DebugStatus::DS_READY_END;
     } else {
+      LOG_EVERY_N(WARNING, 100) << "feedback...";
+
       node_pkt_list_.push_back(pkt);
     }
     break;
@@ -158,10 +165,12 @@ bool TestNode::requireCmdDeliver() {
 bool TestNode::generateCmd(std::vector<Packet>& pkts) {
   if (DebugStatus::DS_INIT != debug_status_) return false;
 
+  LOG_WARNING << "Enter";
   Packet pkt = {ARM_BUS, MII_GRUP_ALL_NODE, MII_MSG_DEBUG_1, 5, {0}};
   memcpy(pkt.data, &N_total_msgs_, sizeof(N_total_msgs_));
   pkt.data[sizeof(N_total_msgs_)] = which_one_;
 
+  pkts.push_back(pkt);
   debug_status_ = DebugStatus::DS_WAITING;
   return true;
 }

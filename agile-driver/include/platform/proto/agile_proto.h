@@ -24,6 +24,7 @@
 #define BYTE unsigned char
 #endif*/
 
+const unsigned char MAX_BUS_NUM  = 0x10u;
 const unsigned char MAX_NODE_NUM = 0x10u;
 #define INVALID_BYTE (0x88)
 

@@ -16,6 +16,9 @@ find_package(Eigen3  REQUIRED)
 # Declare a catkin package
 catkin_package(
   LIBRARIES
+    controlcan
+    ${PROJECT_NAME}_sys_platform
+    ${PROJECT_NAME}_sys_robot
   INCLUDE_DIRS
     include
   DEPENDS
@@ -27,12 +30,29 @@ catkin_package(
 ## Build ##
 ###########
 
+set(THIRDPARTY_ROOT     thirdparty)
+
+set(CAN_LIB_ROOT        ${THIRDPARTY_ROOT}/controlcan)
+# Copy the libcontrolcan.so into devel/lib directory.
+execute_process(COMMAND cp
+  ${PROJECT_SOURCE_DIR}/${CAN_LIB_ROOT}/lib/libcontrolcan.so
+  ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_LIB_DESTINATION}
+)
+# execute_process(COMMAND echo xxxxxxx${CMAKE_LIBRARY_PATH})
+
 # Build
 include_directories(
   include
+  ${CAN_LIB_ROOT}/include
+
   ${catkin_INCLUDE_DIRS}
   ${TinyXML_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
+)
+
+# Add the thirdparty lib path.
+link_directories(
+  ${CAN_LIB_ROOT}/lib
 )
 
 set(SRC_ROOT            src)
@@ -58,6 +78,7 @@ set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/sw_node/sw_node_manager.cpp
                         # ${SRC_SYS_PLATFORM}/propagate/arm_pcan.cpp
                         # ${SRC_SYS_PLATFORM}/propagate/motor_pcan.cpp
                         ${SRC_SYS_PLATFORM}/propagate/usb.cpp
+                        ${SRC_SYS_PLATFORM}/propagate/can_usb.cpp
                         ${SRC_SYS_PLATFORM}/propagate/gazebo_propagate.cpp
 
                         ${SRC_SYS_PLATFORM}/master.cpp
@@ -83,6 +104,7 @@ target_link_libraries(${PROJECT_NAME}_sys_platform
   ${EIGEN3_LIBRARIES}
   agile_foundation
   agile_foundation_repository
+  controlcan
   # pcanbasic
 )
 

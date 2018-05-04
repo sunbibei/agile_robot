@@ -22,12 +22,21 @@ public:
   virtual void handleMsg(const Packet&)          override;
   virtual bool generateCmd(std::vector<Packet>&) override;
 
+///! The helper methods
+private:
+  bool __fill_pos_cmd(std::vector<Packet>& pkts);
+  bool __fill_vel_cmd(std::vector<Packet>& pkts);
+  bool __fill_tor_cmd(std::vector<Packet>& pkts);
+  bool __fill_pos_vel_cmd(std::vector<Packet>& pkts);
+  bool __fill_motor_vel_cmd(std::vector<Packet>& pkts);
+
 protected:
   // there are three joint in each leg
   LegType                   leg_;
   ///! update each motor, this vector order by the type of joint.
   std::vector<class Motor*> motors_by_type_;
-
+  // The order match the @joints_by_type_
+  std::vector<class __PrivateLinearParams*> jnt_params_;
 
   ///! the source of command, this vector order by the type of joint.
   std::vector<class Joint*> joints_by_type_;

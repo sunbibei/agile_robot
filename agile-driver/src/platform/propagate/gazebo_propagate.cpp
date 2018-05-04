@@ -43,7 +43,7 @@ bool GzPropagateP::auto_init() {
     id_2_leg_lut_[id] = l;
   }
 #endif
-  LOG_WARNING << "Starting to auto_init...";
+  LOG_WARNING << "Ending to auto_init...";
   return true;
 }
 

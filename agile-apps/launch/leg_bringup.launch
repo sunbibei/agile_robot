@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="debug"               default="True"  />
-  <arg name="use_ros_control"     default="False"  />
+  <arg name="sim"                 default="False" />
+  <arg name="use_ros_control"     default="False" />
   <arg name="rt_frequency"        default="100.0" />
   <arg name="ctrl_loop_frequency" default="100.0" />
 
@@ -11,7 +12,9 @@
   <!-- Load hardware interface -->
   <node name="leg_bringup" pkg="agile_apps" type="agile_apps" output="screen">
     <param name="prefix"    value="leg" />
-    <param name="configure" value="$(find agile_apps)/config/leg_robot.cfg" />
+    <param if="$(arg sim)"     name="configure" value="$(find agile_apps)/config/leg_robot_sim.cfg" />
+    <param unless="$(arg sim)" name="configure" value="$(find agile_apps)/config/leg_robot.cfg" />
+    
     <param name="library"   value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_driver_sys_platform.so"/>
     <param name="gait_cfg"  value="$(find agile_apps)/config/leg_gait.cfg" />
     <param name="gait_lib"  value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_control_repository.so" />

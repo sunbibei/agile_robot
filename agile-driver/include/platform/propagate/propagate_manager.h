@@ -12,6 +12,8 @@
 #include "foundation/internal/resource_manager.h"
 #include "platform/propagate/propagate.h"
 
+#include <chrono>
+// #include <boost/lockfree/queue.hpp>
 #include <mutex>
 
 namespace agile_robot {
@@ -48,6 +50,11 @@ protected:
   std::chrono::milliseconds  propa_interval_;
   bool                       thread_alive_;
   // size_t                     pkts_queue_size;
+
+  ///! Maybe we should use the lock-free queue instead of std::vector.
+//  boost::lockfree::queue<Packet>* pkts_queue_4_send_;
+//  boost::lockfree::queue<Packet>* pkts_queue_4_recv_;
+
   std::mutex            lock_4_send_;
   std::mutex            lock_4_recv_;
   std::vector<Packet>   pkts_queue_4_send_;

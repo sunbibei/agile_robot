@@ -27,7 +27,7 @@
           <cmd_ipc_name>cmds</cmd_ipc_name>
 
           <leg_type>FL</leg_type>
-          <node_id>0x02</node_id>
+          <node_id>0x01</node_id>
 
           <!-- The linear coefficients -->
           <HAA_linear_scale>1</HAA_linear_scale>

@@ -311,15 +311,17 @@ void GzAgileLegPlugin::joint_control() {
       if ((nullptr == joints_target_[j]) || (nullptr == joints_control_[j]))
         continue;
 
-      // TODO need to support the velocity and torque command
-      if (joints_target_[j]->is_new.load()) {
-        joints_control_[j]->target(joints_target_[j]->value);
-        joints_target_[j]->is_new.store(false);
-      }
+      joints_[j]->SetPosition(0, joints_target_[j]->value);
 
-      _u = 0;
-      joints_control_[j]->control(joints_[j]->Position(), _u);
-      joints_[j]->SetVelocity(0, _u);
+      // TODO need to support the velocity and torque command
+//      if (joints_target_[j]->is_new.load()) {
+//        joints_control_[j]->target(joints_target_[j]->value);
+//        joints_target_[j]->is_new.store(false);
+//      }
+//
+//      _u = 0;
+//      joints_control_[j]->control(joints_[j]->Position(), _u);
+//      joints_[j]->SetVelocity(0, _u);
       // joints_[j]->SetForce(0, _u);
     }
 
@@ -553,6 +555,7 @@ void GzAgileLegPlugin::__write_command_to_sim(const Packet& pkt) {
     }
     joints_target_[type]->value  = cmd;
     joints_target_[type]->is_new.store(true);
+    // joints_[type]->SetPosition(0, cmd);
     offset += sizeof(count);
   }
   if (false)
@@ -560,8 +563,8 @@ void GzAgileLegPlugin::__write_command_to_sim(const Packet& pkt) {
         counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
 
   if (true)
-    printf(" - %+8.5f, %+8.5f, %+8.5f\n",
-        cmds[JntType::KFE], cmds[JntType::HFE], cmds[JntType::HAA]);
+    printf("\n -    HAA  ,    HFE  ,    KFE  \n - %+8.5f, %+8.5f, %+8.5f\n\n",
+        cmds[JntType::HAA], cmds[JntType::HFE], cmds[JntType::KFE]);
 }
 
 inline void __parse_jnt_name(const std::string& _n, JntType& _j) {

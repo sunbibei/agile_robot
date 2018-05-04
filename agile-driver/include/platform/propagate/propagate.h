@@ -50,7 +50,7 @@ public:
 
 protected:
   unsigned char bus_id_;
-  std::string     propa_name_;
+  std::string   propa_name_;
 };
 
 } /* namespace middleware */

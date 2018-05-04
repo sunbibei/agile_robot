@@ -97,6 +97,7 @@ void PropagateManager::updateRead() {
             (int)pkt.data[6], (int)pkt.data[7]);
         }
 
+        // pkts_queue_4_recv_->push(pkt);
         pkts_queue_4_recv_.push_back(pkt);
       }
     }
@@ -109,11 +110,12 @@ void PropagateManager::updateRead() {
 void PropagateManager::updateWrite() {
   TIMER_INIT
 
+  Packet pkt;
   while (thread_alive_) {
     MUTEX_TRY_LOCK(lock_4_send_)
     while (!pkts_queue_4_send_.empty()) {
+      // pkts_queue_4_send_->pop(pkt);
       const auto& pkt = pkts_queue_4_send_.back();
-
       for (auto& c : res_list_) {
         if (c->write(pkt)) break;
       }
@@ -134,7 +136,10 @@ void PropagateManager::updateWrite() {
 
 bool PropagateManager::readPackets(std::vector<Packet>& pkts) {
   MUTEX_TRY_LOCK(lock_4_recv_)
+
   if (!pkts_queue_4_recv_.empty()) {
+    // pkts.push_back(Packet());
+    // pkts_queue_4_recv_->pop(pkts.back());
     for (const auto& pkt : pkts_queue_4_recv_)
       pkts.push_back(pkt);
 

@@ -97,6 +97,8 @@ bool RosWrapper::start() {
 
   LOG_INFO << "MiiRobot initialization has completed.";
 
+  ///! No launch the framework of control!
+  return MiiRobot::start();
   if (use_ros_control_) {
     hardware_interface_.reset(
               new RosRobotHW(nh_, Label::make_label(root_tag_, "roswrapper")));

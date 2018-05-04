@@ -44,6 +44,7 @@ struct __PrivateLinearParams {
 //    c = nullptr;
 //}
 
+
 LegNode::LegNode(const std::string& __l)
   : SWNode(__l), leg_(LegType::UNKNOWN_LEG), td_(nullptr) {
   ;
@@ -137,7 +138,7 @@ void LegNode::handleMsg(const Packet& pkt) {
   case MII_MSG_HEARTBEAT_1:
     if (8 != pkt.size) {
       LOG_ERROR << "The data size of MII_MSG_HEARTBEAT_MSG_1 message does not match!"
-          << ", the expect size is 8, but the real size is " << pkt.size;
+          << ", the expect size is 8, but the real size is " << (int)pkt.size;
       return;
     }
     // parse the joint state and touchdown data
