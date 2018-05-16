@@ -20,6 +20,11 @@ namespace agile_robot {
 class PropagateManager: public internal::ResourceManager<Propagate> {
   SINGLETON_DECLARE(PropagateManager)
 public:
+
+  /*!
+   * @brief This method will initialize something.
+   */
+  bool init();
   /**
    * @brief This method will starts a propagate thread for reading and writing Packets
    * @return Return true if everything is right, or return false.

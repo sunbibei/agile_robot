@@ -40,6 +40,10 @@ PropagateManager::~PropagateManager() {
   }
 }
 
+bool PropagateManager::init() {
+  return true; // Nothing to do here.
+}
+
 bool PropagateManager::run() {
   if (ThreadPool::instance()->is_running(THREAD_R_NAME)
       || ThreadPool::instance()->is_running(THREAD_W_NAME)) {
@@ -110,15 +114,17 @@ void PropagateManager::updateRead() {
 void PropagateManager::updateWrite() {
   TIMER_INIT
 
-  Packet pkt;
   while (thread_alive_) {
     MUTEX_TRY_LOCK(lock_4_send_)
     while (!pkts_queue_4_send_.empty()) {
       // pkts_queue_4_send_->pop(pkt);
       const auto& pkt = pkts_queue_4_send_.back();
-      for (auto& c : res_list_) {
-        if (c->write(pkt)) break;
-      }
+      if (nullptr == propa_list_by_bus_[pkt.bus_id]) {
+        for (auto& c : res_list_)
+          if (c->write(pkt)) break;
+      } else
+        propa_list_by_bus_[pkt.bus_id]->write(pkt);
+
       pkts_queue_4_send_.pop_back();
       if (false) {
         // printf("%s", (std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) + ":" + std::to_string(__LINE__)).c_str());

@@ -40,7 +40,7 @@ Master::~Master() {
 bool Master::init() {
   if (!propagate_manager_ || !sw_node_manager_) return false;
 
-  return sw_node_manager_->init();
+  return propagate_manager_->init() && sw_node_manager_->init();
 }
 
 bool Master::run() {
