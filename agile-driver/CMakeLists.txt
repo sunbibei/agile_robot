@@ -79,6 +79,8 @@ set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/sw_node/sw_node_manager.cpp
                         # ${SRC_SYS_PLATFORM}/propagate/motor_pcan.cpp
                         ${SRC_SYS_PLATFORM}/propagate/usb.cpp
                         ${SRC_SYS_PLATFORM}/propagate/can_usb.cpp
+                        ${SRC_SYS_PLATFORM}/propagate/motor_can.cpp
+                        ${SRC_SYS_PLATFORM}/propagate/leg_can.cpp
                         ${SRC_SYS_PLATFORM}/propagate/gazebo_propagate.cpp
 
                         ${SRC_SYS_PLATFORM}/master.cpp

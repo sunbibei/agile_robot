@@ -38,8 +38,10 @@ bool TestNode::auto_init() {
 }
 
 TestNode::~TestNode() {
+  LOG_WARNING << "~TestNode";
   if (pkt_list_.empty()) return;
 
+  LOG_WARNING << "Write the msg to file...";
   writeMsgToFile();
 }
 
@@ -166,9 +168,9 @@ bool TestNode::generateCmd(std::vector<Packet>& pkts) {
   if (DebugStatus::DS_INIT != debug_status_) return false;
 
   LOG_WARNING << "Enter";
-  Packet pkt = {ARM_BUS, MII_GRUP_ALL_NODE, MII_MSG_DEBUG_1, 5, {0}};
+  Packet pkt = {ARM_BUS, which_one_, MII_MSG_DEBUG_1, 2, {0}};
   memcpy(pkt.data, &N_total_msgs_, sizeof(N_total_msgs_));
-  pkt.data[sizeof(N_total_msgs_)] = which_one_;
+  // pkt.data[sizeof(N_total_msgs_)] = which_one_;
 
   pkts.push_back(pkt);
   debug_status_ = DebugStatus::DS_WAITING;

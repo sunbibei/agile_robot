@@ -27,24 +27,25 @@ public:
   virtual bool start() override;
   virtual void stop()  override;
 
-  virtual bool write(const Packet&) override;
-  virtual bool read(Packet&)        override;
+//  virtual bool write(const Packet&) override;
+//  virtual bool read(Packet&)        override;
+
+protected:
+  boost::lockfree::queue<VCI_CAN_OBJ>* recv_buffer_;
+  boost::lockfree::queue<VCI_CAN_OBJ>* send_buffer_;
+  bool         connected_;
 
 private:
   void do_exchange_w();
   void do_exchange_r();
 
 private:
+  int      recv_buf_size_;
+
   PVCI_CAN_OBJ recv_msgs_;
   PVCI_CAN_OBJ send_msgs_;
 
-  boost::lockfree::queue<Packet>* recv_buffer_;
-  boost::lockfree::queue<Packet>* send_buffer_;
-
   VCI_INIT_CONFIG config_;
-  bool         connected_;
-
-  int      recv_buf_size_;
 };
 
 } /* namespace agile_robot */

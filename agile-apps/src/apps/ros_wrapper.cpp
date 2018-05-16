@@ -97,6 +97,7 @@ bool RosWrapper::start() {
 
   LOG_INFO << "MiiRobot initialization has completed.";
 
+  // Label::printfEveryInstance();
   ///! No launch the framework of control!
   return MiiRobot::start();
   if (use_ros_control_) {

@@ -11,8 +11,6 @@
 #include "foundation/cfg_reader.h"
 #include "foundation/utf.h"
 
-//#include ""
-
 namespace agile_robot {
 
 static bool  g_is_startup_device = false;
@@ -25,9 +23,9 @@ static DWORD g_device_idx        = 0;
 
 CanUsb::CanUsb()
   : Propagate("CanUsb"),
-    recv_msgs_(nullptr), send_msgs_(nullptr),
     recv_buffer_(nullptr), send_buffer_(nullptr),
-    connected_(false), recv_buf_size_(2048) {
+    connected_(false),   recv_buf_size_(2048),
+    recv_msgs_(nullptr), send_msgs_(nullptr) {
   ;
 }
 
@@ -60,17 +58,14 @@ bool CanUsb::auto_init() {
   ///! Setting the size of swap buffer
   N_SWAP_BUF = 2048;
   cfg->get_value(getLabel(), "swap_buf_size", N_SWAP_BUF);
-  recv_buffer_ = new boost::lockfree::queue<Packet>(N_SWAP_BUF);
-  send_buffer_ = new boost::lockfree::queue<Packet>(N_SWAP_BUF);
-
-  ThreadPool::instance()->add(USBCAN_THREAD_R, &CanUsb::do_exchange_r, this);
-  ThreadPool::instance()->add(USBCAN_THREAD_W, &CanUsb::do_exchange_w, this);
+  recv_buffer_ = new boost::lockfree::queue<VCI_CAN_OBJ>(N_SWAP_BUF);
+  send_buffer_ = new boost::lockfree::queue<VCI_CAN_OBJ>(N_SWAP_BUF);
   return true;
 }
 
 CanUsb::~CanUsb() {
   int count = 0;
-  Packet tmp;
+  VCI_CAN_OBJ tmp;
   while (!send_buffer_->empty())
     send_buffer_->pop(tmp);
   LOG_WARNING << "Send Buffer Residue: " << count;
@@ -127,6 +122,13 @@ bool CanUsb::start() {
       usleep(500000);
     } else {
       LOG_DEBUG << "Initialize CAN OK!";
+
+      ///! It will be launch two thread by each Bus inherit from CanUsb
+      ThreadPool::instance()->add(USBCAN_THREAD_R + std::to_string(bus_id_),
+          &CanUsb::do_exchange_r, this);
+      ThreadPool::instance()->add(USBCAN_THREAD_W + std::to_string(bus_id_),
+          &CanUsb::do_exchange_w, this);
+
       return connected_;
     }
   }
@@ -141,23 +143,23 @@ void CanUsb::stop()  {
   connected_          = false;
 }
 
-bool CanUsb::write(const Packet& pkt) {
-  if (!connected_) {
-    // LOG_FIRST_N(WARNING, 10000) << "The pcan has not been launched, or initialized fail.";
-    return false;
-  }
-
-  return send_buffer_->push(pkt);
-}
-
-bool CanUsb::read(Packet& pkt)  {
-  if (!connected_ || recv_buffer_->empty()) {
-    // LOG_FIRST_N(WARNING, 10000) << "The pcan has not been launched, or initialized fail.";
-    return false;
-  }
-
-  return recv_buffer_->pop(pkt);
-}
+//bool CanUsb::write(const Packet& pkt) {
+//  if (!connected_) {
+//    // LOG_FIRST_N(WARNING, 10000) << "The pcan has not been launched, or initialized fail.";
+//    return false;
+//  }
+//
+//  return send_buffer_->push(pkt);
+//}
+//
+//bool CanUsb::read(Packet& pkt)  {
+//  if (!connected_ || recv_buffer_->empty()) {
+//    // LOG_FIRST_N(WARNING, 10000) << "The pcan has not been launched, or initialized fail.";
+//    return false;
+//  }
+//
+//  return recv_buffer_->pop(pkt);
+//}
 
 void CanUsb::do_exchange_w() {
   TIMER_INIT
@@ -166,10 +168,11 @@ void CanUsb::do_exchange_w() {
   while (connected_) {
     if (!send_buffer_->empty()) {
       __n_msg    = 0;
-      send_buffer_->consume_all( [&] (const Packet& pkt) {
-        send_msgs_[__n_msg].ID      = MII_MSG_FILL_2NODE_MSG(pkt.node_id, pkt.msg_id);
-        send_msgs_[__n_msg].DataLen = pkt.size;
-        memcpy(send_msgs_[__n_msg].Data, pkt.data, pkt.size * sizeof(pkt.data[0]));
+      send_buffer_->consume_all( [&] (const VCI_CAN_OBJ& pkt) {
+        memcpy(send_msgs_ + __n_msg, &pkt, sizeof(VCI_CAN_OBJ));
+//        send_msgs_[__n_msg].ID      = MII_MSG_FILL_2NODE_MSG(pkt.node_id, pkt.msg_id);
+//        send_msgs_[__n_msg].DataLen = pkt.size;
+//        memcpy(send_msgs_[__n_msg].Data, pkt.data, pkt.size * sizeof(pkt.data[0]));
         ++__n_msg;
       });
 
@@ -177,13 +180,13 @@ void CanUsb::do_exchange_w() {
         LOG_ERROR << "Write CAN FAIL!!!";
       }
 
-      if (true)
-        printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-          (int)send_msgs_[0].ID, (int)send_msgs_[0].DataLen,
-          (int)send_msgs_[0].Data[0], (int)send_msgs_[0].Data[1],
-          (int)send_msgs_[0].Data[2], (int)send_msgs_[0].Data[3],
-          (int)send_msgs_[0].Data[4], (int)send_msgs_[0].Data[5],
-          (int)send_msgs_[0].Data[6], (int)send_msgs_[0].Data[7]);
+//      if (true)
+//        printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//          (int)send_msgs_[0].ID, (int)send_msgs_[0].DataLen,
+//          (int)send_msgs_[0].Data[0], (int)send_msgs_[0].Data[1],
+//          (int)send_msgs_[0].Data[2], (int)send_msgs_[0].Data[3],
+//          (int)send_msgs_[0].Data[4], (int)send_msgs_[0].Data[5],
+//          (int)send_msgs_[0].Data[6], (int)send_msgs_[0].Data[7]);
     }
 
     TIMER_CONTROL(5)
@@ -194,38 +197,40 @@ void CanUsb::do_exchange_r() {
   TIMER_INIT
 
   // TimeControl timer;
+  int recv_off  = 0;
   int recv_size = 0;
-  Packet pkt;
+  // Packet pkt;
   while (connected_) {
     recv_size = VCI_Receive(g_device_type, g_device_idx, bus_id_,
         recv_msgs_, recv_buf_size_, 0);
     // LOG_WARNING << "BUF_SIZE=" << recv_buf_size_ << "; REC_SIZE=" << recv_size;
-    while (recv_size > 0) {
-      if (!MII_MSG_IS_2HOST(recv_msgs_->ID)) {
-        LOG_WARNING << "Error Message Id format! " << recv_msgs_->ID
-            << "[" << MII_MSG_SPLIT_NODEID(recv_msgs_->ID) << ", "
-            << MII_MSG_SPLIT_MSGID(recv_msgs_->ID) << "].";
-        --recv_size;
-        continue;
-      }
-
-      pkt.bus_id  = bus_id_;
-      pkt.node_id = MII_MSG_SPLIT_NODEID(recv_msgs_[recv_size].ID);
-      pkt.msg_id  = MII_MSG_SPLIT_MSGID(recv_msgs_[recv_size].ID);
-      pkt.size    = recv_msgs_[recv_size].DataLen;
-      memset(pkt.data, '\0', 8 * sizeof(char));
-      memcpy(pkt.data, recv_msgs_[recv_size].Data, pkt.size * sizeof(char));
+    recv_off  = 0;
+    while (recv_off < recv_size) {
+//      if (!MII_MSG_IS_2HOST(recv_msgs_->ID)) {
+//        LOG_WARNING << "Error Message Id format! " << recv_msgs_->ID
+//            << "[" << MII_MSG_SPLIT_NODEID(recv_msgs_->ID) << ", "
+//            << MII_MSG_SPLIT_MSGID(recv_msgs_->ID) << "].";
+//        --recv_size;
+//        continue;
+//      }
+//
+//      pkt.bus_id  = bus_id_;
+//      pkt.node_id = MII_MSG_SPLIT_NODEID(recv_msgs_[recv_size].ID);
+//      pkt.msg_id  = MII_MSG_SPLIT_MSGID(recv_msgs_[recv_size].ID);
+//      pkt.size    = recv_msgs_[recv_size].DataLen;
+//      memset(pkt.data, '\0', 8 * sizeof(char));
+//      memcpy(pkt.data, recv_msgs_[recv_size].Data, pkt.size * sizeof(char));
 
       if (true)
         printf(" <- ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-          (int)recv_msgs_[recv_size].ID, (int)recv_msgs_[recv_size].DataLen,
-          (int)recv_msgs_[recv_size].Data[0], (int)recv_msgs_[recv_size].Data[1],
-          (int)recv_msgs_[recv_size].Data[2], (int)recv_msgs_[recv_size].Data[3],
-          (int)recv_msgs_[recv_size].Data[4], (int)recv_msgs_[recv_size].Data[5],
-          (int)recv_msgs_[recv_size].Data[6], (int)recv_msgs_[recv_size].Data[7]);
+          (int)recv_msgs_[recv_off].ID, (int)recv_msgs_[recv_off].DataLen,
+          (int)recv_msgs_[recv_off].Data[0], (int)recv_msgs_[recv_off].Data[1],
+          (int)recv_msgs_[recv_off].Data[2], (int)recv_msgs_[recv_off].Data[3],
+          (int)recv_msgs_[recv_off].Data[4], (int)recv_msgs_[recv_off].Data[5],
+          (int)recv_msgs_[recv_off].Data[6], (int)recv_msgs_[recv_off].Data[7]);
 
-      recv_buffer_->push(pkt);
-      --recv_size;
+      recv_buffer_->push(recv_msgs_[recv_off]);
+      ++recv_off;
     }
 
     TIMER_CONTROL(5)
@@ -234,5 +239,5 @@ void CanUsb::do_exchange_r() {
 
 } /* namespace agile_robot */
 
-#include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(agile_robot::CanUsb, Label)
+//#include <class_loader/class_loader_register_macro.h>
+//CLASS_LOADER_REGISTER_CLASS(agile_robot::CanUsb, Label)

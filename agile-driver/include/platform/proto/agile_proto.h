@@ -26,6 +26,7 @@
 
 const unsigned char MAX_BUS_NUM  = 0x10u;
 const unsigned char MAX_NODE_NUM = 0x10u;
+const unsigned char MAX_MSG_NUM  = 040u;
 #define INVALID_BYTE (0x88)
 
 struct Packet {
