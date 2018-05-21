@@ -14,26 +14,26 @@ namespace agile_robot {
 
 SINGLETON_IMPL(SWNodeManager)
 
-size_t counter = 0;
-TimeControl* timer = nullptr;
-std::vector<int64_t> freqs;
+//size_t counter = 0;
+//TimeControl* timer = nullptr;
+//std::vector<int64_t> freqs;
 SWNodeManager::SWNodeManager()
   : internal::ResourceManager<SWNode>() {
 
 }
 
 SWNodeManager::~SWNodeManager() {
-  LOG_WARNING << "Last occur the error message has lapsed: " << timer->dt();
-  LOG_WARNING << "Lapse: " << timer->span()
-      << ", Count: " << counter;
-  delete timer;
-
-  counter = 0;
-  for (const auto& dt : freqs) {
-    printf("%3ld ", dt);
-    if (0 == counter++%20) std::cout << std::endl;
-  }
-  std::cout << std::endl;
+//  LOG_WARNING << "Last occur the error message has lapsed: " << timer->dt();
+//  LOG_WARNING << "Lapse: " << timer->span()
+//      << ", Count: " << counter;
+//  delete timer;
+//
+//  counter = 0;
+//  for (const auto& dt : freqs) {
+//    printf("%3ld ", dt);
+//    if (0 == counter++%20) std::cout << std::endl;
+//  }
+//  std::cout << std::endl;
 }
 
 bool SWNodeManager::init() {
@@ -70,8 +70,8 @@ bool SWNodeManager::init() {
     LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
   }
 
-  timer = new TimeControl(true);
-  freqs.reserve(1024*16);
+//  timer = new TimeControl(true);
+//  freqs.reserve(1024*16);
   return true;
 }
 
@@ -99,8 +99,8 @@ void SWNodeManager::handleMsg(const std::vector<Packet>& pkts) {
         (int)pkt.data[2], (int)pkt.data[3],
         (int)pkt.data[4], (int)pkt.data[5],
         (int)pkt.data[6], (int)pkt.data[7]);
-      freqs.push_back(timer->dt());
-      ++counter;
+//      freqs.push_back(timer->dt());
+//      ++counter;
       continue;
     }
     if (nullptr == hw_list_by_id_[pkt.bus_id][pkt.node_id]) {
@@ -114,8 +114,12 @@ void SWNodeManager::handleMsg(const std::vector<Packet>& pkts) {
         (int)pkt.data[2], (int)pkt.data[3],
         (int)pkt.data[4], (int)pkt.data[5],
         (int)pkt.data[6], (int)pkt.data[7]);
-      freqs.push_back(timer->dt());
-      ++counter;
+//      freqs.push_back(timer->dt());
+//      ++counter;
+      ///! try to the others node whether handle this package.
+      for (auto& node : res_list_) {
+        node->handleMsg(pkt);
+      }
       continue;
     }
     ///! handle the package.

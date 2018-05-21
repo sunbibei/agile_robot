@@ -74,6 +74,10 @@ protected:
    * Interface for communication layer, friend class LegNode.
    */
   void updateJointPosition(double pos);
+  /**
+   * Interface for communication layer, friend class LegNode.
+   */
+  void updateJointTorque(double tor);
   // if has new command, return true and fill the Packet pointer
   std::atomic_bool new_command_; // the flag indicate whether has new command
 

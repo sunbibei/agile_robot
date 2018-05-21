@@ -37,8 +37,8 @@ struct Packet {
   unsigned char data[DATA_SIZE];
 };
 
-#define ARM_BUS          (0x01)
-#define MOTOR_BUS        (0x02)
+#define ARM_BUS          (0x00)
+#define MOTOR_BUS        (0x01)
 
 /*////////////////////////////////////////////////////////
 The CAN message id define:
@@ -146,6 +146,10 @@ The motor command/msg id, offer the interface to control/monitor motor directly.
 #define MII_MSG_MOTOR_2           (022u)
 ///! The motor torque command,   or motor torque   feedback
 #define MII_MSG_MOTOR_3           (023u)
+
+#define MII_MSG_MOTOR_4           (024u)
+
+#define MII_MSG_MOTOR_5           (025u)
 
 /*////////////////////////////////////////////////////////
 THE DEBUG MESSAGE [RESERVED]

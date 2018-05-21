@@ -35,13 +35,11 @@ protected:
   boost::lockfree::queue<VCI_CAN_OBJ>* send_buffer_;
   bool         connected_;
 
-private:
-  void do_exchange_w();
-  void do_exchange_r();
+  virtual void do_exchange_w();
+  virtual void do_exchange_r();
 
 private:
   int      recv_buf_size_;
-
   PVCI_CAN_OBJ recv_msgs_;
   PVCI_CAN_OBJ send_msgs_;
 

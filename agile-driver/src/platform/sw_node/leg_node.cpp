@@ -144,6 +144,15 @@ void LegNode::handleMsg(const Packet& pkt) {
     // parse the joint state and touchdown data
     __parse_heart_beat_1(pkt.data);
     break;
+  case MII_MSG_HEARTBEAT_2:
+    if (4 != pkt.size) {
+      LOG_ERROR << "The data size of MII_MSG_HEARTBEAT_MSG_1 message does not match!"
+          << ", the expect size is 8, but the real size is " << (int)pkt.size;
+      return;
+    }
+    // parse the joint state and touchdown data
+    __parse_heart_beat_2(pkt.data);
+    break;
   default:
     SWNode::handleMsg(pkt);
   }
@@ -163,9 +172,43 @@ void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
     // angle = \frac{360 \pi \alpha}{180*4096} C - \frac{\pi}{18000}\alpha*\beta
     // so, the ABS(scale) = \frac{360 \pi \alpha}{180*4096} = \frac{360\pi}{180*4096}
     // offset = - \frac{\pi}{18000}\alpha*\beta = -0.000174528*\beta
-    pos = jnt_params_[type]->scale * (double)count + jnt_params_[type]->offset;
+    // pos = jnt_params_[type]->scale * (double)count + jnt_params_[type]->offset;
+    pos = count; // TODO
     
     jnts_by_type_[type]->updateJointPosition(pos);
+    offset += sizeof(count); // each count will stand two bytes.
+  }
+
+  if (false && LegType::FL == leg_)
+#ifdef  SAVE_MSG_TO_FILE
+    fprintf(_msg_fd, "%s - %+5d, %+5d, %+5d\n", LEGTYPE2STR(leg_),
+        counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
+#else
+    printf("%s - %+5d, %+5d, %+5d\n", LEGTYPE2STR(leg_),
+        counts[JntType::KFE], counts[JntType::HFE], counts[JntType::HAA]);
+#endif
+  // if (LegType::HL == leg_) printf("%d: 0x%02X, 0x%02X", leg_, __p[offset], __p[offset + 1]);
+  td_->updateForceCount((__p[offset] | (__p[offset + 1] << 8)));
+}
+
+void LegNode::__parse_heart_beat_2(const unsigned char* __p) {
+  // if (true && LegType::FL == leg_)
+//    printf("0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//        __p[0], __p[1], __p[2], __p[3], __p[4], __p[5], __p[6], __p[7]);
+  int offset  = 0;
+  short count = 0;
+  double tor  = 0.0;
+  short counts[JntType::N_JNTS] = {0};
+  for (const auto& type : {JntType::KFE, JntType::HFE}) {
+    memcpy(&count, __p + offset, sizeof(count));
+    counts[type] = count;
+    // angle = \frac{360 \pi \alpha}{180*4096} C - \frac{\pi}{18000}\alpha*\beta
+    // so, the ABS(scale) = \frac{360 \pi \alpha}{180*4096} = \frac{360\pi}{180*4096}
+    // offset = - \frac{\pi}{18000}\alpha*\beta = -0.000174528*\beta
+    // pos = jnt_params_[type]->scale * (double)count + jnt_params_[type]->offset;
+    tor = count; // TODO
+
+    jnts_by_type_[type]->updateJointTorque(tor);
     offset += sizeof(count); // each count will stand two bytes.
   }
 

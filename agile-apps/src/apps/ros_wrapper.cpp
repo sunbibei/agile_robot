@@ -8,21 +8,22 @@
 #include "apps/ros_robothw.h"
 #include "apps/ros_wrapper.h"
 
-#include <repository/resource/joint_manager.h>
-#include <repository/resource/imu_sensor.h>
-#include <repository/resource/force_sensor.h>
 #include "repository/registry.h"
+#include "repository/resource/motor.h"
+#include "repository/resource/imu_sensor.h"
+#include "repository/resource/force_sensor.h"
+#include "repository/resource/joint_manager.h"
 
-#include "foundation/auto_instanceor.h"
 #include "foundation/cfg_reader.h"
+#include "foundation/auto_instanceor.h"
 #include "foundation/thread/threadpool.h"
 
 ///! qr-next-control
-#include <mii_control.h>
+#include "mii_control.h"
 
-#include <std_msgs/Int32MultiArray.h>
-#include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/JointState.h>
+#include <std_msgs/Int32MultiArray.h>
 
 #define MII_CTRL_THREAD ("mii_control")
 #define ROS_CTRL_THREAD ("ros_control")
@@ -99,7 +100,26 @@ bool RosWrapper::start() {
 
   // Label::printfEveryInstance();
   ///! No launch the framework of control!
+  // return MiiRobot::start();
+  // initControl();
+
+  double frequency = 50.0;
+  ros::param::get("~rt_frequency", frequency);
+  if (frequency > 0)
+    rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
+
+  ThreadPool::instance()->add(RT_PUB_THREAD, &RosWrapper::publishRTMsg, this);
+
+// For debug
+#ifdef DEBUG_TOPIC
+  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("debug", 100,
+      &RosWrapper::cbForDebug, this);
+#endif
+
   return MiiRobot::start();
+}
+
+void RosWrapper::initControl() {
   if (use_ros_control_) {
     hardware_interface_.reset(
               new RosRobotHW(nh_, Label::make_label(root_tag_, "roswrapper")));
@@ -152,21 +172,6 @@ bool RosWrapper::start() {
     gait_ctrl_sub_ = nh_.subscribe<std_msgs::String>(str, 1,
         &RosWrapper::gaitControlCb, this);
   }
-
-  double frequency = 50.0;
-  ros::param::get("~rt_frequency", frequency);
-  if (frequency > 0)
-    rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
-
-  ThreadPool::instance()->add(RT_PUB_THREAD, &RosWrapper::publishRTMsg, this);
-
-// For debug
-#ifdef DEBUG_TOPIC
-  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("debug", 100,
-      &RosWrapper::cbForDebug, this);
-#endif
-
-  return MiiRobot::start();
 }
 
 inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
@@ -180,6 +185,21 @@ inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
     to.velocity.push_back(jnt->joint_velocity());
     to.effort.push_back(jnt->joint_torque());
     to.name.push_back(jnt->joint_name());
+  }
+  to.header.stamp = ros::Time::now();
+}
+
+inline void __fill_motor_data(sensor_msgs::JointState& to, JointManager* from) {
+  to.name.clear();
+  to.position.clear();
+  to.velocity.clear();
+  to.effort.clear();
+  to.name.clear();
+  for (const auto& jnt : *from) {
+    to.position.push_back(jnt->joint_motor()->motor_position());
+    to.velocity.push_back(jnt->joint_motor()->motor_velocity());
+    to.effort.push_back(jnt->joint_motor()->motor_torque());
+    to.name.push_back(jnt->joint_motor()->motor_name());
   }
   to.header.stamp = ros::Time::now();
 }
@@ -227,6 +247,8 @@ inline void __fill_cmd_data(std_msgs::Float64MultiArray& __cmd_msg, Eigen::Vecto
 void RosWrapper::publishRTMsg() {
   ros::Publisher jnt_puber
       = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
+  ros::Publisher motor_puber
+        = nh_.advertise<sensor_msgs::JointState>("motor_states", 1);
   ros::Publisher imu_puber
       = nh_.advertise<sensor_msgs::Imu>("imu", 1);
   ros::Publisher force_puber
@@ -238,6 +260,7 @@ void RosWrapper::publishRTMsg() {
 //    cmd_puber = nh_.advertise<std_msgs::Float64MultiArray>("/dragon/joint_commands", 10);
 
   sensor_msgs::JointState     __jnt_msg;
+  sensor_msgs::JointState     __motor_msg;
   sensor_msgs::Imu            __imu_msg;
   std_msgs::Int32MultiArray   __f_msg;
   std_msgs::Float64MultiArray __cmd_msg;
@@ -270,6 +293,12 @@ void RosWrapper::publishRTMsg() {
       __fill_jnt_data(__jnt_msg, jnt_manager_);
       jnt_puber.publish(__jnt_msg);
     }
+
+    if (motor_puber.getNumSubscribers()) {
+      __fill_motor_data(__motor_msg, jnt_manager_);
+      motor_puber.publish(__motor_msg);
+    }
+
     if (imu_puber.getNumSubscribers()) {
       __fill_imu_data(__imu_msg, imu_sensor_);
       imu_puber.publish(__imu_msg);

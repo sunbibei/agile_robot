@@ -45,6 +45,7 @@ protected:
 ///! Helper methods
 private:
   void __parse_heart_beat_1(const unsigned char*);
+  void __parse_heart_beat_2(const unsigned char*);
 //  void __parse_motor_cmd_1(const unsigned char*);
 //  void __parse_motor_cmd_2(const unsigned char*);
 

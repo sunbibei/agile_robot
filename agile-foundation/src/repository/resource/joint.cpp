@@ -109,6 +109,12 @@ void Joint::updateJointPosition(double pos) {
   // LOG_WARNING << jnt_name_ << ": " << joint_state_->pos_ << ", " << joint_state_->vel_;
 }
 
+void Joint::updateJointTorque(double tor) {
+  joint_state_->tor_ = tor;
+
+  // LOG_WARNING << jnt_name_ << ": " << joint_state_->pos_ << ", " << joint_state_->vel_;
+}
+
 double Joint::joint_position() const {
   return joint_state_->pos_;
 }

@@ -39,6 +39,9 @@ public:
   void halt();
 
 private:
+  ///! Initialize the framework of control, If use_ros_control_ is true,
+  ///!   Initialize the ros-control, or mii-control.
+  void initControl();
   ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
   void publishRTMsg();
   void rosControlLoop();

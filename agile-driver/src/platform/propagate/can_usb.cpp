@@ -18,8 +18,6 @@ static DWORD g_device_type       = VCI_USBCAN2;
 static DWORD g_device_idx        = 0;
 
 #define MAX_TRY_TIMES     (10)
-#define USBCAN_THREAD_R   ("usb-can-read")
-#define USBCAN_THREAD_W   ("usb-can-write")
 
 CanUsb::CanUsb()
   : Propagate("CanUsb"),
@@ -64,16 +62,16 @@ bool CanUsb::auto_init() {
 }
 
 CanUsb::~CanUsb() {
-  int count = 0;
-  VCI_CAN_OBJ tmp;
-  while (!send_buffer_->empty())
-    send_buffer_->pop(tmp);
-  LOG_WARNING << "Send Buffer Residue: " << count;
-
-  count = 0;
-  while (!recv_buffer_->empty())
-    recv_buffer_->pop(tmp);
-  LOG_WARNING << "Recv Buffer Residue: " << count;
+//  int count = 0;
+//  VCI_CAN_OBJ tmp;
+//  while (!send_buffer_->empty())
+//    send_buffer_->pop(tmp);
+//  LOG_WARNING << "Send Buffer Residue: " << count;
+//
+//  count = 0;
+//  while (!recv_buffer_->empty())
+//    recv_buffer_->pop(tmp);
+//  LOG_WARNING << "Recv Buffer Residue: " << count;
 
   delete recv_msgs_;
   delete send_msgs_;
@@ -95,7 +93,7 @@ bool CanUsb::start() {
     g_is_startup_device = true;
     // LOG_WARNING << "Open the usb_can device successful.";
 
-    LOG_WARNING << "Try to initialize the can bus " << (int)bus_id_;
+    LOG_INFO << "Try to initialize the can bus " << (int)bus_id_;
     if (connected_ &&
         STATUS_OK != VCI_InitCAN(g_device_type, g_device_idx, bus_id_, &config_)) {
       LOG_INFO << "Initialize the CAN Configure fail!";
@@ -121,12 +119,12 @@ bool CanUsb::start() {
       // Waiting 500ms
       usleep(500000);
     } else {
-      LOG_DEBUG << "Initialize CAN OK!";
+      LOG_INFO << "Initialize CAN OK!";
 
       ///! It will be launch two thread by each Bus inherit from CanUsb
-      ThreadPool::instance()->add(USBCAN_THREAD_R + std::to_string(bus_id_),
+      ThreadPool::instance()->add(propa_name_ + "-r",
           &CanUsb::do_exchange_r, this);
-      ThreadPool::instance()->add(USBCAN_THREAD_W + std::to_string(bus_id_),
+      ThreadPool::instance()->add(propa_name_ + "-w",
           &CanUsb::do_exchange_w, this);
 
       return connected_;
@@ -176,17 +174,22 @@ void CanUsb::do_exchange_w() {
         ++__n_msg;
       });
 
+      if (false) {
+        printf("%s [%03d]: \n", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
+        for (int i = 0; i < __n_msg; ++i) {
+          printf(" <- [%d] ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+            i, (int)send_msgs_[i].ID, (int)send_msgs_[i].DataLen,
+            (int)send_msgs_[i].Data[0], (int)send_msgs_[i].Data[1],
+            (int)send_msgs_[i].Data[2], (int)send_msgs_[i].Data[3],
+            (int)send_msgs_[i].Data[4], (int)send_msgs_[i].Data[5],
+            (int)send_msgs_[i].Data[6], (int)send_msgs_[i].Data[7]);
+        }
+        printf("\n");
+      }
+
       if (VCI_Transmit(g_device_type, g_device_idx, bus_id_, send_msgs_, __n_msg) < 0) {
         LOG_ERROR << "Write CAN FAIL!!!";
       }
-
-//      if (true)
-//        printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-//          (int)send_msgs_[0].ID, (int)send_msgs_[0].DataLen,
-//          (int)send_msgs_[0].Data[0], (int)send_msgs_[0].Data[1],
-//          (int)send_msgs_[0].Data[2], (int)send_msgs_[0].Data[3],
-//          (int)send_msgs_[0].Data[4], (int)send_msgs_[0].Data[5],
-//          (int)send_msgs_[0].Data[6], (int)send_msgs_[0].Data[7]);
     }
 
     TIMER_CONTROL(5)
@@ -199,41 +202,29 @@ void CanUsb::do_exchange_r() {
   // TimeControl timer;
   int recv_off  = 0;
   int recv_size = 0;
-  // Packet pkt;
   while (connected_) {
     recv_size = VCI_Receive(g_device_type, g_device_idx, bus_id_,
         recv_msgs_, recv_buf_size_, 0);
-    // LOG_WARNING << "BUF_SIZE=" << recv_buf_size_ << "; REC_SIZE=" << recv_size;
+    // LOG_WARNING<< "bus_id=" << (int)bus_id_ << " -- [ " << recv_size
+    //     << " / " << recv_buf_size_ << " ]";
     recv_off  = 0;
     while (recv_off < recv_size) {
-//      if (!MII_MSG_IS_2HOST(recv_msgs_->ID)) {
-//        LOG_WARNING << "Error Message Id format! " << recv_msgs_->ID
-//            << "[" << MII_MSG_SPLIT_NODEID(recv_msgs_->ID) << ", "
-//            << MII_MSG_SPLIT_MSGID(recv_msgs_->ID) << "].";
-//        --recv_size;
-//        continue;
-//      }
-//
-//      pkt.bus_id  = bus_id_;
-//      pkt.node_id = MII_MSG_SPLIT_NODEID(recv_msgs_[recv_size].ID);
-//      pkt.msg_id  = MII_MSG_SPLIT_MSGID(recv_msgs_[recv_size].ID);
-//      pkt.size    = recv_msgs_[recv_size].DataLen;
-//      memset(pkt.data, '\0', 8 * sizeof(char));
-//      memcpy(pkt.data, recv_msgs_[recv_size].Data, pkt.size * sizeof(char));
 
-      if (true)
-        printf(" <- ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+      if (false) {
+        printf("%s [%03d]: ", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
+        printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
           (int)recv_msgs_[recv_off].ID, (int)recv_msgs_[recv_off].DataLen,
           (int)recv_msgs_[recv_off].Data[0], (int)recv_msgs_[recv_off].Data[1],
           (int)recv_msgs_[recv_off].Data[2], (int)recv_msgs_[recv_off].Data[3],
           (int)recv_msgs_[recv_off].Data[4], (int)recv_msgs_[recv_off].Data[5],
           (int)recv_msgs_[recv_off].Data[6], (int)recv_msgs_[recv_off].Data[7]);
+      }
 
       recv_buffer_->push(recv_msgs_[recv_off]);
       ++recv_off;
-    }
+    } // end while (recv_off < recv_size)
 
-    TIMER_CONTROL(5)
+    TIMER_CONTROL(10)
   }
 }
 
