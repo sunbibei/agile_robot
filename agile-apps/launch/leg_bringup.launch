@@ -2,7 +2,7 @@
 <launch>
   <arg name="debug"               default="True"  />
   <arg name="sim"                 default="False" />
-  <arg name="use_ros_control"     default="False" />
+  <arg name="use_control"         default="False" />
   <arg name="rt_frequency"        default="100.0" />
   <arg name="ctrl_loop_frequency" default="100.0" />
 
@@ -19,7 +19,7 @@
     <param name="gait_cfg"  value="$(find agile_apps)/config/leg_gait.cfg" />
     <param name="gait_lib"  value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_control_repository.so" />
 
-    <param name="use_ros_control"     type="bool"   value="$(arg use_ros_control)"     />
+    <param name="use_control"         type="bool"   value="$(arg use_control)"     />
     <param name="debug"               type="bool"   value="$(arg debug)"               />
     <param name="rt_frequency"        type="double" value="$(arg rt_frequency)"        />
     <param name="ctrl_loop_frequency" type="double" value="$(arg ctrl_loop_frequency)" />

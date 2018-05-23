@@ -36,8 +36,8 @@ private:
 
 private:
   ///! The relationship between MsgId and Data.
-  unsigned int                         msgid2idx_lut_[MAX_MSG_NUM];
-  std::map<unsigned int, unsigned int> idx2msgid_lut_;
+//  unsigned int                         msgid2idx_lut_[MAX_MSG_NUM];
+//  std::map<unsigned int, unsigned int> idx2msgid_lut_;
 
   VCI_CAN_OBJ recv_can_obj_;
   VCI_CAN_OBJ send_can_obj_;

@@ -16,7 +16,7 @@
     <param name="library"   value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_driver_sys_platform.so"/>
     <param name="gait_cfg"  value="$(find agile_apps)/config/agile_gait.cfg" />
     <param name="gait_lib"  value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_control_repository.so" />
-    <param name="use_ros_control"     type="bool"   value="$(arg use_ros_control)"     />
+    <param name="use_control"         type="bool"   value="$(arg use_control)"     />
     <param name="rl_trial"            type="bool"   value="$(arg rl_trial)"            />
     <param name="debug"               type="bool"   value="$(arg debug)"               />
     <param name="rt_frequency"        type="double" value="$(arg rt_frequency)"        />

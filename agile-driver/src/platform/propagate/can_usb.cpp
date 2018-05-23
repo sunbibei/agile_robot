@@ -209,8 +209,7 @@ void CanUsb::do_exchange_r() {
     //     << " / " << recv_buf_size_ << " ]";
     recv_off  = 0;
     while (recv_off < recv_size) {
-
-      if (false) {
+      if (false && MOTOR_BUS == bus_id_) {
         printf("%s [%03d]: ", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
         printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
           (int)recv_msgs_[recv_off].ID, (int)recv_msgs_[recv_off].DataLen,

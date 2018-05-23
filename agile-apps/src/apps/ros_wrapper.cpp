@@ -4,8 +4,6 @@
  *  Created on: Dec 5, 2016
  *      Author: silence
  */
-
-#include "apps/ros_robothw.h"
 #include "apps/ros_wrapper.h"
 
 #include "repository/registry.h"
@@ -26,7 +24,6 @@
 #include <std_msgs/Int32MultiArray.h>
 
 #define MII_CTRL_THREAD ("mii_control")
-#define ROS_CTRL_THREAD ("ros_control")
 #define RT_PUB_THREAD   ("rt_publisher")
 
 SINGLETON_IMPL_NO_CREATE(RosWrapper)
@@ -42,8 +39,7 @@ RosWrapper* RosWrapper::create_instance(const std::string& __tag) {
 
 RosWrapper::RosWrapper(const std::string& __tag)
   : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag), alive_(true),
-    rt_duration_(1000/50), ros_ctrl_duration_(1000/100), use_ros_control_(false),
-    mii_control_(nullptr) {
+    rt_duration_(1000/50), mii_control_(nullptr) {
   // LOG_DEBUG << "Enter the roswrapper construction";
   // google::InitGoogleLogging("qr_driver");
   // google::SetLogDestination(google::GLOG_INFO, "/path/to/log/INFO_");
@@ -65,7 +61,6 @@ RosWrapper::~RosWrapper() {
 }
 
 void RosWrapper::create_system_instance() {
-
   std::string str;
   // if (nh_.getParam("configure", cfg)) {
   if (!ros::param::get("~configure", str)) {
@@ -93,16 +88,14 @@ bool RosWrapper::start() {
   google::SetStderrLogging(debug ?
       google::GLOG_INFO : google::GLOG_WARNING);
 
-  ros::param::get("~use_ros_control", use_ros_control_);
-  if (!init(!use_ros_control_)) LOG_FATAL << "Robot initializes fail!";
-
+  bool use_control = false;
+  ros::param::get("~use_control", use_control);
+  if (!init(use_control)) LOG_FATAL << "Robot initializes fail!";
   LOG_INFO << "MiiRobot initialization has completed.";
 
   // Label::printfEveryInstance();
   ///! No launch the framework of control!
-  // return MiiRobot::start();
-  // initControl();
-
+  initControl();
   double frequency = 50.0;
   ros::param::get("~rt_frequency", frequency);
   if (frequency > 0)
@@ -120,58 +113,43 @@ bool RosWrapper::start() {
 }
 
 void RosWrapper::initControl() {
-  if (use_ros_control_) {
-    hardware_interface_.reset(
-              new RosRobotHW(nh_, Label::make_label(root_tag_, "roswrapper")));
-    controller_manager_.reset(
-        new controller_manager::ControllerManager(
-            hardware_interface_.get(), nh_));
+  // Use the MII Control
+  std::string str;
+  if (!ros::param::get("~gait_lib", str)) {
+    LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
+  }
+  AutoInstanceor::instance()->add_library(str);
 
-    double frequency = 100.0;
-    ros::param::get("~ctrl_loop_frequency", frequency);
-    if (frequency > 0)
-      ros_ctrl_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
-
-    ThreadPool::instance()->add(ROS_CTRL_THREAD, &RosWrapper::rosControlLoop, this);
-  } else {
-    // Use the MII Control
-    std::string str;
-    if (!ros::param::get("~gait_lib", str)) {
+  bool rl_trial = false;
+  if (ros::param::get("~rl_trial", rl_trial) && rl_trial) {
+    if (!ros::param::get("~rl_lib", str)) {
       LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
           << "in the parameter server. Did you forget define this parameter.";
     }
     AutoInstanceor::instance()->add_library(str);
-
-    bool rl_trial = false;
-    if (ros::param::get("~rl_trial", rl_trial) && rl_trial) {
-      if (!ros::param::get("~rl_lib", str)) {
-        LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
-            << "in the parameter server. Did you forget define this parameter.";
-      }
-      AutoInstanceor::instance()->add_library(str);
-    }
-
-    if (!ros::param::get("~gait_cfg", str)) {
-      LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
-          << "in the parameter server. Did you forget define this parameter.";
-    }
-    MiiCfgReader::instance()->add_config(str);
-
-    mii_control_ = agile_control::MiiControl::create_instance("ctrl");
-    if ((nullptr == mii_control_) || !mii_control_->init())
-      LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
-
-    ThreadPool::instance()->add(MII_CTRL_THREAD, &agile_control::MiiControl::tick,
-        agile_control::MiiControl::instance());
-
-    if (!ros::param::get("~gait_topic", str)) {
-      LOG_INFO << "No 'gait_topic' parameter, using the default name of topic"
-          << " -- gait_control";
-      str = "gait_control";
-    }
-    gait_ctrl_sub_ = nh_.subscribe<std_msgs::String>(str, 1,
-        &RosWrapper::gaitControlCb, this);
   }
+
+  if (!ros::param::get("~gait_cfg", str)) {
+    LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
+  }
+  MiiCfgReader::instance()->add_config(str);
+
+  mii_control_ = agile_control::MiiControl::create_instance("ctrl");
+  if ((nullptr == mii_control_) || !mii_control_->init())
+    LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
+
+  ThreadPool::instance()->add(MII_CTRL_THREAD, &agile_control::MiiControl::tick,
+      agile_control::MiiControl::instance());
+
+  if (!ros::param::get("~gait_topic", str)) {
+    LOG_INFO << "No 'gait_topic' parameter, using the default name of topic"
+        << " -- gait_control";
+    str = "gait_control";
+  }
+  gait_ctrl_sub_ = nh_.subscribe<std_msgs::String>(str, 1,
+      &RosWrapper::gaitControlCb, this);
 }
 
 inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
@@ -319,33 +297,6 @@ void RosWrapper::publishRTMsg() {
   alive_ = false;
 }
 
-void RosWrapper::rosControlLoop() {
-  ros::Duration elapsed_time;
-  struct timespec last_time, current_time;
-  static const double BILLION = 1000000000.0;
-  clock_gettime(CLOCK_MONOTONIC, &last_time);
-
-  TIMER_INIT
-  while (alive_ && ros::ok()) {
-    // Input
-    hardware_interface_->read();
-    // Control
-    clock_gettime(CLOCK_MONOTONIC, &current_time);
-    elapsed_time = ros::Duration(current_time.tv_sec - last_time.tv_sec
-        + (current_time.tv_nsec - last_time.tv_nsec) / BILLION);
-
-    controller_manager_->update(ros::Time::now(), elapsed_time);
-    last_time = current_time;
-    // Output
-    if (JntCmdType::CMD_POS_VEL != jnt_manager_->getJointCommandMode())
-      hardware_interface_->write();
-
-    TIMER_CONTROL(ros_ctrl_duration_)
-  }
-
-  alive_ = false;
-}
-
 void RosWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
   static auto _s_inst = agile_control::MiiControl::instance();
   if (nullptr == _s_inst) return;
@@ -359,13 +310,7 @@ void RosWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
 
 void RosWrapper::halt() {
   alive_ = false;
-
-  if (!use_ros_control_) {
-    controller_manager_.reset();
-    hardware_interface_.reset();
-  } else {
-    agile_control::MiiControl::instance()->destroy_instance();
-  }
+  agile_control::MiiControl::instance()->destroy_instance();
 }
 
 #ifdef DEBUG_TOPIC

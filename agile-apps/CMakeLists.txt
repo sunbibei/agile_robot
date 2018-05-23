@@ -43,19 +43,18 @@ set(SRC_APP             ${SRC_ROOT}/apps)
 
 # Files define.
 set(BIN_FILES           ${SRC_ROOT}/main.cpp
-                        ${SRC_APP}/ros_robothw.cpp
                         ${SRC_APP}/ros_wrapper.cpp
 )
 
-set(EX_FILES            ${SRC_EXAMPLES}/qr_driver_test.cpp
-                        ${SRC_EXAMPLES}/qr_driver_test2.cpp
-                        ${SRC_EXAMPLES}/qr_driver_test3.cpp
-)
+# set(EX_FILES            ${SRC_EXAMPLES}/qr_driver_test.cpp
+#                         ${SRC_EXAMPLES}/qr_driver_test2.cpp
+#                         ${SRC_EXAMPLES}/qr_driver_test3.cpp
+# )
 
-## Declare a C++ library
-add_library(${PROJECT_NAME}_test_lib
-  ${EX_FILES}
-)
+# ## Declare a C++ library
+# add_library(${PROJECT_NAME}_test_lib
+#   ${EX_FILES}
+# )
 
 ## Declare a C++ executable
 add_executable(${PROJECT_NAME}
@@ -63,9 +62,9 @@ add_executable(${PROJECT_NAME}
 )
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_test_lib
-  ${catkin_LIBRARIES}
-)
+# target_link_libraries(${PROJECT_NAME}_test_lib
+#   ${catkin_LIBRARIES}
+# )
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -81,7 +80,7 @@ install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS ${PROJECT_NAME}
-                ${PROJECT_NAME}_test_lib
+                # ${PROJECT_NAME}_test_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

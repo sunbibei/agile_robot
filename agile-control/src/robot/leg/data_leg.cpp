@@ -51,6 +51,11 @@ bool DataLeg::auto_init() {
     LOG_INFO << "get resource(JntDataType::VEL/" << leg_type_ << "): " << jnt_pos_[JntDataType::VEL];
     LOG_INFO << "get resource(JntDataType::TOR/" << leg_type_ << "): " << jnt_pos_[JntDataType::TOR];
   }
+
+  ///! Assert the all of resource is a valid pointer, Or your should not
+  ///! launch the mii-control.
+  assert(jnt_mode_ && jnt_cmd_ && jnt_cmd_flag_ && foot_force_
+      && jnt_pos_[JntDataType::POS]);
   return true;
 }
 

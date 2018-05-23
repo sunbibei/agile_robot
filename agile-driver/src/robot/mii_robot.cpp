@@ -23,7 +23,7 @@
 
 namespace agile_robot {
 
-#define OWNER_CTRL_THREAD  ("mii-control-support")
+#define REGISTY_THREAD  ("mii-control-support")
 
 struct __RegJntRes {
   ///! Order by { JntType::KNEE, JntType::HIP, JntType::YAW }
@@ -185,7 +185,7 @@ bool MiiRobot::init(bool use_mii_control) {
     double frequency = 50;
     cfg->get_value(prefix_tag_, "frequency", frequency);
     tick_interval_ = std::chrono::milliseconds((int)(1000.0/frequency));
-    ThreadPool::instance()->add(OWNER_CTRL_THREAD, &MiiRobot::supportRegistry, this);
+    ThreadPool::instance()->add(REGISTY_THREAD, &MiiRobot::supportRegistry, this);
   }
 
   return true;
