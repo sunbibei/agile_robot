@@ -9,7 +9,7 @@
 #define INCLUDE_SYSTEM_PLATFORM_SW_NODE_MOTOR_NODE_H_
 
 #include "sw_node.h"
-#include<cmath>
+#include <cmath>
 
 #define Joint_Num 3
 #define DataMin 0
@@ -30,14 +30,6 @@ typedef struct _PID_Struct{
 	   float Output_Speed;         //定义输出速度（位置环输出值）
 	   float Location_integral;         //定义位置环积分值
 }PID_Struct;
-
-typedef struct _Control_Comd{
-	float setvalue;
-	float actualvalue;
-	int driver_id;
-	int msg_id;
-	int datasize;
-}Control_Comd;
 
 public:
   MotorNode();
