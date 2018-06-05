@@ -5,12 +5,17 @@
  *      Author: bibei
  */
 
-#include <repository/data_service.h>
-#include <foundation/cfg_reader.h>
-#include <foundation/thread/threadpool.h>
-#include <repository/resource/joint_manager.h>
-#include <repository/resource/force_sensor.h>
+#include "repository/data_service.h"
+#include "repository/resource/joint_manager.h"
+#include "repository/resource/force_sensor.h"
+
+#include "foundation/cfg_reader.h"
+#include "foundation/thread/threadpool.h"
+
+#include "toolbox/time_control.h"
+
 #include <stdio.h>
+#include <iomanip>
 
 namespace agile_robot {
 
@@ -22,46 +27,14 @@ struct DataSources {
   std::vector<const double*> leg_td;
 };
 
-const size_t DS_BUF_SIZE = 128;
+const size_t DS_BUF_SIZE = 256;
 
 DataService::DataService(const std::string& _l)
   : Label(_l), enable_(false), path_("."),
     ofn_(""), buffer_(nullptr),
     tick_alive_(false), tick_duration_(20),
-    timer_(nullptr), sources_(nullptr) {
+    sources_(nullptr) {
   ;
-}
-
-std::string __cvtJnt2Str(JntType t) {
-  switch (t) {
-  case JntType::HAA:
-    return "YAW";
-  case JntType::HFE:
-    return "HIP";
-  case JntType::KFE:
-    return "KNEE";
-  case JntType::N_JNTS:
-    return "N_JNTS";
-  default:
-    return "UNKNOWN_JNT";
-  }
-}
-
-std::string __cvtLeg2Str(LegType t) {
-  switch (t) {
-  case LegType::FL:
-    return "FL";
-  case LegType::FR:
-    return "FR";
-  case LegType::HL:
-    return "HL";
-  case LegType::HR:
-    return "HR";
-  case LegType::N_LEGS:
-    return "N_LEGS";
-  default:
-    return "UNKNOWN_LEG";
-  }
 }
 
 bool DataService::auto_init() {
@@ -172,18 +145,18 @@ void DataService::start() {
 void DataService::tick() {
   TIMER_INIT
 
-  timer_ = new TimeControl();
-  timer_->start();
+  TimeControl* timer = new TimeControl();
+  timer->start();
   while (tick_alive_) {
-    ofd_ << timer_->dt() << " ";
+    ofd_ << timer->dt() << " ";
     for (const auto& val : sources_->jnt_pos)
-      ofd_ << *val << " ";
+      ofd_ << std::setw(8) << std::setprecision(4) << *val << " ";
     for (const auto& val : sources_->jnt_vel)
-      ofd_ << *val << " ";
+      ofd_ << std::setw(8) << std::setprecision(4) << *val << " ";
     for (const auto& val : sources_->jnt_tor)
-      ofd_ << *val << " ";
+      ofd_ << std::setw(8) << std::setprecision(4) << *val << " ";
     for (const auto& val : sources_->jnt_cmd)
-      ofd_ << *val << " ";
+      ofd_ << std::setw(8) << std::setprecision(4) << *val << " ";
     // for (const auto& val : sources_->leg_td)
     //   ofd_ << *val << " ";
 
@@ -191,8 +164,8 @@ void DataService::tick() {
     TIMER_CONTROL(tick_duration_)
   }
 
-  delete timer_;
-  timer_ = nullptr;
+  delete timer;
+  timer = nullptr;
 }
 
 } /* namespace middleware */

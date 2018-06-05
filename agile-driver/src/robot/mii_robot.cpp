@@ -10,10 +10,11 @@
 #include "repository/resource/joint.h"
 #include "repository/resource/joint_manager.h"
 #include "repository/registry.h"
-#include "foundation/thread/threadpool.h"
+
 #include "foundation/label.h"
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instanceor.h"
+#include "foundation/thread/threadpool.h"
 
 #include "platform/master.h"
 #include "platform/propagate/propagate_manager.h"

@@ -16,6 +16,7 @@ namespace agile_robot {
 class Motor: public Label {
   // friend class LegNode;
   friend class MotorNode;
+  friend class MotorNode0;
 public:
   Motor();
   virtual bool auto_init() override;

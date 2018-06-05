@@ -103,7 +103,6 @@
 #define PRESS_THEN_GO do {LOG_WARNING << " -> Press any key to continue."; getchar();} while(0);
 //   {LOG_WARNING << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__ << " -> Press any key to continue."; getchar();}
 
-
 //template<class _Type>
 //using MiiVector =  std::vector<_Type>;
 
@@ -201,6 +200,8 @@ enum JntType {
     ( ( (const char*[]){"UNKNOWN_JNT", "HAA", "HFE", "KFE", "N_JNTS"} )[(l) + 1] )
 
 #define _DEBUG_INFO_FLAG (true)
+
+#define LOG_HEADER std::cout << std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) << ":" << __LINE__
 
 #ifdef USING_GLOG
 #define LOG_DEBUG     if (_DEBUG_INFO_FLAG) LOG(WARNING)  << "\t"
