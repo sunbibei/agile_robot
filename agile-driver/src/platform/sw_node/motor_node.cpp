@@ -240,9 +240,9 @@ bool MotorNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
   Packet cmd = {bus_id_, node_id_, MII_MSG_MOTOR_3, 8, {0}};
  // int cmd_val = PID_realize(*jnt_cmd_, joint_handle_->joint_position());
   int cmd_val = PID_realize(-1.5, joint_handle_->joint_position());
-//  std::cout<<"jnt_cmd Value : "<<*jnt_cmd_<<std::endl;
-//  std::cout<<"joint_position Value : "<<joint_handle_->joint_position()<<std::endl;
-//  std::cout<<"cmd_val Value : "<<cmd_val<<std::endl;
+  std::cout<<"jnt_cmd Value : "<<*jnt_cmd_<<std::endl;
+  std::cout<<"joint_position Value : "<<joint_handle_->joint_position()<<std::endl;
+  std::cout<<"cmd_val Value : "<<cmd_val<<std::endl;
   cmd.data[0] = 0x4A;
   cmd.data[1] = 0x56;
   cmd.data[2] = 0x00;
@@ -251,14 +251,14 @@ bool MotorNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
   cmd.data[5] = (cmd_val >> 8) & 0xff;
   cmd.data[6] = (cmd_val >> 16) & 0xff;
   cmd.data[7] = (cmd_val >> 24) & 0xff;
-// printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-//        (int)cmd.node_id,
-//        (int)cmd.msg_id,  (int)cmd.size,
-//        (int)cmd.data[0], (int)cmd.data[1],
-//        (int)cmd.data[2], (int)cmd.data[3],
-//        (int)cmd.data[4], (int)cmd.data[5],
-//        (int)cmd.data[6], (int)cmd.data[7]);
-//  joint_handle_->new_command_ = false;
+  printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+        (int)cmd.node_id,
+        (int)cmd.msg_id,  (int)cmd.size,
+        (int)cmd.data[0], (int)cmd.data[1],
+        (int)cmd.data[2], (int)cmd.data[3],
+        (int)cmd.data[4], (int)cmd.data[5],
+        (int)cmd.data[6], (int)cmd.data[7]);
+  joint_handle_->new_command_ = false;
   pkts.push_back(cmd);
 
   cmd.size = 4;
