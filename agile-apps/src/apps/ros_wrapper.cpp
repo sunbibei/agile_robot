@@ -319,25 +319,25 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   auto kfe = jnt_manager_->getJointHandle(LegType::FL, JntType::KFE);
   LOG_INFO << "Jnt: " << hfe->joint_name();
   // double limits[] = {-0.15, 0.75};
-  double limits[]  = {0, 1.3};
+  double lim_hfe[] = {0, 1.3};
 //  double limits1[] = {-2.181500873, -1.4821116};
-  double limits1[] = {-1.9, -1.5};
-  std::string type = "phase";
+  double lim_kfe[] = {-1.9, -1.5};
+  std::string type = "linear";
 
   // std::vector<double> _y;
   // _y.reserve(512);
  // jnt->updateJointCommand(limits[0]);
-//  jnt1->updateJointCommand(limits1[0]);
+  kfe->updateJointCommand(lim_kfe[0]);
  // LOG_INFO << "Go to initialize position.";
-  //sleep(2); // in s
+  sleep(2); // in s
 
   ///! sin
   if (0 == type.compare("sin")) {
     for (double _x = 0; _x < 10 * 3.14; _x += 0.01) {
       // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
-      double tmp = (limits[1] - limits[0])*sin(_x) + limits[0];
+      double tmp = (lim_hfe[1] - lim_hfe[0])*sin(_x) + lim_hfe[0];
       hfe->updateJointCommand(tmp);
-      double tmp1 = (limits1[1] - limits1[0])*sin(_x) + limits1[0];
+      double tmp1 = (lim_kfe[1] - lim_kfe[0])*sin(_x) + lim_kfe[0];
       kfe->updateJointCommand(tmp1);
       LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
@@ -348,17 +348,17 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
      // double tmp = (limits[1] - limits[0])*_x + limits[0];
       double tmp = 1.3;
     //  jnt->updateJointCommand(tmp);
-      double tmp1 = (limits1[1] - limits1[0])*_x + limits1[0];
+      double tmp1 = (lim_kfe[1] - lim_kfe[0])*_x + lim_kfe[0];
     //  double tmp1 = -1.5;
       kfe->updateJointCommand(tmp1);
-      LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
+      LOG_INFO << "Add the target: " << tmp1 << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
       //return;
     }
   } else if (0 == type.compare("quadratic")) {
     for (double _x = 0; _x < 1; _x += 0.01) {
       // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
-      double tmp = (limits[1] - limits[0])*_x*_x + limits[0];
+      double tmp = (lim_hfe[1] - lim_hfe[0])*_x*_x + lim_hfe[0];
       hfe->updateJointCommand(tmp);
       LOG_INFO << "Add the target: " << tmp;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
@@ -368,7 +368,7 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
     kfe->updateJointCommand(msg->data);
   } else if (0 == type.compare("square")) {
     for (int i = 0; i < (int)msg->data; ++i) {
-      kfe->updateJointCommand(limits1[i%2]);
+      kfe->updateJointCommand(lim_kfe[i%2]);
       std::this_thread::sleep_for(std::chrono::seconds(4));
     }
   } else {

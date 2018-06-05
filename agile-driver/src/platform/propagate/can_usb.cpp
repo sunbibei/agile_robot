@@ -22,7 +22,8 @@ static DWORD g_device_idx        = 0;
 CanUsb::CanUsb()
   : Propagate("CanUsb"),
     recv_buffer_(nullptr), send_buffer_(nullptr),
-    connected_(false),   recv_buf_size_(2048),
+    connected_(false),   tick_r_interval_(2), tick_w_interval_(5),
+    recv_buf_size_(2048),
     recv_msgs_(nullptr), send_msgs_(nullptr) {
   ;
 }
@@ -58,6 +59,9 @@ bool CanUsb::auto_init() {
   cfg->get_value(getLabel(), "swap_buf_size", N_SWAP_BUF);
   recv_buffer_ = new boost::lockfree::queue<VCI_CAN_OBJ>(N_SWAP_BUF);
   send_buffer_ = new boost::lockfree::queue<VCI_CAN_OBJ>(N_SWAP_BUF);
+
+  cfg->get_value(getLabel(), "tick_r_interval", tick_r_interval_);
+  cfg->get_value(getLabel(), "tick_w_interval", tick_w_interval_);
   return true;
 }
 
@@ -192,7 +196,7 @@ void CanUsb::do_exchange_w() {
       }
     }
 
-    TIMER_CONTROL(5)
+    TIMER_CONTROL(tick_w_interval_)
   }
 }
 
@@ -223,7 +227,7 @@ void CanUsb::do_exchange_r() {
       ++recv_off;
     } // end while (recv_off < recv_size)
 
-    TIMER_CONTROL(10)
+    TIMER_CONTROL(tick_r_interval_)
   }
 }
 

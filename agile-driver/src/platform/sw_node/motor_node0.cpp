@@ -33,8 +33,13 @@ struct __PrivateLinearParams {
   double offset;
 };
 
+static const size_t   N_STARTUP_STEPS = 3;
+static const uint64_t _g_startup_cmds[] = {
+    0x0000000000000001, 0x0000000200004D55, 0x0000000100004F4D
+};
+
 MotorNode0::MotorNode0()
-  : SWNode("motor_node"), is_startup_(false),
+  : SWNode("motor_node"), is_startup_(-1),
     leg_(LegType::UNKNOWN_LEG),  jnt_(JntType::UNKNOWN_JNT),
     motor_handle_(nullptr), jnt_param_(nullptr), joint_handle_(nullptr),
     joint_pid_(nullptr), motor_pidout_(0),
@@ -108,6 +113,16 @@ void MotorNode0::handleMsg(const Packet& pkt) {
   short data = 0;
   memcpy(&data, pkt.data, sizeof(short));
   if (_s_data2msgid.end() == _s_data2msgid.find(data)) {
+//    uint64_t pktdata = 0;
+//    memcpy(&pktdata, pkt.data, 8);
+//    printf("is_startup00=%d\n", is_startup_);
+//    if (-1 == is_startup_) is_startup_ = 0;
+//    if (pktdata == _g_startup_cmds[is_startup_ + 1]) {
+//      ++is_startup_;
+//      printf("is_startup11=%d\n", is_startup_);
+//      return;
+//    }
+
     LOG_ERROR << "ERROR data of msg!";
     LOG_HEADER;
     printf(" NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
@@ -157,17 +172,16 @@ void MotorNode0::handleMsg(const Packet& pkt) {
 }
 
 bool MotorNode0::generateCmd(std::vector<Packet>& pkts) {
-  if (!is_startup_) { ///! The first, we need to startup the motor.
-    static uint64_t _s_startup_cmds[] = {
-        0x0000000000000001, 0x0000000200004D55, 0x0000000100004F4D
-    };
+  if (N_STARTUP_STEPS != is_startup_) { ///! The first, we need to startup the motor.
     Packet cmd = {bus_id_, node_id_, MII_MSG_MOTOR_3, 8, {0}};
-    for (const auto& c : _s_startup_cmds) {
+//    memcpy(cmd.data, _g_startup_cmds + (is_startup_ + 1), cmd.size);
+//    pkts.push_back(cmd);
+    for (const auto& c : _g_startup_cmds) {
       memcpy(cmd.data, &c, cmd.size);
       pkts.push_back(cmd);
     }
 
-    is_startup_ = true;
+    is_startup_ = N_STARTUP_STEPS;
     return true;
   }
 

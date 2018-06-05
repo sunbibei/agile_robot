@@ -34,6 +34,8 @@ protected:
   boost::lockfree::queue<VCI_CAN_OBJ>* recv_buffer_;
   boost::lockfree::queue<VCI_CAN_OBJ>* send_buffer_;
   bool         connected_;
+  uint64_t     tick_r_interval_;
+  uint64_t     tick_w_interval_;
 
   virtual void do_exchange_w();
   virtual void do_exchange_r();

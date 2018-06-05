@@ -287,7 +287,7 @@ bool Pid::stability(double _x, double& _e) {
 }
 
 void Pid::compute(double _x, double _e, double& _u) {
-  _u =  (errors_->update(_e, time_control_->dt()/1000.0)) ?
+  _u =  (errors_->update(_e, time_control_->dt_s())) ?
         ((*gains_) * (*errors_)) : 0.0;
 }
 

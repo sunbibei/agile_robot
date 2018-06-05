@@ -36,7 +36,7 @@ private:
 
 protected:
   ///! Whether is startup the motor
-  bool                         is_startup_;
+  int                          is_startup_;
   // there are three joint in each leg
   LegType                      leg_;
   ///! The type of joint.
