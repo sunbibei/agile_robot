@@ -9,7 +9,10 @@
 #define INCLUDE_SYSTEM_PLATFORM_SW_NODE_MOTOR_NODE_H_
 
 #include "sw_node.h"
-#include<cmath>
+
+#include "toolbox/time_control.h"
+
+#include <cmath>
 
 #define Joint_Num 3
 #define DataMin 0
@@ -84,6 +87,12 @@ protected:
   const JntCmdType&         jnt_mode_;
   const double*             jnt_cmd_;
   const short*              motor_cmd_;
+
+  ///! For generateCmd delay
+  TimeControl*              cmd_tick_time_ctrl_;
+  uint64_t                  cmd_tick_interval_;
+  uint64_t                  sum_tick_interval_;
+
 };
 
 } /* namespace agile_robot */

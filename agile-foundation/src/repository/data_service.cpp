@@ -14,8 +14,6 @@
 
 namespace agile_robot {
 
-#define DATA_SERVICE_THREAD "data-service"
-
 struct DataSources {
   std::vector<const double*> jnt_pos;
   std::vector<const double*> jnt_vel;
@@ -168,7 +166,7 @@ DataService::~DataService() {
 }
 
 void DataService::start() {
-    ThreadPool::instance()->add(DATA_SERVICE_THREAD, &DataService::tick, this);
+    ThreadPool::instance()->add("data-log", &DataService::tick, this);
 }
 
 void DataService::tick() {

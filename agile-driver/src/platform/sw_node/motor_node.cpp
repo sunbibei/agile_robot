@@ -16,8 +16,6 @@
 #include "repository/resource/motor.h"
 #include "foundation/thread/threadpool.h"
 
-#include "toolbox/time_control.h"
-
 #include <boost/algorithm/string.hpp>
 #include <stdio.h>
 #include <iostream>
@@ -41,7 +39,9 @@ struct __PrivateLinearParams {
 MotorNode::MotorNode()
   : SWNode("motor_node"), is_startup_(false),
     leg_(LegType::UNKNOWN_LEG),  jnt_(JntType::UNKNOWN_JNT),
-    jnt_mode_(JointManager::instance()->getJointCommandMode()) {
+    jnt_mode_(JointManager::instance()->getJointCommandMode()),
+    cmd_tick_time_ctrl_(nullptr), cmd_tick_interval_(2),
+    sum_tick_interval_(0) {
   jnt_cmd_   = nullptr;
   motor_cmd_ = nullptr;
 }
@@ -88,6 +88,11 @@ bool MotorNode::auto_init() {
   }
 
   Initialize(gains[0], gains[1], gains[2], gains[3], gains[4], gains[5]);
+
+  cmd_tick_time_ctrl_ = new TimeControl();
+
+  cfg->get_value_fatal(getLabel(), "interval", cmd_tick_interval_);
+  cmd_tick_time_ctrl_->start();
   return true;
 }
 
@@ -228,22 +233,16 @@ bool MotorNode::generateCmd(std::vector<Packet>& pkts) {
 
 static int __g_counter = 0;
 bool MotorNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
-//  if (!joint_handle_->new_command_) return false;
-  ///! The command frequency control
-  static TimeControl   _s_post_tick(true);
-  static const int64_t _s_post_tick_interval = 2;
-  static int64_t       _s_sum_interval = 0;
-  _s_sum_interval += _s_post_tick.dt();
-  if (_s_sum_interval < _s_post_tick_interval) return false;
-  _s_sum_interval = 0;
-
+  sum_tick_interval_ += cmd_tick_time_ctrl_->dt();
+  if (sum_tick_interval_ < cmd_tick_interval_) return false;
+  sum_tick_interval_ = 0;
 
   Packet cmd = {bus_id_, node_id_, MII_MSG_MOTOR_3, 8, {0}};
  // int cmd_val = PID_realize(*jnt_cmd_, joint_handle_->joint_position());
   int cmd_val = PID_realize(-1.5, joint_handle_->joint_position());
-  std::cout<<"jnt_cmd Value : "<<*jnt_cmd_<<std::endl;
-  std::cout<<"joint_position Value : "<<joint_handle_->joint_position()<<std::endl;
-  std::cout<<"cmd_val Value : "<<cmd_val<<std::endl;
+//  std::cout<<"jnt_cmd Value : "<<*jnt_cmd_<<std::endl;
+//  std::cout<<"joint_position Value : "<<joint_handle_->joint_position()<<std::endl;
+//  std::cout<<"cmd_val Value : "<<cmd_val<<std::endl;
   cmd.data[0] = 0x4A;
   cmd.data[1] = 0x56;
   cmd.data[2] = 0x00;
@@ -252,13 +251,13 @@ bool MotorNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
   cmd.data[5] = (cmd_val >> 8) & 0xff;
   cmd.data[6] = (cmd_val >> 16) & 0xff;
   cmd.data[7] = (cmd_val >> 24) & 0xff;
- printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-        (int)cmd.node_id,
-        (int)cmd.msg_id,  (int)cmd.size,
-        (int)cmd.data[0], (int)cmd.data[1],
-        (int)cmd.data[2], (int)cmd.data[3],
-        (int)cmd.data[4], (int)cmd.data[5],
-        (int)cmd.data[6], (int)cmd.data[7]);
+// printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//        (int)cmd.node_id,
+//        (int)cmd.msg_id,  (int)cmd.size,
+//        (int)cmd.data[0], (int)cmd.data[1],
+//        (int)cmd.data[2], (int)cmd.data[3],
+//        (int)cmd.data[4], (int)cmd.data[5],
+//        (int)cmd.data[6], (int)cmd.data[7]);
 //  joint_handle_->new_command_ = false;
   pkts.push_back(cmd);
 
