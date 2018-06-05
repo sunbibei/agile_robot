@@ -99,8 +99,9 @@ bool MotorCan::start() {
 }
 
 bool MotorCan::write(const Packet& pkt) {
+
   if (!connected_ || pkt.bus_id != bus_id_) {
-    // LOG_FIRST_N(WARNING, 10000) << "The pcan has not been launched, or initialized fail.";
+    LOG_WARNING << "The pcan has not been launched, or initialized fail.";
     return false;
   }
 
@@ -123,8 +124,11 @@ bool MotorCan::write(const Packet& pkt) {
 //  if (pkt.size > 0)
 //    memcpy(send_can_obj_.Data + sizeof(msgid2idx_lut_[pkt.msg_id]),
 //        pkt.data, pkt.size);
-
-  send_can_obj_.ID      = s_sendid_base_ + pkt.node_id;
+  if(pkt.data[0] == 0x01){
+    send_can_obj_.ID      = 0x0000;
+  }else{
+    send_can_obj_.ID      = s_sendid_base_ + pkt.node_id;
+  }
   send_can_obj_.DataLen = pkt.size;
   memcpy(send_can_obj_.Data, pkt.data, pkt.size);
   return send_buffer_->push(send_can_obj_);
@@ -184,7 +188,7 @@ void MotorCan::state_tick() {
   memset(&req_p, 0x00, sizeof(req_p));
   req_p.DataLen = 4;
   req_p.Data[0] = 0x50; req_p.Data[1] = 0x58;
-  req_p.Data[2] = 0x00; req_p.Data[3] = 0x80;
+  req_p.Data[2] = 0x00; req_p.Data[3] = 0x00;
 
   while (connected_) {
     for (const auto& proxy : proxy_list_) {

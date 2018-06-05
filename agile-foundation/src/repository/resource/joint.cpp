@@ -105,6 +105,7 @@ void Joint::updateJointPosition(double pos) {
   auto count = std::chrono::duration_cast<std::chrono::duration<double>>(duration).count();
   joint_state_->vel_ = (pos - joint_state_->pos_) / count;
   joint_state_->pos_ = pos;
+//  std::cout << "TEST:" << pos << std::endl;
 
   // LOG_WARNING << jnt_name_ << ": " << joint_state_->pos_ << ", " << joint_state_->vel_;
 }

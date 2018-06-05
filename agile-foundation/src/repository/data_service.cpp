@@ -88,7 +88,7 @@ bool DataService::auto_init() {
   time(&_time);
   tm* _tm = std::localtime(&_time);
 
-  sprintf(buffer_, "qr_log_%4d-%02d-%02d_%02d-%02d-%02d", _tm->tm_year + 1900, _tm->tm_mon,
+  sprintf(buffer_, "agile_log_%4d-%02d-%02d_%02d-%02d-%02d", _tm->tm_year + 1900, _tm->tm_mon,
       _tm->tm_mday, _tm->tm_hour, _tm->tm_min, _tm->tm_sec);
   ofn_ = buffer_;
   ofd_.open(path_ + "/" + ofn_);
@@ -118,7 +118,7 @@ bool DataService::auto_init() {
   for (size_t i = 0; i < str.size(); ++i) {
     const auto& t = str[i];
     for (const auto& l : legs) {
-      for (const auto& j : {JntType::HAA, JntType::HFE, JntType::KFE}) {
+      FOREACH_JNT(j) {
         auto jnt = _jnts->getJointHandle(l, j);
 
         if (0 == t.compare("position")) {
@@ -140,18 +140,18 @@ bool DataService::auto_init() {
     // str.pop_back();
   } // end while
 
-  cfg->get_value(sub_tag, "tds", str);
-  sources_->leg_td.resize(str.size());
-  for (const auto& td : str) {
-    auto ptd = Label::getHardwareByName<ForceSensor>(td);
-    if (nullptr == ptd) {
-      LOG_ERROR << "Can't found the named " << td << " TD sensor";
-      continue;
-    }
+  // cfg->get_value(sub_tag, "tds", str);
+  // sources_->leg_td.resize(str.size());
+  // for (const auto& td : str) {
+  //   auto ptd = Label::getHardwareByName<ForceSensor>(td);
+  //   if (nullptr == ptd) {
+  //     LOG_ERROR << "Can't found the named " << td << " TD sensor";
+  //     continue;
+  //   }
 
-    sources_->leg_td[ptd->leg_type()] = ptd->force_data_const_pointer();
-    ofd_ << __cvtLeg2Str(ptd->leg_type()) << "_TD" << " ";
-  }
+  //   sources_->leg_td[ptd->leg_type()] = ptd->force_data_const_pointer();
+  //   ofd_ << __cvtLeg2Str(ptd->leg_type()) << "_TD" << " ";
+  // }
 
   ofd_ << std::endl;
 
@@ -186,8 +186,8 @@ void DataService::tick() {
       ofd_ << *val << " ";
     for (const auto& val : sources_->jnt_cmd)
       ofd_ << *val << " ";
-    for (const auto& val : sources_->leg_td)
-      ofd_ << *val << " ";
+    // for (const auto& val : sources_->leg_td)
+    //   ofd_ << *val << " ";
 
     ofd_ << std::endl;
     TIMER_CONTROL(tick_duration_)

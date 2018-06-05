@@ -6,6 +6,7 @@
  */
 
 #include "platform/sw_node/motor_node.h"
+#include "platform/propagate/can_usb.h"
 
 #include "foundation/utf.h"
 #include "foundation/cfg_reader.h"
@@ -13,14 +14,21 @@
 #include "repository/resource/joint_manager.h"
 #include "repository/resource/joint.h"
 #include "repository/resource/motor.h"
+#include "foundation/thread/threadpool.h"
+
+#include "toolbox/time_control.h"
 
 #include <boost/algorithm/string.hpp>
+#include <stdio.h>
+#include <iostream>
+#include <cstring>
 
 namespace agile_robot {
 
 const size_t JNT_P_CMD_DSIZE   = 6;
 const size_t JNT_PV0_CMD_DSIZE = 8;
 const size_t JNT_PV1_CMD_DSIZE = 4;
+int count_value = 0;
 
 // angle = \frac{360 \pi \alpha}{180*4096} C - \frac{\pi}{18000}\alpha*\beta
 // so, the ABS(scale) = \frac{360 \pi \alpha}{180*4096} = \frac{360\pi}{180*4096}
@@ -31,10 +39,11 @@ struct __PrivateLinearParams {
 };
 
 MotorNode::MotorNode()
-  : SWNode("motor_node"), leg_(LegType::UNKNOWN_LEG),
+  : SWNode("motor_node"), is_startup_(false),
+    leg_(LegType::UNKNOWN_LEG),  jnt_(JntType::UNKNOWN_JNT),
     jnt_mode_(JointManager::instance()->getJointCommandMode()) {
-  for (auto& c : jnt_cmds_)   c = nullptr;
-  for (auto& c : motor_cmds_) c = nullptr;
+  jnt_cmd_   = nullptr;
+  motor_cmd_ = nullptr;
 }
 
 MotorNode::~MotorNode() {
@@ -45,66 +54,171 @@ bool MotorNode::auto_init() {
   if (!SWNode::auto_init()) return false;
   auto cfg = MiiCfgReader::instance();
   cfg->get_value_fatal(getLabel(), "leg", leg_);
+  cfg->get_value_fatal(getLabel(), "jnt", jnt_);
 
-  jnt_params_.resize(JntType::N_JNTS);
-  motors_by_type_.resize(JntType::N_JNTS);
-  joints_by_type_.resize(JntType::N_JNTS);
-  FOREACH_JNT(j) {
-    std::string _tag = Label::make_label(getLabel(),
-        boost::to_lower_copy(std::string(JNTTYPE2STR(j))));
+  jnt_param_    = nullptr;
+  motor_handle_ = nullptr;
+  joint_handle_ = nullptr;
 
-    std::string tmp_str;
-    cfg->get_value(_tag, "label", tmp_str);
-    Joint* jnt = Label::getHardwareByName<Joint>(tmp_str);
-    if (!jnt || !jnt->joint_motor()) {
-      LOG_ERROR << "Can't get the joint '" << tmp_str
-          << "' pointer from LabelSystem, or the motor within joint.";
-      continue;
-    }
+  joint_handle_ = JointManager::instance()->getJointHandle(leg_, jnt_);
+  if (!joint_handle_ || !joint_handle_->joint_motor())
+    LOG_FATAL << "Can't get the joint '" << LEGTYPE2STR(leg_) << " - "
+        << JNTTYPE2STR(jnt_) << "' pointer from JointManager, or the motor within joint.";
 
-    auto param  = new __PrivateLinearParams;
-    double alpha = 0, beta = 0;
-    cfg->get_value_fatal(_tag, "scale",  alpha);
-    cfg->get_value_fatal(_tag, "offset", beta);
-    param->scale  = alpha * 0.001533981;
-    param->offset = alpha * beta * -0.000174528;
-    // LOG_DEBUG << jnt->joint_name() << ": " << param->scale << ", " << param->offset;
-    jnt_params_[j] = param;
+  jnt_param_  = new __PrivateLinearParams;
+  double alpha = 0, beta = 0;
+  cfg->get_value_fatal(getLabel(), "scale",  alpha);
+  cfg->get_value_fatal(getLabel(), "offset", beta);
+  jnt_param_->scale  = alpha;
+  jnt_param_->offset = beta;
+  // LOG_DEBUG << jnt->joint_name() << ": " << param->scale << ", " << param->offset;
 
-    joints_by_type_[jnt->joint_type()] = jnt;
-    motors_by_type_[jnt->joint_type()] = jnt->joint_motor();
+  motor_handle_ = joint_handle_->joint_motor();
 
-    jnt_cmds_[jnt->joint_type()]       = jnt->joint_command_const_pointer();
-    motor_cmds_[jnt->joint_type()]     = jnt->joint_motor()->motor_command_const_pointer();
+  jnt_cmd_       = joint_handle_->joint_command_const_pointer();
+  motor_cmd_     = joint_handle_->joint_motor()->motor_command_const_pointer();
+
+  ///! Got the parameters of PID
+  std::vector<float> gains;
+  std::string _pid_tag = Label::make_label(getLabel(), "pid");
+  cfg->get_value_fatal(_pid_tag, "gains", gains);
+  if (6 != gains.size()) {
+    LOG_FATAL << "The input parameters of PID in " << LEGTYPE2STR(leg_)
+      << " - " << JNTTYPE2STR(jnt_) << " error!";
   }
 
+  Initialize(gains[0], gains[1], gains[2], gains[3], gains[4], gains[5]);
   return true;
 }
 
-void MotorNode::handleMsg(const Packet&) {
-  // TODO
-  ;
+void MotorNode::handleMsg(const Packet& pkt) {
+	// int pos_value,vel_value;
+	// Comd[0].driver_id = pkt.node_id;         //驱动器ID号
+	// Comd[0].msg_id = pkt.msg_id;             //位置 速度 力矩命令标识符
+	// Comd[0].datasize = pkt.size;             //数据长度
+  auto msg_id = MII_MSG_HEARTBEAT_1;
+	if(pkt.data[0] == 0x49 && pkt.data[1] == 0x51)
+	{
+    msg_id = MII_MSG_HEARTBEAT_1;
+
+	//驱动器反馈值为电流值
+	// Comd[0].msg_id = MII_MSG_HEARTBEAT_1;
+	// memcpy(&Comd[0].actualvalue, &pkt.data[4], 4);
+ //        std::cout<<"Torque Value : "<<Comd[0].actualvalue<<std::endl;
+	}else if(pkt.data[0] == 0x56 && pkt.data[1] == 0x58)
+	{
+    msg_id = MII_MSG_HEARTBEAT_2;
+		//驱动器反馈值为速度值
+	// Comd[0].msg_id = MII_MSG_HEARTBEAT_2;
+	// memcpy(&vel_value, &pkt.data[4], 4);
+ //        Comd[0].actualvalue = vel_value;
+ //        std::cout<<"Velocity Value : "<<Comd[0].actualvalue<<std::endl;
+ //        printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+ //        (int)pkt.node_id,
+ //        (int)pkt.msg_id,  (int)pkt.size,
+ //        (int)pkt.data[0], (int)pkt.data[1],
+ //        (int)pkt.data[2], (int)pkt.data[3],
+ //        (int)pkt.data[4], (int)pkt.data[5],
+ //        (int)pkt.data[6], (int)pkt.data[7]);
+	}else if(pkt.data[0] == 0x50 && pkt.data[1] == 0x58)
+	{
+    msg_id = MII_MSG_HEARTBEAT_3;
+		// //驱动器反馈值为位置值
+		// Comd[0].msg_id = MII_MSG_HEARTBEAT_3;
+		// memcpy(&pos_value, &pkt.data[4], 4);
+  //               Comd[0].actualvalue = pos_value;
+  //               std::cout<<"Position Value : "<<Comd[0].actualvalue<<std::endl;
+	}
+
+  float _tor = 0.0;
+  int   _vel = 0, _pos = 0;
+	switch (msg_id) {
+	  case MII_MSG_HEARTBEAT_1:
+	    if (8 != pkt.size) {
+	      LOG_ERROR << "The data size of MII_MSG_HEARTBEAT_MSG_1 message does not match!"
+	          << ", the expect size is 8, but the real size is " << pkt.size;
+	      return;
+	    }
+      
+      memcpy(&_tor, pkt.data + 4, sizeof(_tor));
+	    // parse the joint state and touchdown data
+      motor_handle_->updateMotorTorque(_tor);
+	    break;
+	  case MII_MSG_HEARTBEAT_2:
+	  if (8 != pkt.size) {
+			  LOG_ERROR << "The data size of MII_MSG_HEARTBEAT_MSG_1 message does not match!"
+				  << ", the expect size is 8, but the real size is " << pkt.size;
+			  return;
+			}
+      memcpy(&_vel, pkt.data + 4, sizeof(_vel));
+			// parse the joint state and touchdown data
+      motor_handle_->updateMotorVelocity(_vel);
+	   break;
+	  case MII_MSG_HEARTBEAT_3:
+      if (8 != pkt.size) {
+        LOG_ERROR << "The data size of MII_MSG_HEARTBEAT_MSG_1 message does not match!"
+          << ", the expect size is 8, but the real size is " << pkt.size;
+        return;
+      }
+      memcpy(&_pos, pkt.data + 4, sizeof(_pos));
+      // parse the joint state and touchdown data
+      motor_handle_->updateMotorPosition(_pos);
+      break;
+	  default:
+	    SWNode::handleMsg(pkt);
+	}
+
 }
 
 bool MotorNode::generateCmd(std::vector<Packet>& pkts) {
+  if (!is_startup_) {
+  Packet cmd = {bus_id_, node_id_, MII_MSG_MOTOR_3, 8, {0}};
+
+  cmd.data[0] = 0x01;
+  cmd.data[1] = 0x00;
+  pkts.push_back(cmd);
+  
+  cmd.data[0] = 0x55;
+  cmd.data[1] = 0x4D;
+  cmd.data[2] = 0x00;
+  cmd.data[3] = 0x00;
+  cmd.data[4] = 0x02; 
+  cmd.data[5] = 0x00;
+  cmd.data[6] = 0x00;
+  cmd.data[7] = 0x00;
+  pkts.push_back(cmd);
+
+  cmd.data[0]  = 0x4D;
+  cmd.data[1]  = 0x4F;
+  cmd.data[2]  = 0x00;
+  cmd.data[3]  = 0x00;
+  cmd.data[4]  = 0x01; 
+  cmd.data[5]  = 0x00;
+  cmd.data[6]  = 0x00;
+  cmd.data[7]  = 0x00;
+  pkts.push_back(cmd);
+
+  is_startup_ = true;
+  return true;
+  }
 
   bool is_any_valid = false;
   switch (jnt_mode_) {
   case JntCmdType::CMD_POS:
     is_any_valid = __fill_pos_cmd(pkts);
     break;
-  case JntCmdType::CMD_VEL:
-    is_any_valid = __fill_vel_cmd(pkts);
-    break;
-  case JntCmdType::CMD_TOR:
-    is_any_valid = __fill_tor_cmd(pkts);
-    break;
-  case JntCmdType::CMD_POS_VEL:
-    is_any_valid = __fill_pos_vel_cmd(pkts);
-    break;
-  case JntCmdType::CMD_MOTOR_VEL:
-    is_any_valid = __fill_motor_vel_cmd(pkts);
-    break;
+  // case JntCmdType::CMD_VEL:
+  //   is_any_valid = __fill_vel_cmd(pkts);
+  //   break;
+  // case JntCmdType::CMD_TOR:
+  //   is_any_valid = __fill_tor_cmd(pkts);
+  //   break;
+  // case JntCmdType::CMD_POS_VEL:
+  //   is_any_valid = __fill_pos_vel_cmd(pkts);
+  //   break;
+  // case JntCmdType::CMD_MOTOR_VEL:
+  //   is_any_valid = __fill_motor_vel_cmd(pkts);
+  //   break;
   default:
     LOG_ERROR << "What a fucking the command mode of joint.";
   }
@@ -112,121 +226,260 @@ bool MotorNode::generateCmd(std::vector<Packet>& pkts) {
   return is_any_valid;
 }
 
-
+static int __g_counter = 0;
 bool MotorNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
-//  double cmds[JntType::N_JNTS]  = {0};
-//  short counts[JntType::N_JNTS] = {0};
+//  if (!joint_handle_->new_command_) return false;
+  ///! The command frequency control
+  static TimeControl   _s_post_tick(true);
+  static const int64_t _s_post_tick_interval = 2;
+  static int64_t       _s_sum_interval = 0;
+  _s_sum_interval += _s_post_tick.dt();
+  if (_s_sum_interval < _s_post_tick_interval) return false;
+  _s_sum_interval = 0;
 
-  int offset  = 0;
-  short count = 0;
-  bool is_any_valid = false;
-  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_1, JNT_P_CMD_DSIZE, {0}};
-  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
-    if (joints_by_type_[type]->new_command_) {
-      is_any_valid = true;
-//      if ((LegType::FL == leg_) && (JntType::HIP == type))
-//        printf("LegNode: [%s] - (%s): %+01.04f\n", LEGTYPE_TOSTRING(leg_),
-//            JNTTYPE_TOSTRING(type), jnt_cmds_[type][0]);
-      count = (*jnt_cmds_[type] - jnt_params_[type]->offset) / jnt_params_[type]->scale;
-      memcpy(cmd.data + offset, &count, sizeof(count));
-//      cmds[type]   = *jnt_cmds_[type];
-//      counts[type] = count;
-//      if (LegType::FL == leg_)
-//        printf("LegNode: [%s] - (%s):\t%05d\n", LEGTYPE_TOSTRING(leg_), JNTTYPE_TOSTRING(type), count);
-      joints_by_type_[type]->new_command_ = false;
-    } else {
-      cmd.data[offset]     = INVALID_BYTE;
-      cmd.data[offset + 1] = INVALID_BYTE;
-    }
-    offset += sizeof(count); // Each count stand two bytes.
-  }
 
-  if (is_any_valid) {
-//    if (false && LegType::FL == leg_)
-//      printf("%s - %+8.5f, %+8.5f, %+8.5f\n", LEGTYPE_TOSTRING(leg_),
-//          cmds[JntType::KNEE], cmds[JntType::HIP], cmds[JntType::YAW]);
-
-    pkts.push_back(cmd);
-  }
-
-  return is_any_valid;
-}
-
-bool MotorNode::__fill_vel_cmd(std::vector<Packet>& pkts) {
-  // cmd = {INVALID_BYTE, node_id_, MII_MSG_MOTOR_CMD_1, JNT_P_CMD_DSIZE, {0}};
-  LOG_ERROR << "No implement velocity command!";
-  return false;
-}
-
-bool MotorNode::__fill_tor_cmd(std::vector<Packet>&) {
-  LOG_ERROR << "No implement torque command!";
-  return false;
-}
-
-bool MotorNode::__fill_pos_vel_cmd(std::vector<Packet>& pkts) {
-  int offset  = 0;
-  short count = 0;
-  bool is_any_valid = false;
-  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_4, JNT_PV0_CMD_DSIZE, {0}};
-
-  for (const auto& type : {JntType::KFE, JntType::HFE}) {
-    if (joints_by_type_[type]->new_command_) {
-      is_any_valid = true;
-      // printf("[%d] - (%d): %+01.04f %+01.04f\n", leg_, type, jnt_cmds_[type][0], jnt_cmds_[type][1]);
-      count = (jnt_cmds_[type][0] - jnt_params_[type]->offset) / jnt_params_[type]->scale;
-      memcpy(cmd.data + offset, &count, sizeof(count));
-      // printf("[%d] - (%d): %04d ", leg_, type, count);
-
-      count = (jnt_cmds_[type][1] - jnt_params_[type]->offset) / jnt_params_[type]->scale;
-      memcpy(cmd.data + offset + sizeof(count), &count, sizeof(count));
-      joints_by_type_[type]->new_command_ = false;
-      // printf("%04d\n", count);
-
-    } else {
-      memset(cmd.data + offset, INVALID_BYTE, 2*sizeof(count));
-    }
-
-    offset += 2*sizeof(count); // Each count stand 2*two bytes.
-  }
-  if (is_any_valid) pkts.push_back(cmd);
-  if (!joints_by_type_[JntType::HAA]->new_command_) return is_any_valid;
-
-  is_any_valid = true;
-  cmd = {INVALID_BYTE, node_id_, MII_MSG_COMMON_5, JNT_PV1_CMD_DSIZE, {0}};
-  // printf("[%d] - (%d): %+01.04f %+01.04f\n", leg_, JntType::YAW, jnt_cmds_[JntType::YAW][0], jnt_cmds_[JntType::YAW][1]);
-  count = (jnt_cmds_[JntType::HAA][0] - jnt_params_[JntType::HAA]->offset)
-      / jnt_params_[JntType::HAA]->scale;
-  memcpy(cmd.data, &count, sizeof(count));
-  // printf("[%d] - (%d): %04d ", leg_, JntType::YAW, count);
-
-  count = (jnt_cmds_[JntType::HAA][1] - jnt_params_[JntType::HAA]->offset)
-      / jnt_params_[JntType::HAA]->scale;
-  memcpy(cmd.data + sizeof(count), &count, sizeof(count));
-  joints_by_type_[JntType::HAA]->new_command_ = false;
-  // printf("%d\n", count);
+  Packet cmd = {bus_id_, node_id_, MII_MSG_MOTOR_3, 8, {0}};
+ // int cmd_val = PID_realize(*jnt_cmd_, joint_handle_->joint_position());
+  int cmd_val = PID_realize(-1.5, joint_handle_->joint_position());
+  std::cout<<"jnt_cmd Value : "<<*jnt_cmd_<<std::endl;
+  std::cout<<"joint_position Value : "<<joint_handle_->joint_position()<<std::endl;
+  std::cout<<"cmd_val Value : "<<cmd_val<<std::endl;
+  cmd.data[0] = 0x4A;
+  cmd.data[1] = 0x56;
+  cmd.data[2] = 0x00;
+  cmd.data[3] = 0x00;
+  cmd.data[4] = cmd_val & 0xff;
+  cmd.data[5] = (cmd_val >> 8) & 0xff;
+  cmd.data[6] = (cmd_val >> 16) & 0xff;
+  cmd.data[7] = (cmd_val >> 24) & 0xff;
+ printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+        (int)cmd.node_id,
+        (int)cmd.msg_id,  (int)cmd.size,
+        (int)cmd.data[0], (int)cmd.data[1],
+        (int)cmd.data[2], (int)cmd.data[3],
+        (int)cmd.data[4], (int)cmd.data[5],
+        (int)cmd.data[6], (int)cmd.data[7]);
+//  joint_handle_->new_command_ = false;
   pkts.push_back(cmd);
-  return is_any_valid;
+
+  cmd.size = 4;
+  cmd.data[0]  = 0x42;
+  cmd.data[1]  = 0x47;
+  cmd.data[2]  = 0x00;
+  cmd.data[3]  = 0x00;
+  pkts.push_back(cmd);
+  return true;
 }
 
-bool MotorNode::__fill_motor_vel_cmd(std::vector<Packet>& pkts) {
-  int offset  = 0;
-  bool is_any_valid = false;
-  Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_MOTOR_2, JNT_P_CMD_DSIZE, {0}};
-  for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
-    if (motors_by_type_[type]->new_command_) {
-      is_any_valid = true;
-      // printf("Motor velocity: %04d ", *motor_cmds_[type]);
-      memcpy(cmd.data + offset, motor_cmds_[type], sizeof(short));
-      motors_by_type_[type]->new_command_ = false;
-    } else {
-      cmd.data[offset]     = INVALID_BYTE;
-      cmd.data[offset + 1] = INVALID_BYTE;
-    }
-    offset += sizeof(short); // Each count stand two bytes.
-  }
+//   for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
+// 	if(type == KFE){
+//     if (joints_by_type_[type]->new_command_) {
+//       std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXX " << __g_counter++ << ": " << *(jnt_cmds_[type])<<std::endl;
+//       is_any_valid = true;
+// //      float joint_value_KFE = (-(*(jnt_cmds_[type])) * 57.296 - 63.69) * 11.375; //电机模型转换
+//       float joint_value_KFE = *(jnt_cmds_[type]);   //joint command value
+//       float joint_actualvalue_KFE = joints_by_type_[type]->joint_position();   //joint actual value
+//       Initialize(10,0.1,0,0,0,0,1);
+//       count_value = PID_realize(joint_value_KFE,joint_actualvalue_KFE,1);
+//       cmd.node_id = 0x01;
+//       cmd.data[0] = 0x4A;
+//       cmd.data[1] = 0x56;
+//       cmd.data[2] = 0x00;
+//       cmd.data[3] = 0x00;
+//       cmd.data[4] = count_value & 0xff;
+//       cmd.data[5] = (count_value >> 8) & 0xff;
+//       cmd.data[6] = (count_value >> 16) & 0xff;
+//       cmd.data[7] = (count_value >> 24) & 0xff;
 
-  if (is_any_valid) pkts.push_back(cmd);
-  return is_any_valid;
+//     joints_by_type_[type]->new_command_ = false;
+// // printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+// //        (int)cmd.node_id,
+// //        (int)cmd.msg_id,  (int)cmd.size,
+// //        (int)cmd.data[0], (int)cmd.data[1],
+// //        (int)cmd.data[2], (int)cmd.data[3],
+// //        (int)cmd.data[4], (int)cmd.data[5],
+// //        (int)cmd.data[6], (int)cmd.data[7]);
+// //    } else {
+// //      cmd.data[offset]     = INVALID_BYTE;
+// //      cmd.data[offset + 1] = INVALID_BYTE;
+//     }
+//   }
+// 	if(type == HFE){
+// 	    if (joints_by_type_[type]->new_command_) {
+// 	      is_any_valid = true;
+//               std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXF " << __g_counter++ << ": " << *(jnt_cmds_[type]) << std::endl;
+// //	      float joint_value_HFE = (-(*(jnt_cmds_[type])) * 57.296 - 63.69) * 11.375; //电机模型转换
+//               float joint_value_HFE = *(jnt_cmds_[type]);
+//               float joint_actualvalue_HFE = joints_by_type_[type]->joint_position(); 
+//               Initialize(10,0.1,0,0,0,0,2);
+// 	      count2 = PID_realize(joint_value_HFE,joint_actualvalue_HFE,2);
+//               // std::cout<<"Count2 Value : "<<count2<<std::endl;
+// 	      cmd.node_id = 0x02;
+// 	      cmd.data[0] = 0x4A;
+// 	      cmd.data[1] = 0x56;
+// 	      cmd.data[2] = 0x00;
+// 	      cmd.data[3] = 0x00;
+// 	      cmd.data[4] = count2 & 0xff;
+// 	      cmd.data[5] = (count2 >> 8) & 0xff;
+// 	      cmd.data[6] = (count2 >> 16) & 0xff;
+// 	      cmd.data[7] = (count2 >> 24) & 0xff;
+// 	      joints_by_type_[type]->new_command_ = false;
+// //	    } else {
+// //	      cmd.data[offset]     = INVALID_BYTE;
+// //	      cmd.data[offset + 1] = INVALID_BYTE;
+// //	    }
+// // printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+// //        (int)cmd.node_id,
+// //        (int)cmd.msg_id,  (int)cmd.size,
+// //        (int)cmd.data[0], (int)cmd.data[1],
+// //        (int)cmd.data[2], (int)cmd.data[3],
+// //        (int)cmd.data[4], (int)cmd.data[5],
+// //        (int)cmd.data[6], (int)cmd.data[7]);
+// 	  }
+//    }
+// 	if(type == HAA){
+// 	    if (joints_by_type_[type]->new_command_) {
+// 	      is_any_valid = true;
+// 	      float joint_value_HAA = (-(*(jnt_cmds_[type])) * 57.296 - 63.69) * 11.375; //电机模型转换
+//               Initialize(10,0.1,0,0,0,0,3);
+// 	      count3 = PID_realize(joint_value_HAA,100,3);
+//               // std::cout<<"Count3 Value : "<<count3<<std::endl;
+// 	      cmd.node_id = 0x03;
+// 	      cmd.data[0] = 0x4A;
+// 	      cmd.data[1] = 0x56;
+// 	      cmd.data[2] = 0x00;
+// 	      cmd.data[3] = 0x00;
+// 	      cmd.data[4] = count3 & 0xff;
+// 	      cmd.data[5] = (count3 >> 8) & 0xff;
+// 	      cmd.data[6] = (count3 >> 16) & 0xff;
+// 	      cmd.data[7] = (count3 >> 24) & 0xff;
+// 	      joints_by_type_[type]->new_command_ = false;
+// //	    } else {
+// //	      cmd.data[offset]     = INVALID_BYTE;
+// //	      cmd.data[offset + 1] = INVALID_BYTE;
+// //	    }
+// // printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+// //        (int)cmd.node_id,
+// //        (int)cmd.msg_id,  (int)cmd.size,
+// //        (int)cmd.data[0], (int)cmd.data[1],
+// //        (int)cmd.data[2], (int)cmd.data[3],
+// //        (int)cmd.data[4], (int)cmd.data[5],
+// //        (int)cmd.data[6], (int)cmd.data[7]);
+// 	  }
+//   }
+// }
+//   if (is_any_valid) {
+//     pkts.push_back(cmd);
+//   }
+//   return is_any_valid;
+// }
+
+// bool MotorNode::__fill_vel_cmd(std::vector<Packet>& pkts) {
+// 	int offset  = 0;
+// 	short count = 0;
+// 	int setvalue = 0;
+// 	bool is_any_valid = false;
+// 	Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_MOTOR_2, JNT_PV0_CMD_DSIZE, {0}};
+// 	for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
+// 	   if (joints_by_type_[type]->new_command_) {
+// 	      is_any_valid = true;
+// 	      if(type==KFE){
+// 	        cmd.node_id = 0x301;
+// 	       }else if(type == HFE){
+// 	        cmd.node_id = 0x302;
+// 	       }else if(type == HAA){
+// 	        cmd.node_id = 0x303;
+// 	       }
+// 	      count = PID_realize(*jnt_cmds_[type],100,MII_MSG_MOTOR_2);
+// 	      cmd.data[0] = 0x4A;
+// 	      cmd.data[1] = 0x56;
+// 	      cmd.data[2] = 0x00;
+// 	      cmd.data[3] = 0x00;
+// 	      cmd.data[4] = count & 0xff;
+// 	      cmd.data[5] = (count >> 8) & 0xff;
+// 	      cmd.data[6] = (count >> 16) & 0xff;
+// 	      cmd.data[7] = (count >> 24) & 0xff;
+// 	      joints_by_type_[type]->new_command_ = false;
+// 	    } else {
+// 	      cmd.data[offset]     = INVALID_BYTE;
+// 	      cmd.data[offset + 1] = INVALID_BYTE;
+// 	    }
+// 	  }
+
+// 	  if (is_any_valid) {
+// 	    pkts.push_back(cmd);
+// 	  }
+
+// 	  return is_any_valid;
+// }
+
+float Location_datalimit(float data, float dataMax, float dataMin){
+	if(data >= dataMax)
+	{
+		data = dataMax;
+	}
+	if(data <= dataMin)
+	{
+		data = dataMin;
+	}
+	return data;
+}
+void MotorNode::Initialize(float l_kp,float l_ki,float l_kd,float s_kp,float s_ki,float s_kd)
+{
+    //初始化控制器参数
+   PID.L_Kp = l_kp;
+   PID.L_Ki = l_ki;
+   PID.L_Kd = l_kd;
+   PID.S_Kp = s_kp;
+   PID.S_Ki = s_ki;
+   PID.S_Kd = s_kd;
+
+}
+
+void MotorNode::Initialize_increment(float l_kp,float l_ki,float l_kd,float s_kp,float s_ki,float s_kd)
+{
+    //初始化增量式控制器参数
+	PID.L_Kp = l_kp;
+	PID.L_Ki = l_ki;
+	PID.L_Kd = l_kd;
+	PID.S_Kp = s_kp;
+	PID.S_Ki = s_ki;
+	PID.S_Kd = s_kd;
+	PID.Locatioin_err = 0;
+	PID.Location_err_last = 0;
+	PID.Location_err_next = 0;
+
+}
+
+float MotorNode :: PID_realize(float setlocation,float actuallocation)
+{   
+    float Outspeed;
+    PID.SetLocation = setlocation;
+    PID.ActualLocation = actuallocation;
+    PID.Locatioin_err = PID.SetLocation-PID.ActualLocation;
+    PID.Location_integral += PID.Locatioin_err;
+    PID.Output_Speed = PID.L_Kp * PID.Locatioin_err + PID.L_Ki * PID.Location_integral + PID.L_Kd * (PID.Locatioin_err-PID.Location_err_last);
+    PID.Location_err_last = PID.Locatioin_err;
+    if(actuallocation >= 1.4)
+    {
+       Outspeed = 0;
+    }else{
+      Outspeed = PID.Output_Speed ;// /(std::abs(PID.Output_Speed)) * (std::abs(PID.Output_Speed));
+    }
+    return Outspeed;
+//    return Location_datalimit(PID.Output_Speed, DataMax, DataMin);
+}
+
+float MotorNode ::PID_incremental_realize(float setlocation,float actuallocation)
+{
+	PID.SetLocation = setlocation;
+	PID.ActualLocation = actuallocation;
+	PID.Locatioin_err = PID.SetLocation-PID.ActualLocation;
+	PID.IncrementLocation = PID.L_Kp * (PID.Locatioin_err - PID.Location_err_next) + PID.L_Ki * PID.Locatioin_err + PID.L_Kd * (PID.Locatioin_err - 2 * PID.Location_err_next + PID.Location_err_last);
+	PID.Output_Speed += PID.IncrementLocation;
+	PID.Location_err_last = PID.Location_err_next;
+	PID.Location_err_next = PID.Locatioin_err;
+	return PID.Output_Speed;
 }
 
 } /* namespace agile_robot */

@@ -149,13 +149,13 @@ set(SRC_AGILE_LEG_FILES      ${SRC_ROOT}/gz_agile_leg_plugin.cc
 # set(SYS_TEST_FILES      ${SRC_TEST_ROOT}/test.cpp)
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}_robot_plugin SHARED
-  ${SRC_AGILE_ROBOT_FILES}
-)
+# add_library(${PROJECT_NAME}_robot_plugin SHARED
+#   ${SRC_AGILE_ROBOT_FILES}
+# )
 
-add_library(${PROJECT_NAME}_leg_plugin SHARED
-  ${SRC_AGILE_LEG_FILES}
-)
+# add_library(${PROJECT_NAME}_leg_plugin SHARED
+#   ${SRC_AGILE_LEG_FILES}
+# )
 
 # add_library(agile_plugin SHARED
 #   ${SRC_ROOT}/gz_agile_plugin.cc
@@ -174,19 +174,19 @@ add_library(${PROJECT_NAME}_leg_plugin SHARED
 # add_dependencies(dragon_gazebo_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_robot_plugin
-  ${catkin_LIBRARIES}
-  ${GAZEBO_LIBRARIES}
-  agile_foundation
-  agile_foundation_repository
-)
+# target_link_libraries(${PROJECT_NAME}_robot_plugin
+#   ${catkin_LIBRARIES}
+#   ${GAZEBO_LIBRARIES}
+#   agile_foundation
+#   agile_foundation_repository
+# )
 
-target_link_libraries(${PROJECT_NAME}_leg_plugin
-  ${catkin_LIBRARIES}
-  ${GAZEBO_LIBRARIES}
-  agile_foundation
-  agile_foundation_repository
-)
+# target_link_libraries(${PROJECT_NAME}_leg_plugin
+#   ${catkin_LIBRARIES}
+#   ${GAZEBO_LIBRARIES}
+#   agile_foundation
+#   agile_foundation_repository
+# )
 
 # target_link_libraries(agile_plugin
 #   ${GAZEBO_LIBRARIES}
@@ -201,20 +201,20 @@ target_link_libraries(${PROJECT_NAME}_leg_plugin
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
-install(DIRECTORY plugins/include/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+# install(DIRECTORY plugins/include/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS ${PROJECT_NAME}_robot_plugin
-                ${PROJECT_NAME}_leg_plugin
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+# install(TARGETS ${PROJECT_NAME}_robot_plugin
+#                 ${PROJECT_NAME}_leg_plugin
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
-foreach(dir models worlds launch)
-  install(DIRECTORY ${dir}/
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
-endforeach(dir)
+# foreach(dir models worlds launch)
+#   install(DIRECTORY ${dir}/
+#     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
+# endforeach(dir)
 
 #############
 ## Testing ##
