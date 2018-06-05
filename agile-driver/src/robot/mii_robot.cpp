@@ -312,10 +312,10 @@ MiiRobot::~MiiRobot() {
   mii_ctrl_alive_ = false;
   Master::destroy_instance();
   JointManager::destroy_instance();
-  ThreadPool::destroy_instance();
-
   // destroy the auto_instancor.
   AutoInstanceor::destroy_instance();
+
+  ThreadPool::destroy_instance();
 
   if (jnt_reg_res_) delete jnt_reg_res_;
   if (td_reg_res_)  delete td_reg_res_;

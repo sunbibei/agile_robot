@@ -76,6 +76,10 @@ void AutoInstanceor::printAvailableClass() {
 
 AutoInstanceor::~AutoInstanceor() {
   // s_inst_table_.clear();
+  for (auto& inst : Label::s_label_table_) {
+    inst.second.reset();
+  }
+
   Label::s_label_table_.clear();
   // The s_inst_table_ will be automatic dealloc.
   if (nullptr != class_loader_) {

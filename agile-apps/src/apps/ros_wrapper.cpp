@@ -52,10 +52,6 @@ RosWrapper::RosWrapper(const std::string& __tag)
 RosWrapper::~RosWrapper() {
   // LOG_DEBUG << "Enter the roswrapper deconstruction";
   halt();
-  // AutoInstanceor::destroy_instance();
-  MiiCfgReader::destroy_instance();
-
-  mii_control_->destroy_instance();
   // LOG_DEBUG << "Leave the roswrapper deconstruction";
   // google::ShutdownGoogleLogging();
 }
@@ -310,7 +306,11 @@ void RosWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
 
 void RosWrapper::halt() {
   alive_ = false;
-  agile_control::MiiControl::instance()->destroy_instance();
+  // agile_control::MiiControl::instance()->destroy_instance();
+  // AutoInstanceor::destroy_instance();
+  MiiCfgReader::destroy_instance();
+
+  mii_control_->destroy_instance();
 }
 
 #ifdef DEBUG_TOPIC
@@ -338,7 +338,7 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
       double tmp = (limits[1] - limits[0])*sin(_x) + limits[0];
       jnt->updateJointCommand(tmp);
       double tmp1 = (limits1[1] - limits1[0])*sin(_x) + limits1[0];
-    //  jnt1->updateJointCommand(tmp1);
+      jnt1->updateJointCommand(tmp1);
       LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
       //return;
@@ -346,12 +346,12 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   } else if (0 == type.compare("linear")) {
     for (double _x = 0; _x <= 1; _x += 0.01) {
      // double tmp = (limits[1] - limits[0])*_x + limits[0];
-    //  double tmp = 1.3;
-     // jnt->updateJointCommand(tmp);
+      double tmp = 1.3;
+    //  jnt->updateJointCommand(tmp);
       double tmp1 = (limits1[1] - limits1[0])*_x + limits1[0];
-     // double tmp1 = -1.5;
+    //  double tmp1 = -1.5;
       jnt1->updateJointCommand(tmp1);
-    //  LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
+      LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
       //return;
     }
