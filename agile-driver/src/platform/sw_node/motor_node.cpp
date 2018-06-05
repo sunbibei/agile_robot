@@ -23,11 +23,6 @@
 
 namespace agile_robot {
 
-const size_t JNT_P_CMD_DSIZE   = 6;
-const size_t JNT_PV0_CMD_DSIZE = 8;
-const size_t JNT_PV1_CMD_DSIZE = 4;
-int count_value = 0;
-
 // angle = \frac{360 \pi \alpha}{180*4096} C - \frac{\pi}{18000}\alpha*\beta
 // so, the ABS(scale) = \frac{360 \pi \alpha}{180*4096} = \frac{360\pi}{180*4096}
 // offset = - \frac{\pi}{18000}\alpha*\beta = -0.000174528*\beta
@@ -39,6 +34,7 @@ struct __PrivateLinearParams {
 MotorNode::MotorNode()
   : SWNode("motor_node"), is_startup_(false),
     leg_(LegType::UNKNOWN_LEG),  jnt_(JntType::UNKNOWN_JNT),
+    motor_handle_(nullptr), jnt_param_(nullptr), joint_handle_(nullptr),
     jnt_mode_(JointManager::instance()->getJointCommandMode()),
     cmd_tick_time_ctrl_(nullptr), cmd_tick_interval_(2),
     sum_tick_interval_(0) {
@@ -89,9 +85,8 @@ bool MotorNode::auto_init() {
 
   Initialize(gains[0], gains[1], gains[2], gains[3], gains[4], gains[5]);
 
-  cmd_tick_time_ctrl_ = new TimeControl();
-
   cfg->get_value_fatal(getLabel(), "interval", cmd_tick_interval_);
+  cmd_tick_time_ctrl_ = new TimeControl();
   cmd_tick_time_ctrl_->start();
   return true;
 }
@@ -133,6 +128,13 @@ void MotorNode::handleMsg(const Packet& pkt) {
 		// memcpy(&pos_value, &pkt.data[4], 4);
   //               Comd[0].actualvalue = pos_value;
   //               std::cout<<"Position Value : "<<Comd[0].actualvalue<<std::endl;
+	} else {
+	  LOG_ERROR << "ERROR data of msg";
+    LOG_HEADER;
+    printf(" NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+      (int)pkt.node_id, (int)pkt.msg_id,  (int)pkt.size,
+      (int)pkt.data[0], (int)pkt.data[1], (int)pkt.data[2], (int)pkt.data[3],
+      (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
 	}
 
   float _tor = 0.0;
@@ -231,15 +233,14 @@ bool MotorNode::generateCmd(std::vector<Packet>& pkts) {
   return is_any_valid;
 }
 
-static int __g_counter = 0;
 bool MotorNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
   sum_tick_interval_ += cmd_tick_time_ctrl_->dt();
   if (sum_tick_interval_ < cmd_tick_interval_) return false;
   sum_tick_interval_ = 0;
 
   Packet cmd = {bus_id_, node_id_, MII_MSG_MOTOR_3, 8, {0}};
- // int cmd_val = PID_realize(*jnt_cmd_, joint_handle_->joint_position());
-  int cmd_val = PID_realize(-1.5, joint_handle_->joint_position());
+ int cmd_val = PID_realize(*jnt_cmd_, joint_handle_->joint_position());
+ // int cmd_val = PID_realize(-1.5, joint_handle_->joint_position());
   std::cout<<"jnt_cmd Value : "<<*jnt_cmd_<<std::endl;
   std::cout<<"joint_position Value : "<<joint_handle_->joint_position()<<std::endl;
   std::cout<<"cmd_val Value : "<<cmd_val<<std::endl;
@@ -269,148 +270,6 @@ bool MotorNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
   pkts.push_back(cmd);
   return true;
 }
-
-//   for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
-// 	if(type == KFE){
-//     if (joints_by_type_[type]->new_command_) {
-//       std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXX " << __g_counter++ << ": " << *(jnt_cmds_[type])<<std::endl;
-//       is_any_valid = true;
-// //      float joint_value_KFE = (-(*(jnt_cmds_[type])) * 57.296 - 63.69) * 11.375; //电机模型转换
-//       float joint_value_KFE = *(jnt_cmds_[type]);   //joint command value
-//       float joint_actualvalue_KFE = joints_by_type_[type]->joint_position();   //joint actual value
-//       Initialize(10,0.1,0,0,0,0,1);
-//       count_value = PID_realize(joint_value_KFE,joint_actualvalue_KFE,1);
-//       cmd.node_id = 0x01;
-//       cmd.data[0] = 0x4A;
-//       cmd.data[1] = 0x56;
-//       cmd.data[2] = 0x00;
-//       cmd.data[3] = 0x00;
-//       cmd.data[4] = count_value & 0xff;
-//       cmd.data[5] = (count_value >> 8) & 0xff;
-//       cmd.data[6] = (count_value >> 16) & 0xff;
-//       cmd.data[7] = (count_value >> 24) & 0xff;
-
-//     joints_by_type_[type]->new_command_ = false;
-// // printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-// //        (int)cmd.node_id,
-// //        (int)cmd.msg_id,  (int)cmd.size,
-// //        (int)cmd.data[0], (int)cmd.data[1],
-// //        (int)cmd.data[2], (int)cmd.data[3],
-// //        (int)cmd.data[4], (int)cmd.data[5],
-// //        (int)cmd.data[6], (int)cmd.data[7]);
-// //    } else {
-// //      cmd.data[offset]     = INVALID_BYTE;
-// //      cmd.data[offset + 1] = INVALID_BYTE;
-//     }
-//   }
-// 	if(type == HFE){
-// 	    if (joints_by_type_[type]->new_command_) {
-// 	      is_any_valid = true;
-//               std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXF " << __g_counter++ << ": " << *(jnt_cmds_[type]) << std::endl;
-// //	      float joint_value_HFE = (-(*(jnt_cmds_[type])) * 57.296 - 63.69) * 11.375; //电机模型转换
-//               float joint_value_HFE = *(jnt_cmds_[type]);
-//               float joint_actualvalue_HFE = joints_by_type_[type]->joint_position(); 
-//               Initialize(10,0.1,0,0,0,0,2);
-// 	      count2 = PID_realize(joint_value_HFE,joint_actualvalue_HFE,2);
-//               // std::cout<<"Count2 Value : "<<count2<<std::endl;
-// 	      cmd.node_id = 0x02;
-// 	      cmd.data[0] = 0x4A;
-// 	      cmd.data[1] = 0x56;
-// 	      cmd.data[2] = 0x00;
-// 	      cmd.data[3] = 0x00;
-// 	      cmd.data[4] = count2 & 0xff;
-// 	      cmd.data[5] = (count2 >> 8) & 0xff;
-// 	      cmd.data[6] = (count2 >> 16) & 0xff;
-// 	      cmd.data[7] = (count2 >> 24) & 0xff;
-// 	      joints_by_type_[type]->new_command_ = false;
-// //	    } else {
-// //	      cmd.data[offset]     = INVALID_BYTE;
-// //	      cmd.data[offset + 1] = INVALID_BYTE;
-// //	    }
-// // printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-// //        (int)cmd.node_id,
-// //        (int)cmd.msg_id,  (int)cmd.size,
-// //        (int)cmd.data[0], (int)cmd.data[1],
-// //        (int)cmd.data[2], (int)cmd.data[3],
-// //        (int)cmd.data[4], (int)cmd.data[5],
-// //        (int)cmd.data[6], (int)cmd.data[7]);
-// 	  }
-//    }
-// 	if(type == HAA){
-// 	    if (joints_by_type_[type]->new_command_) {
-// 	      is_any_valid = true;
-// 	      float joint_value_HAA = (-(*(jnt_cmds_[type])) * 57.296 - 63.69) * 11.375; //电机模型转换
-//               Initialize(10,0.1,0,0,0,0,3);
-// 	      count3 = PID_realize(joint_value_HAA,100,3);
-//               // std::cout<<"Count3 Value : "<<count3<<std::endl;
-// 	      cmd.node_id = 0x03;
-// 	      cmd.data[0] = 0x4A;
-// 	      cmd.data[1] = 0x56;
-// 	      cmd.data[2] = 0x00;
-// 	      cmd.data[3] = 0x00;
-// 	      cmd.data[4] = count3 & 0xff;
-// 	      cmd.data[5] = (count3 >> 8) & 0xff;
-// 	      cmd.data[6] = (count3 >> 16) & 0xff;
-// 	      cmd.data[7] = (count3 >> 24) & 0xff;
-// 	      joints_by_type_[type]->new_command_ = false;
-// //	    } else {
-// //	      cmd.data[offset]     = INVALID_BYTE;
-// //	      cmd.data[offset + 1] = INVALID_BYTE;
-// //	    }
-// // printf("  <- NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-// //        (int)cmd.node_id,
-// //        (int)cmd.msg_id,  (int)cmd.size,
-// //        (int)cmd.data[0], (int)cmd.data[1],
-// //        (int)cmd.data[2], (int)cmd.data[3],
-// //        (int)cmd.data[4], (int)cmd.data[5],
-// //        (int)cmd.data[6], (int)cmd.data[7]);
-// 	  }
-//   }
-// }
-//   if (is_any_valid) {
-//     pkts.push_back(cmd);
-//   }
-//   return is_any_valid;
-// }
-
-// bool MotorNode::__fill_vel_cmd(std::vector<Packet>& pkts) {
-// 	int offset  = 0;
-// 	short count = 0;
-// 	int setvalue = 0;
-// 	bool is_any_valid = false;
-// 	Packet cmd = {INVALID_BYTE, node_id_, MII_MSG_MOTOR_2, JNT_PV0_CMD_DSIZE, {0}};
-// 	for (const auto& type : {JntType::KFE, JntType::HFE, JntType::HAA}) {
-// 	   if (joints_by_type_[type]->new_command_) {
-// 	      is_any_valid = true;
-// 	      if(type==KFE){
-// 	        cmd.node_id = 0x301;
-// 	       }else if(type == HFE){
-// 	        cmd.node_id = 0x302;
-// 	       }else if(type == HAA){
-// 	        cmd.node_id = 0x303;
-// 	       }
-// 	      count = PID_realize(*jnt_cmds_[type],100,MII_MSG_MOTOR_2);
-// 	      cmd.data[0] = 0x4A;
-// 	      cmd.data[1] = 0x56;
-// 	      cmd.data[2] = 0x00;
-// 	      cmd.data[3] = 0x00;
-// 	      cmd.data[4] = count & 0xff;
-// 	      cmd.data[5] = (count >> 8) & 0xff;
-// 	      cmd.data[6] = (count >> 16) & 0xff;
-// 	      cmd.data[7] = (count >> 24) & 0xff;
-// 	      joints_by_type_[type]->new_command_ = false;
-// 	    } else {
-// 	      cmd.data[offset]     = INVALID_BYTE;
-// 	      cmd.data[offset + 1] = INVALID_BYTE;
-// 	    }
-// 	  }
-
-// 	  if (is_any_valid) {
-// 	    pkts.push_back(cmd);
-// 	  }
-
-// 	  return is_any_valid;
-// }
 
 float Location_datalimit(float data, float dataMax, float dataMin){
 	if(data >= dataMax)

@@ -8,9 +8,9 @@
 #ifndef INCLUDE_REPOSITORY_DATA_SERVICE_H_
 #define INCLUDE_REPOSITORY_DATA_SERVICE_H_
 
-#include <foundation/label.h>
-#include <toolbox/time_control.h>
+#include "foundation/label.h"
 
+#include <chrono>
 #include <fstream>
 
 namespace agile_robot {
@@ -27,16 +27,15 @@ public:
   virtual void tick();
 
 protected:
-  bool          enable_;
+  bool            enable_;
   std::string     path_;
   std::string     ofn_;
-  std::ofstream ofd_;
-  char*         buffer_;
+  std::ofstream   ofd_;
+  char*           buffer_;
 
   bool                       tick_alive_;
   std::chrono::milliseconds  tick_duration_;
 
-  TimeControl*       timer_;
   class DataSources* sources_;
 
 };

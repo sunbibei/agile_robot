@@ -37,7 +37,7 @@ include_directories(
 )
 
 set(SRC_ROOT            src)
-set(SRC_EXAMPLES        examples/src)
+# set(SRC_EXAMPLES        examples/src)
 
 set(SRC_APP             ${SRC_ROOT}/apps)
 

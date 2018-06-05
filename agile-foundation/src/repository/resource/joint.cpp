@@ -91,13 +91,14 @@ bool Joint::auto_init() {
     pos_min = std::min(limits[0], limits[1]);
     pos_max = std::max(limits[0], limits[1]);
   }
-  joint_command_ = new JointCommand(pos_min, pos_max, JointManager::instance()->getJointCommandMode());
+  joint_command_ = new JointCommand(pos_min, pos_max,
+      JointManager::instance()->getJointCommandMode(), 0.5*pos_min+0.5*pos_max);
   return true;
 }
 
 const std::string& Joint::joint_name() const { return jnt_name_; }
-const JntType&   Joint::joint_type() const { return jnt_type_; }
-const LegType&   Joint::leg_type() const { return leg_type_; }
+const JntType&   Joint::joint_type()   const { return jnt_type_; }
+const LegType&   Joint::leg_type()     const { return leg_type_; }
 
 void Joint::updateJointPosition(double pos) {
   auto t0 = std::chrono::high_resolution_clock::now();

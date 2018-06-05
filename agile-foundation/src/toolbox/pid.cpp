@@ -229,10 +229,11 @@ Pid::~Pid() {
   stability_ = nullptr;
 }
 
-void Pid::gains(double Kp, double Ki, double Kd, double i_max) {
+void Pid::gains(double Kp, double Ki, double Kd, double i_min, double i_max) {
   gains_->p_gain_ = Kp;
   gains_->i_gain_ = Ki;
   gains_->d_gain_ = Kd;
+  gains_->i_min_  = i_min;
   gains_->i_max_  = i_max;
 }
 

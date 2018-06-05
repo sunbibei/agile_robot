@@ -22,7 +22,7 @@ public:
    * @param Ki    The integral gain.
    * @param Kd    The derivative gain.
    */
-  void gains(double Kp, double Ki, double Kd, double i_max = 200);
+  void gains(double Kp, double Ki, double Kd, double i_min = -200, double i_max = 200);
 
   /*!
    * @brief Set the target.
