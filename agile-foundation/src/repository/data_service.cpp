@@ -8,6 +8,7 @@
 #include "repository/data_service.h"
 #include "repository/resource/joint_manager.h"
 #include "repository/resource/force_sensor.h"
+#include "repository/registry.h"
 
 #include "foundation/cfg_reader.h"
 #include "foundation/thread/threadpool.h"
@@ -25,6 +26,8 @@ struct DataSources {
   std::vector<const double*> jnt_tor;
   std::vector<const double*> jnt_cmd;
   std::vector<const double*> leg_td;
+
+  std::vector<const double*> others;
 };
 
 const size_t DS_BUF_SIZE = 256;
@@ -111,6 +114,16 @@ bool DataService::auto_init() {
     // str.pop_back();
   } // end while
 
+  cfg->get_value(sub_tag, "reg_names", str);
+  for (const auto& o : str) {
+    const double* ots = GET_RESOURCE(o, const double*);
+    if (nullptr != ots) {
+      sources_->others.push_back(ots);
+
+      ofd_ << o << " ";
+    }
+  }
+
   // cfg->get_value(sub_tag, "tds", str);
   // sources_->leg_td.resize(str.size());
   // for (const auto& td : str) {
@@ -159,6 +172,8 @@ void DataService::tick() {
       ofd_ << std::setw(8) << std::setprecision(4) << *val << " ";
     // for (const auto& val : sources_->leg_td)
     //   ofd_ << *val << " ";
+    for (const auto& val : sources_->others)
+      ofd_ << std::setw(8) << std::setprecision(4) << *val << " ";
 
     ofd_ << std::endl;
     TIMER_CONTROL(tick_duration_)

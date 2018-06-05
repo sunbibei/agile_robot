@@ -72,7 +72,6 @@ bool MotorNode0::auto_init() {
   cfg->get_value_fatal(getLabel(), "offset", jnt_param_->offset);
   cfg->get_value_fatal(getLabel(), "interval", cmd_tick_interval_);
 
-
   ///! Got the parameters of PID
   std::vector<float> gains;
   std::string _sub_tag = Label::make_label(getLabel(), "pid");
