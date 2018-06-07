@@ -41,7 +41,7 @@ static const uint64_t _g_startup_cmds[] = {
 MotorNode0::MotorNode0()
   : SWNode("motor_node"), is_startup_(-1),
     leg_(LegType::UNKNOWN_LEG),  jnt_(JntType::UNKNOWN_JNT),
-    motor_handle_(nullptr), jnt_param_(nullptr), joint_handle_(nullptr),
+    motor_handle_(nullptr), joint_handle_(nullptr),
     joint_pid_(nullptr), motor_pidout_(0),
     jnt_mode_(JointManager::instance()->getJointCommandMode()),
     cmd_tick_time_ctrl_(nullptr), cmd_tick_interval_(2),
@@ -50,10 +50,8 @@ MotorNode0::MotorNode0()
 }
 
 MotorNode0::~MotorNode0() {
-  delete jnt_param_;
   delete joint_pid_;
   delete cmd_tick_time_ctrl_;
-  jnt_param_ = nullptr;
   joint_pid_ = nullptr;
   cmd_tick_time_ctrl_ = nullptr;
   ; // Nothing to do here.
@@ -72,10 +70,7 @@ bool MotorNode0::auto_init() {
   ///! Add the instance of motor
   motor_handle_  = joint_handle_->joint_motor();
 
-  jnt_param_  = new __PrivateLinearParams;
-  cfg->get_value_fatal(getLabel(), "scale",  jnt_param_->scale);
-  cfg->get_value_fatal(getLabel(), "offset", jnt_param_->offset);
-  cfg->get_value_fatal(getLabel(), "interval", cmd_tick_interval_);
+  cfg->get_value_fatal(getLabel(), "cmd_interval", cmd_tick_interval_);
 
   ///! Got the parameters of PID
   std::vector<float> gains;

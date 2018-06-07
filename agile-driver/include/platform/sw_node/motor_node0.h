@@ -36,15 +36,13 @@ private:
 
 protected:
   ///! Whether is startup the motor
-  int                          is_startup_;
+  int                       is_startup_;
   // there are three joint in each leg
-  LegType                      leg_;
+  LegType                   leg_;
   ///! The type of joint.
-  JntType                      jnt_;
+  JntType                   jnt_;
   ///! update each motor, this vector order by the type of joint.
-  class Motor*                 motor_handle_;
-  // The order match the @joints_by_type_
-  class __PrivateLinearParams* jnt_param_;
+  class Motor*              motor_handle_;
   ///! the source of command, this vector order by the type of joint.
   class Joint*              joint_handle_;
   ///! the handle of pid control

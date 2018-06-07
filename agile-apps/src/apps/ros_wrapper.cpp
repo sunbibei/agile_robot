@@ -86,12 +86,14 @@ bool RosWrapper::start() {
 
   bool use_control = false;
   ros::param::get("~use_control", use_control);
-  if (!init(use_control)) LOG_FATAL << "Robot initializes fail!";
+  if (!init(use_control))
+    LOG_FATAL << "Robot initializes fail!";
   LOG_INFO << "MiiRobot initialization has completed.";
+  if (use_control)
+    initControl();
+  LOG_INFO << "Launched the mii-control has completed.";
 
   // Label::printfEveryInstance();
-  ///! No launch the framework of control!
-  // initControl();
   double frequency = 50.0;
   ros::param::get("~rt_frequency", frequency);
   if (frequency > 0)
@@ -155,9 +157,9 @@ inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
   to.effort.clear();
   to.name.clear();
   for (const auto& jnt : *from) {
-    to.position.push_back(jnt->joint_position());
-    to.velocity.push_back(jnt->joint_velocity());
-    to.effort.push_back(jnt->joint_torque());
+    to.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
+    to.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
+    to.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
     to.name.push_back(jnt->joint_name());
   }
   to.header.stamp = ros::Time::now();
@@ -318,26 +320,24 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   auto hfe = jnt_manager_->getJointHandle(LegType::FL, JntType::HFE);
   auto kfe = jnt_manager_->getJointHandle(LegType::FL, JntType::KFE);
   LOG_INFO << "Jnt: " << hfe->joint_name();
-  // double limits[] = {-0.15, 0.75};
-  double lim_hfe[] = {0, 1.3};
-//  double limits1[] = {-2.181500873, -1.4821116};
-  double lim_kfe[] = {-1.9, -1.5};
-  std::string type = "linear";
 
-  // std::vector<double> _y;
-  // _y.reserve(512);
- // jnt->updateJointCommand(limits[0]);
-  kfe->updateJointCommand(lim_kfe[0]);
- // LOG_INFO << "Go to initialize position.";
-  sleep(2); // in s
+  double lim_hfe[] = {0, -0.7};
+  double lim_kfe[] = {-2.0, -1.5};
+//  double lim_hfe[] = {hfe->joint_position_min(), hfe->joint_position_max()};
+//  double lim_kfe[] = {kfe->joint_position_min(), kfe->joint_position_max()};
+  std::string type = "phase";
+
+//  kfe->updateJointCommand(lim_kfe[0]);
+//  LOG_INFO << "Go to initialize position.";
+//  sleep(2); // in s
 
   ///! sin
   if (0 == type.compare("sin")) {
     for (double _x = 0; _x < 10 * 3.14; _x += 0.01) {
       // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
-      double tmp = (lim_hfe[1] - lim_hfe[0])*sin(_x) + lim_hfe[0];
+      double tmp = 0.5*(lim_hfe[1] - lim_hfe[0])*sin(_x) + 0.5*(lim_hfe[1] + lim_hfe[0]);
       hfe->updateJointCommand(tmp);
-      double tmp1 = (lim_kfe[1] - lim_kfe[0])*sin(_x) + lim_kfe[0];
+      double tmp1 = 0.5*(lim_kfe[1] - lim_kfe[0])*sin(_x) + 0.5*(lim_kfe[1] + lim_kfe[0]);
       kfe->updateJointCommand(tmp1);
       LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
@@ -345,9 +345,9 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
     }
   } else if (0 == type.compare("linear")) {
     for (double _x = 0; _x <= 1; _x += 0.01) {
-     // double tmp = (limits[1] - limits[0])*_x + limits[0];
-      double tmp = 1.3;
-    //  jnt->updateJointCommand(tmp);
+      double tmp = (lim_hfe[1] - lim_hfe[0])*_x + lim_hfe[0];
+      // double tmp = 1.3;
+      hfe->updateJointCommand(tmp);
       double tmp1 = (lim_kfe[1] - lim_kfe[0])*_x + lim_kfe[0];
     //  double tmp1 = -1.5;
       kfe->updateJointCommand(tmp1);

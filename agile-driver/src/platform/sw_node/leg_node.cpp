@@ -170,9 +170,9 @@ void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
     memcpy(&count, __p + offset, sizeof(count));
     counts[type] = count;
     // scale = scale * 10000 ; offset = offset * 10000 ;
-
-    pos = jnt_params_[type]->scale * (double)counts[type] /10000 + jnt_params_[type]->offset /10000;
-   // pos = 15.343 * (double)count /10000 + 11116 /10000;
+    pos = jnt_params_[type]->scale * (double)counts[type] + jnt_params_[type]->offset;
+    pos *= 0.0001;
+    // pos = 15.343 * (double)count /10000 + 11116 /10000;
     // pos = count; // TODO
    // std::cout << "bianmaqidzhi: " << JNTTYPE2STR(type) << ": " << pos << std::endl;
     jnts_by_type_[type]->updateJointPosition(pos);

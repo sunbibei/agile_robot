@@ -183,6 +183,7 @@ bool MiiRobot::init(bool use_mii_control) {
   if (use_mii_control_) {
     __reg_resource_and_command(Label::make_label(prefix_tag_, "registry"));
     Registry::instance()->print();
+
     double frequency = 50;
     cfg->get_value(prefix_tag_, "frequency", frequency);
     tick_interval_ = std::chrono::milliseconds((int)(1000.0/frequency));

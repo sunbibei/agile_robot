@@ -81,6 +81,7 @@ CanUsb::~CanUsb() {
   delete send_msgs_;
   delete recv_buffer_;
   delete send_buffer_;
+  stop();
 }
 
 bool CanUsb::start() {
