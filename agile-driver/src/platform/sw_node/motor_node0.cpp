@@ -43,6 +43,7 @@ MotorNode0::MotorNode0()
     leg_(LegType::UNKNOWN_LEG),  jnt_(JntType::UNKNOWN_JNT),
     motor_handle_(nullptr), joint_handle_(nullptr),
     joint_pid_(nullptr), motor_pidout_(0),
+    motor_tor_(0), motor_vel_(0), motor_pos_(0),
     jnt_mode_(JointManager::instance()->getJointCommandMode()),
     cmd_tick_time_ctrl_(nullptr), cmd_tick_interval_(2),
     sum_tick_interval_(0) {
@@ -92,6 +93,15 @@ bool MotorNode0::auto_init() {
     cfg->get_value(_sub_tag, "name", name);
     REG_RESOURCE(name, &motor_pidout_);
   }
+  //get motors' velocity and acceleration
+  _sub_tag = Label::make_label(getLabel(), "motor_information");
+  is_reg = false;
+    cfg->get_value(_sub_tag, "enable", is_reg);
+    if (is_reg) {
+      std::string name = joint_handle_->joint_name() + "_motor_inf";
+      cfg->get_value(_sub_tag, "fl_motor_vel", name);
+      REG_RESOURCE(name, &motor_vel_);
+    }
 
   cmd_tick_time_ctrl_ = new TimeControl();
   cmd_tick_time_ctrl_->start();
@@ -126,8 +136,8 @@ void MotorNode0::handleMsg(const Packet& pkt) {
       (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
   }
 
-  float _tor = 0.0;
-  int   _vel = 0, _pos = 0;
+//  float _tor = 0.0;
+   int   _vel = 0, _pos = 0;
   switch (_s_data2msgid[data]) {
     case MII_MSG_HEARTBEAT_1:
       if (8 != pkt.size) {
@@ -136,10 +146,10 @@ void MotorNode0::handleMsg(const Packet& pkt) {
         return;
       }
 
-      memcpy(&_tor, pkt.data + 4, sizeof(_tor));
+      memcpy(&motor_tor_, pkt.data + 4, sizeof(motor_tor_));
       // parse the joint state and touchdown data
-      motor_handle_->updateMotorTorque(_tor);
-      break;
+      motor_handle_->updateMotorTorque(motor_tor_);
+        break;
     case MII_MSG_HEARTBEAT_2:
     if (8 != pkt.size) {
         LOG_ERROR << "The data size of MII_MSG_HEARTBEAT_MSG_1 message does not match!"
@@ -149,6 +159,7 @@ void MotorNode0::handleMsg(const Packet& pkt) {
       memcpy(&_vel, pkt.data + 4, sizeof(_vel));
       // parse the joint state and touchdown data
       motor_handle_->updateMotorVelocity(_vel);
+      motor_vel_ = _vel;
      break;
     case MII_MSG_HEARTBEAT_3:
       if (8 != pkt.size) {
@@ -159,6 +170,7 @@ void MotorNode0::handleMsg(const Packet& pkt) {
       memcpy(&_pos, pkt.data + 4, sizeof(_pos));
       // parse the joint state and touchdown data
       motor_handle_->updateMotorPosition(_pos);
+      motor_pos_ = _pos;
       break;
     default:
       SWNode::handleMsg(pkt);

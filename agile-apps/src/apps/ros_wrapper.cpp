@@ -89,9 +89,10 @@ bool RosWrapper::start() {
   if (!init(use_control))
     LOG_FATAL << "Robot initializes fail!";
   LOG_INFO << "MiiRobot initialization has completed.";
-  if (use_control)
+  if (use_control) {
     initControl();
-  LOG_INFO << "Launched the mii-control has completed.";
+    LOG_INFO << "Launched the mii-control has completed.";
+  }
 
   // Label::printfEveryInstance();
   double frequency = 50.0;
@@ -321,15 +322,15 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   auto kfe = jnt_manager_->getJointHandle(LegType::FL, JntType::KFE);
   LOG_INFO << "Jnt: " << hfe->joint_name();
 
-  double lim_hfe[] = {0, -0.7};
+  double lim_hfe[] = {0,  1.2};
   double lim_kfe[] = {-2.0, -1.5};
 //  double lim_hfe[] = {hfe->joint_position_min(), hfe->joint_position_max()};
 //  double lim_kfe[] = {kfe->joint_position_min(), kfe->joint_position_max()};
   std::string type = "phase";
 
-//  kfe->updateJointCommand(lim_kfe[0]);
-//  LOG_INFO << "Go to initialize position.";
-//  sleep(2); // in s
+  //hfe->updateJointCommand(lim_hfe[0]);
+  //LOG_INFO << "Go to initialize position.";
+  //sleep(2); // in s
 
   ///! sin
   if (0 == type.compare("sin")) {

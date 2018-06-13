@@ -49,6 +49,12 @@ protected:
   class Pid*                joint_pid_;
   ///! the command of the output of pid
   double                    motor_pidout_;
+  //
+  float                     motor_tor_;
+  //
+  double                       motor_vel_;
+  //
+  double                       motor_pos_;
   // The constant pointer of the joint command
   const JntCmdType&         jnt_mode_;
 

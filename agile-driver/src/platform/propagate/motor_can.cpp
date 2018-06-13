@@ -10,6 +10,11 @@
 #include "foundation/thread/threadpool.h"
 #include "foundation/cfg_reader.h"
 
+#ifdef SAVE_CMD_TIME
+#include "toolbox/time_control.h"
+#include <fstream>
+#endif
+
 #include <iostream>
 
 namespace agile_robot {
@@ -80,6 +85,14 @@ bool MotorCan::auto_init() {
   auto cfg = MiiCfgReader::instance();
   cfg->get_value(getLabel(), "proxy",      enable_proxy_);
   cfg->get_value(getLabel(), "motor_list", proxy_list_);
+
+#ifdef SAVE_CMD_TIME
+  try_len     = 100;
+  objs_timer_ = new TimeControl(true);
+  send_objs_.reserve(try_len);
+  recv_objs_.reserve(try_len);
+#endif
+
   return true;
 }
 
@@ -99,12 +112,13 @@ bool MotorCan::start() {
 }
 
 bool MotorCan::write(const Packet& pkt) {
-
   if (!connected_ || pkt.bus_id != bus_id_) {
     LOG_WARNING << "The pcan has not been launched, or initialized fail.";
     return false;
   }
-
+#ifdef SAVE_CMD_TIME
+  return true;
+#endif
 //  send_can_obj_.ID = s_sendid_base_ + pkt.node_id;
 //  if (INVALID_BYTE == msgid2idx_lut_[pkt.msg_id]) {
 //    LOG_ERROR << "Wrong format Packet";
@@ -121,7 +135,7 @@ bool MotorCan::write(const Packet& pkt) {
 //  memcpy(send_can_obj_.Data, msgid2idx_lut_ + pkt.msg_id,
 //      sizeof(msgid2idx_lut_[pkt.msg_id]));
   ///! fill the data
-//  if (pkt.size > 0)
+//  if (pkt.size > 0)969
 //    memcpy(send_can_obj_.Data + sizeof(msgid2idx_lut_[pkt.msg_id]),
 //        pkt.data, pkt.size);
   if(pkt.data[0] == 0x01){
@@ -139,6 +153,26 @@ bool MotorCan::read(Packet& pkt)  {
     // LOG_FIRST_N(WARNING, 10000) << "The pcan has not been launched, or initialized fail.";
     return false;
   }
+
+#ifdef SAVE_CMD_TIME
+  static int tmp = 0;
+  ++tmp;
+  if (tmp > 2) {
+    recv_objs_.push_back(objs_timer_->span());
+    LOG_INFO << "recv: " << recv_objs_.size();
+
+    if (try_len == recv_objs_.size()) {
+      LOG_INFO << "Write the package...";
+
+      std::ofstream ofd("/home/robot/ControlData/cmds");
+      for (int i = 0; i < try_len; ++i) {
+        ofd << send_objs_[i] << " " << recv_objs_[i] << std::endl;
+      }
+      ofd.close();
+    }
+  }
+
+#endif
 
   ///! make sure that we can found the MsgId from data.
 //  unsigned int idx = 0;
@@ -190,19 +224,37 @@ void MotorCan::state_tick() {
   req_p.Data[0] = 0x50; req_p.Data[1] = 0x58;
   req_p.Data[2] = 0x00; req_p.Data[3] = 0x00;
 
+#ifdef SAVE_CMD_TIME
+  req_p.ID   = s_sendid_base_ + proxy_list_[0];
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+  LOG_INFO << "Start to send objects...";
+  for (int i = 0; i < try_len; ++i) {
+    send_buffer_->push(req_p);
+
+    send_objs_.push_back(objs_timer_->span());
+
+    LOG_WARNING << "Send: " << send_objs_.size();
+    TIMER_CONTROL(1000)
+  }
+
+  return;
+#endif
+
   while (connected_) {
     for (const auto& proxy : proxy_list_) {
-      req_ddp.ID = s_sendid_base_ + proxy;
-      send_buffer_->push(req_ddp);
+//      req_ddp.ID = s_sendid_base_ + proxy;
+//      send_buffer_->push(req_ddp);
 
       req_dp.ID  = s_sendid_base_ + proxy;
       send_buffer_->push(req_dp);
 
-      req_p.ID   = s_sendid_base_ + proxy;
-      send_buffer_->push(req_p);
+//      req_p.ID   = s_sendid_base_ + proxy;
+//      send_buffer_->push(req_p);
     }
 
-    TIMER_CONTROL(1000)
+    TIMER_CONTROL(5)
   }
 }
 

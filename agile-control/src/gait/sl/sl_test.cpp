@@ -134,8 +134,8 @@ bool SlTest::auto_init() {
   init_foothold_ << -params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
   goal_foothold_ <<  params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
 
-  std::cout << "init: " << init_foothold_.transpose() << std::endl;
-  std::cout << "goal: " << goal_foothold_.transpose() << std::endl;
+  LOG_INFO << "init: " << init_foothold_.transpose();
+  LOG_INFO << "goal: " << goal_foothold_.transpose();
   return true;
 }
 
@@ -156,7 +156,9 @@ bool SlTest::starting() {
 
   swing_timer_ = new TimeControl;
 
-  LOG_INFO << "The SingleLegTest gait has STARTED!";
+  LOG_INFO << "The SlTest gait has STARTED!";
+
+  PRESS_THEN_GO
   return true;
 }
 
@@ -170,17 +172,17 @@ void SlTest::stopping() {
   delete state_machine_;
   state_machine_ = nullptr;
 
-  LOG_INFO << "The walk gait has STOPPED!";
+  LOG_INFO << "The SlTest gait has STOPPED!";
 }
 
 void SlTest::post_tick() {
   ///! The command frequency control
-  static TimeControl   _s_post_tick(true);
-  static const int64_t _s_post_tick_interval = 20;
-  static int64_t       _s_sum_interval = 0;
-  _s_sum_interval += _s_post_tick.dt();
-  if (_s_sum_interval < _s_post_tick_interval) return;
-  _s_sum_interval = 0;
+//  static TimeControl   _s_post_tick(true);
+//  static const int64_t _s_post_tick_interval = 2;
+//  static int64_t       _s_sum_interval = 0;
+//  _s_sum_interval += _s_post_tick.dt();
+//  if (_s_sum_interval < _s_post_tick_interval) return;
+//  _s_sum_interval = 0;
 
   leg_iface_->eefPositionTarget(leg_cmd_eef_);
   leg_iface_->move();
@@ -269,8 +271,8 @@ bool SlTest::end_swing_leg() {
 
    ///! for rviz
   // LOG_INFO << "The ceiling: " << eef_traj_->ceiling();
-  return ((LegState::TD_STATE == leg_iface_->leg_state())
-       || (swing_timer_->span() > 2000*eef_traj_->ceiling()));
+  return (/*(LegState::TD_STATE == leg_iface_->leg_state())
+       || */(swing_timer_->span() > 2000*eef_traj_->ceiling()));
 }
 
 void SlTest::ws_calc() {

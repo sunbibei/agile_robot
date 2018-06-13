@@ -10,6 +10,10 @@
 
 #include <platform/propagate/can_usb.h>
 
+// #define SAVE_CMD_TIME
+
+class TimeControl;
+
 namespace agile_robot {
 
 class MotorCan: public CanUsb {
@@ -41,6 +45,12 @@ private:
 
   VCI_CAN_OBJ recv_can_obj_;
   VCI_CAN_OBJ send_can_obj_;
+#ifdef SAVE_CMD_TIME
+  size_t try_len;
+  TimeControl*          objs_timer_;
+  std::vector<uint64_t> send_objs_;
+  std::vector<uint64_t> recv_objs_;
+#endif
 
   ///! a few of data for parse the 301 protocol to control or read from motor.
   static unsigned int s_sendid_base_;

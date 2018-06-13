@@ -76,7 +76,10 @@ bool MiiControl::init() {
 }
 
 void MiiControl::activate(const std::string& _n) {
-  GaitManager::instance()->activate(_n);
+  if (GaitManager::instance()->query(_n) || 0 == _n.compare("null"))
+    GaitManager::instance()->activate(_n);
+  else
+    LOG_ERROR << "No such named gait in the gait manager";
 }
 
 void MiiControl::create_system_instance() {

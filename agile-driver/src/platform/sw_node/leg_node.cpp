@@ -175,7 +175,10 @@ void LegNode::__parse_heart_beat_1(const unsigned char* __p) {
     // pos = 15.343 * (double)count /10000 + 11116 /10000;
     // pos = count; // TODO
    // std::cout << "bianmaqidzhi: " << JNTTYPE2STR(type) << ": " << pos << std::endl;
-    jnts_by_type_[type]->updateJointPosition(pos);
+    if (JntType::HAA == type) /// TODO
+      jnts_by_type_[type]->updateJointPosition(0.0);
+    else
+      jnts_by_type_[type]->updateJointPosition(pos);
     offset += sizeof(count); // each count will stand two bytes.
   }
 
