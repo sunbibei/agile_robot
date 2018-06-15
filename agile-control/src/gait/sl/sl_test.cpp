@@ -572,13 +572,13 @@ void SlTest::prog_eef_traj_poly(const Eigen::Vector3d& _next_fpt, Traj3dSp& _tra
 //}
 
 void SlTest::error_estimate() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
 
   while (thread_alive_) {
     ;
 
 
-    TIMER_CONTROL(1)
+    TICKER_CONTROL(1, std::chrono::milliseconds);
   }
 }
 

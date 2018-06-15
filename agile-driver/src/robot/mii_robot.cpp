@@ -269,7 +269,7 @@ void MiiRobot::__reg_resource_and_command(const std::string& _prefix) {
 }
 
 void MiiRobot::supportRegistry() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
 
   mii_ctrl_alive_ = true;
 
@@ -299,7 +299,7 @@ void MiiRobot::supportRegistry() {
       }
     }
 
-    TIMER_CONTROL(tick_interval_)
+    TICKER_CONTROL(tick_interval_, std::chrono::milliseconds);
   }
 
 }

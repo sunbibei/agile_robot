@@ -273,7 +273,8 @@ void RosWrapper::publishRTMsg() {
 //    }
 //  }
 
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
+
   while (alive_ && ros::ok()) {
     if (jnt_puber.getNumSubscribers()) {
       __fill_jnt_data(__jnt_msg, jnt_manager_);
@@ -305,7 +306,7 @@ void RosWrapper::publishRTMsg() {
 //      cmd_puber.publish(__cmd_msg);
 //    }
 
-    TIMER_CONTROL(rt_duration_)
+    TICKER_CONTROL(rt_duration_, std::chrono::milliseconds);
   }
 
   alive_ = false;

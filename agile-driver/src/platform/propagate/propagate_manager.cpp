@@ -24,7 +24,7 @@ SINGLETON_IMPL(PropagateManager)
 
 PropagateManager::PropagateManager()
   : internal::ResourceManager<Propagate>(),
-    propa_interval_(1), thread_alive_(true) {
+    /*propa_interval_(1), */thread_alive_(true) {
 
   propa_list_by_bus_.reserve(MAX_BUS_NUM);
   pkts_queue_4_send_.reserve(MAX_QUEUE_SIZE);
@@ -83,7 +83,7 @@ bool PropagateManager::run() {
 }
 
 void PropagateManager::updateRead() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   while (thread_alive_) {
     MUTEX_TRY_LOCK(lock_4_recv_)
@@ -107,12 +107,12 @@ void PropagateManager::updateRead() {
     }
     MUTEX_UNLOCK(lock_4_recv_)
 
-    TIMER_CONTROL(propa_interval_)
+    TICKER_CONTROL(200, std::chrono::microseconds);
   }
 }
 
 void PropagateManager::updateWrite() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   while (thread_alive_) {
     MUTEX_TRY_LOCK(lock_4_send_)
@@ -136,7 +136,7 @@ void PropagateManager::updateWrite() {
     }
     MUTEX_UNLOCK(lock_4_send_)
 
-    TIMER_CONTROL(propa_interval_)
+    TICKER_CONTROL(200, std::chrono::microseconds);
   }
 }
 

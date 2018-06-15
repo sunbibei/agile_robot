@@ -14,6 +14,7 @@
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Dense>
 #include <atomic>
+#include <map>
 
 namespace agile_robot {
 

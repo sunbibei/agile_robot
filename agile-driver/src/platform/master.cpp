@@ -21,7 +21,7 @@ const size_t MAX_PKTS_SIZE = 512;
 SINGLETON_IMPL(Master)
 
 Master::Master()
-: tick_interval_(1), thread_alive_(false),
+: /*tick_interval_(1), */thread_alive_(false),
   propagate_manager_(PropagateManager::create_instance()),
   sw_node_manager_(SWNodeManager::create_instance()) {
   queue_4_w_.reserve(MAX_PKTS_SIZE);
@@ -65,7 +65,7 @@ bool Master::run() {
 }
 
 void Master::tick() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   while (thread_alive_) {
     // The manager delivers each packet which read from Propagate for hardware update.
@@ -88,12 +88,12 @@ void Master::tick() {
     // else LOG_DEBUG << "No Command from SWNode";
     propagate_manager_->writePackets(queue_4_w_);
 
-    TIMER_CONTROL(tick_interval_)
+    TICKER_CONTROL(200, std::chrono::microseconds);
   }
 }
 
 void Master::tick_r() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   while (thread_alive_) {
     // The manager delivers each packet which read from Propagate for hardware update.
@@ -110,12 +110,14 @@ void Master::tick_r() {
 //    }
 
     sw_node_manager_->handleMsg(queue_4_r_);
-    TIMER_CONTROL(tick_interval_)
+
+
+    TICKER_CONTROL(200, std::chrono::microseconds);
   }
 }
 
 void Master::tick_w() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   while (thread_alive_) {
     // Collecting all of the new command to control the robot
@@ -132,7 +134,7 @@ void Master::tick_w() {
 
     // TODO
     propagate_manager_->writePackets(queue_4_w_);
-    TIMER_CONTROL(tick_interval_)
+    TICKER_CONTROL(200, std::chrono::microseconds);
   }
 }
 

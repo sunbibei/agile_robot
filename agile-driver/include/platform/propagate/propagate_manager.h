@@ -51,9 +51,7 @@ protected:
 
 protected:
   std::vector<Propagate*>       propa_list_by_bus_;
-  // The interval time between twice RW.(in ms)
-  std::chrono::milliseconds  propa_interval_;
-  bool                       thread_alive_;
+  bool                          thread_alive_;
   // size_t                     pkts_queue_size;
 
   ///! Maybe we should use the lock-free queue instead of std::vector.

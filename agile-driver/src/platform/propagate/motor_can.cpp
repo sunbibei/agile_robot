@@ -206,7 +206,7 @@ bool MotorCan::read(Packet& pkt)  {
 }
 
 void MotorCan::state_tick() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
 
   VCI_CAN_OBJ req_p, req_dp, req_ddp;
   memset(&req_ddp, 0x00, sizeof(req_ddp));
@@ -236,7 +236,7 @@ void MotorCan::state_tick() {
     send_objs_.push_back(objs_timer_->span());
 
     LOG_WARNING << "Send: " << send_objs_.size();
-    TIMER_CONTROL(1000)
+    TICKER_CONTROL(1000)
   }
 
   return;
@@ -254,7 +254,7 @@ void MotorCan::state_tick() {
 //      send_buffer_->push(req_p);
     }
 
-    TIMER_CONTROL(5)
+    TICKER_CONTROL(5, std::chrono::milliseconds);
   }
 }
 

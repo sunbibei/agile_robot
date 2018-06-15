@@ -39,8 +39,13 @@ bool CanUsb::auto_init() {
   config_.AccCode = 0;
   config_.AccMask = 0xFFFFFFFF;
   config_.Filter  = 1;
-  config_.Timing0 = 0x00;
-  config_.Timing1 = 0x14;
+  if (ARM_BUS == bus_id_) {
+    config_.Timing0 = 0x00;
+    config_.Timing1 = 0x1C;
+  } else {
+    config_.Timing0 = 0x00;
+    config_.Timing1 = 0x14;
+  }
   config_.Mode    = 0;
 
   ///! Setting the size of receive buffer
@@ -167,7 +172,7 @@ void CanUsb::stop()  {
 //}
 
 void CanUsb::do_exchange_w() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   int    __n_msg    = 0;
   while (connected_) {
@@ -181,30 +186,30 @@ void CanUsb::do_exchange_w() {
         ++__n_msg;
       });
 
-//      if (false) {
-//        printf("%s [%03d]: \n", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
-//        for (int i = 0; i < __n_msg; ++i) {
-//          printf(" <- [%d] ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-//            i, (int)send_msgs_[i].ID, (int)send_msgs_[i].DataLen,
-//            (int)send_msgs_[i].Data[0], (int)send_msgs_[i].Data[1],
-//            (int)send_msgs_[i].Data[2], (int)send_msgs_[i].Data[3],
-//            (int)send_msgs_[i].Data[4], (int)send_msgs_[i].Data[5],
-//            (int)send_msgs_[i].Data[6], (int)send_msgs_[i].Data[7]);
-//        }
-//        printf("\n");
-//      }
+      if (true && MOTOR_BUS == bus_id_) {
+        printf("%s [%03d]: \n", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
+        for (int i = 0; i < __n_msg; ++i) {
+          printf(" <- [%d] ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+            i, (int)send_msgs_[i].ID, (int)send_msgs_[i].DataLen,
+            (int)send_msgs_[i].Data[0], (int)send_msgs_[i].Data[1],
+            (int)send_msgs_[i].Data[2], (int)send_msgs_[i].Data[3],
+            (int)send_msgs_[i].Data[4], (int)send_msgs_[i].Data[5],
+            (int)send_msgs_[i].Data[6], (int)send_msgs_[i].Data[7]);
+        }
+        printf("\n");
+      }
 
       if (VCI_Transmit(g_device_type, g_device_idx, bus_id_, send_msgs_, __n_msg) < 0) {
         LOG_ERROR << "Write CAN FAIL!!!";
       }
     }
 
-    TIMER_CONTROL(tick_w_interval_)
+    TICKER_CONTROL(tick_w_interval_, std::chrono::microseconds);
   }
 }
 
 void CanUsb::do_exchange_r() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
 
   int recv_off  = 0;
   int recv_size = 0;
@@ -215,21 +220,21 @@ void CanUsb::do_exchange_r() {
 //         << " / " << recv_buf_size_ << " ]";
     recv_off  = 0;
     while (recv_off < recv_size) {
-//      if (true/* && MOTOR_BUS == bus_id_*/) {
-//        printf("%s [%03d]: ", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
-//        printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-//          (int)recv_msgs_[recv_off].ID, (int)recv_msgs_[recv_off].DataLen,
-//          (int)recv_msgs_[recv_off].Data[0], (int)recv_msgs_[recv_off].Data[1],
-//          (int)recv_msgs_[recv_off].Data[2], (int)recv_msgs_[recv_off].Data[3],
-//          (int)recv_msgs_[recv_off].Data[4], (int)recv_msgs_[recv_off].Data[5],
-//          (int)recv_msgs_[recv_off].Data[6], (int)recv_msgs_[recv_off].Data[7]);
-//      }
+      if (true && MOTOR_BUS == bus_id_) {
+        printf("%s [%03d]: ", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
+        printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+          (int)recv_msgs_[recv_off].ID, (int)recv_msgs_[recv_off].DataLen,
+          (int)recv_msgs_[recv_off].Data[0], (int)recv_msgs_[recv_off].Data[1],
+          (int)recv_msgs_[recv_off].Data[2], (int)recv_msgs_[recv_off].Data[3],
+          (int)recv_msgs_[recv_off].Data[4], (int)recv_msgs_[recv_off].Data[5],
+          (int)recv_msgs_[recv_off].Data[6], (int)recv_msgs_[recv_off].Data[7]);
+      }
 
       recv_buffer_->push(recv_msgs_[recv_off]);
       ++recv_off;
     } // end while (recv_off < recv_size)
 
-    TIMER_CONTROL(tick_r_interval_)
+    TICKER_CONTROL(tick_r_interval_, std::chrono::milliseconds);
   }
 }
 

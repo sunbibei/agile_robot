@@ -90,13 +90,13 @@ void MiiControl::create_system_instance() {
 }
 
 void MiiControl::tick() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
 
   while (alive_) {
     if (GaitManager::instance()) GaitManager::instance()->tick();
     else break;
 
-    TIMER_CONTROL(tick_interval_)
+    TICKER_CONTROL(tick_interval_, std::chrono::milliseconds);
   }
 }
 
