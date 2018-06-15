@@ -13,6 +13,8 @@
 #include "controlcan.h"
 #include <boost/lockfree/queue.hpp>
 
+class TimeControl;
+
 namespace agile_robot {
 
 class CanUsb: public Propagate {
@@ -46,6 +48,8 @@ private:
   PVCI_CAN_OBJ send_msgs_;
 
   VCI_INIT_CONFIG config_;
+
+  // TimeControl* __timer;
 };
 
 } /* namespace agile_robot */

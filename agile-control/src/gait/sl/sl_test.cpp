@@ -272,7 +272,7 @@ bool SlTest::end_swing_leg() {
    ///! for rviz
   // LOG_INFO << "The ceiling: " << eef_traj_->ceiling();
   return (/*(LegState::TD_STATE == leg_iface_->leg_state())
-       || */(swing_timer_->span() > 2000*eef_traj_->ceiling()));
+       || */((swing_timer_->span() - params_->SWING_TIME) > 1000));
 }
 
 void SlTest::ws_calc() {

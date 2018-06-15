@@ -90,16 +90,16 @@ void PropagateManager::updateRead() {
     for (auto& c : res_list_) {
       Packet pkt;
       if (c->read(pkt)) {
-        if (false) {
-          printf("%s", (std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) + ":" + std::to_string(__LINE__)).c_str());
-          printf(" NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-            (int)pkt.node_id,
-            (int)pkt.msg_id,  (int)pkt.size,
-            (int)pkt.data[0], (int)pkt.data[1],
-            (int)pkt.data[2], (int)pkt.data[3],
-            (int)pkt.data[4], (int)pkt.data[5],
-            (int)pkt.data[6], (int)pkt.data[7]);
-        }
+//        if (false) {
+//          printf("%s", (std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) + ":" + std::to_string(__LINE__)).c_str());
+//          printf(" NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//            (int)pkt.node_id,
+//            (int)pkt.msg_id,  (int)pkt.size,
+//            (int)pkt.data[0], (int)pkt.data[1],
+//            (int)pkt.data[2], (int)pkt.data[3],
+//            (int)pkt.data[4], (int)pkt.data[5],
+//            (int)pkt.data[6], (int)pkt.data[7]);
+//        }
 
         // pkts_queue_4_recv_->push(pkt);
         pkts_queue_4_recv_.push_back(pkt);
@@ -126,13 +126,13 @@ void PropagateManager::updateWrite() {
         propa_list_by_bus_[pkt.bus_id]->write(pkt);
 
       pkts_queue_4_send_.pop_back();
-      if (false) {
-        // printf("%s", (std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) + ":" + std::to_string(__LINE__)).c_str());
-        printf(" -> NODE ID:0x%02X MSG ID: 0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-              (int)pkt.node_id, (int)pkt.msg_id,  (int)pkt.size,
-              (int)pkt.data[0], (int)pkt.data[1], (int)pkt.data[2], (int)pkt.data[3],
-              (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
-      }
+//      if (false) {
+//        // printf("%s", (std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) + ":" + std::to_string(__LINE__)).c_str());
+//        printf(" -> NODE ID:0x%02X MSG ID: 0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//              (int)pkt.node_id, (int)pkt.msg_id,  (int)pkt.size,
+//              (int)pkt.data[0], (int)pkt.data[1], (int)pkt.data[2], (int)pkt.data[3],
+//              (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
+//      }
     }
     MUTEX_UNLOCK(lock_4_send_)
 
