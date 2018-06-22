@@ -35,14 +35,25 @@ void TimeControl::start() {
 }
 
 /*!
- * @brief The duration (in ms)
+ * @brief The duration (in us)
  */
-int64_t TimeControl::dt() {
+int64_t TimeControl::dt_us() {
   curr_update_t_ = std::chrono::high_resolution_clock::now();
-  dt_            = std::chrono::duration_cast<std::chrono::milliseconds>
+  dt_            = std::chrono::duration_cast<std::chrono::microseconds>
       (curr_update_t_ - last_update_t_).count();
   last_update_t_ = curr_update_t_;
   return dt_;
+}
+
+/*!
+ * @brief The duration (in ms)
+ */
+int64_t TimeControl::dt() {
+//  curr_update_t_ = std::chrono::high_resolution_clock::now();
+//  dt_            = std::chrono::duration_cast<std::chrono::milliseconds>
+//      (curr_update_t_ - last_update_t_).count();
+//  last_update_t_ = curr_update_t_;
+  return dt_us()/1000.0;
 }
 
 double TimeControl::dt_s() {

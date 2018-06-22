@@ -205,7 +205,7 @@ bool MotorNode0::generateCmd(std::vector<Packet>& pkts) {
 }
 
 bool MotorNode0::__fill_pos_cmd(std::vector<Packet>& pkts) {
-  sum_tick_interval_ += cmd_tick_time_ctrl_->dt();
+  sum_tick_interval_ += cmd_tick_time_ctrl_->dt_us();
   if (sum_tick_interval_ < cmd_tick_interval_) return false;
   sum_tick_interval_ = 0;
 

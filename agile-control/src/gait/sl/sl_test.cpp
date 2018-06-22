@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <thread>
+#include <fstream>
 
 namespace agile_control {
 
@@ -98,7 +99,9 @@ SlTest::SlTest()
     leg_type_(LegType::UNKNOWN_LEG), leg_iface_(nullptr),
     leg_cmd_(nullptr), swing_timer_(nullptr),
     ws_params_(nullptr),
-    params_(nullptr),  thread_alive_(false) {
+    params_(nullptr),  thread_alive_(false),
+    is_save_enable_(false), save_episode_(100),
+    wait_episode_(100), save_path_("") {
   ;
 }
 
@@ -136,6 +139,15 @@ bool SlTest::auto_init() {
 
   LOG_INFO << "init: " << init_foothold_.transpose();
   LOG_INFO << "goal: " << goal_foothold_.transpose();
+
+  ///! read the configure of save data.
+  std::string _tag = Label::make_label(getLabel(), "log");
+  cfg->get_value(_tag, "enable",       is_save_enable_);
+  cfg->get_value(_tag, "episode",      save_episode_);
+  cfg->get_value(_tag, "wait_episode", wait_episode_);
+  cfg->get_value(_tag, "path",         save_path_);
+
+  save_data_.resize(6, save_episode_ + wait_episode_);
   return true;
 }
 
@@ -144,6 +156,7 @@ bool SlTest::starting() {
   auto _sm       = (StateMachine<LTestState>*)state_machine_;
   _sm->registerStateCallback(LTestState::LT_INIT_POSE, &SlTest::pose_init, this);
   _sm->registerStateCallback(LTestState::LT_SWING,     &SlTest::swing_leg, this);
+  _sm->registerStateCallback(LTestState::LT_KICK,      &SlTest::kick, this);
   _sm->registerStateCallback(LTestState::LT_WS_CALC,   &SlTest::ws_calc,   this);
   _sm->registerStateCallback(LTestState::LT_PROD_TRAJ, &SlTest::prod_traj, this);
 
@@ -203,6 +216,41 @@ void SlTest::checkState() {
   {
     if (!end_swing_leg()) return;
 
+    if (is_save_enable_) {
+      char _buffer[128] = {0};
+
+      time_t _time;
+      time(&_time);
+      tm* _tm = std::localtime(&_time);
+      sprintf(_buffer, "swing_%4d-%02d-%02d_%02d-%02d-%02d", _tm->tm_year + 1900, _tm->tm_mon,
+          _tm->tm_mday, _tm->tm_hour, _tm->tm_min, _tm->tm_sec);
+
+      std::ofstream _ofd(save_path_ + "/" + std::string(_buffer));
+      if (!_ofd.is_open()) {
+        LOG_WARNING << "Create the file " << std::string(_buffer) << " fail!";
+      } else {
+        FOREACH_JNT(j) {
+          _ofd << JNTTYPE2STR(j) << "_pos" << " ";
+        }
+        FOREACH_JNT(j) {
+          _ofd << JNTTYPE2STR(j) << "_cmd" << " ";
+        }
+        _ofd << std::endl;
+        for (int col = 0; col < save_data_.cols(); ++col) {
+          auto t = save_data_.col(col);
+          for (int i = 0; i < t.size(); ++i) {
+            _ofd << t(i) << " ";
+          }
+          _ofd << std::endl;
+        }
+      }
+
+      _ofd.close();
+      save_data_.fill(0.0);
+
+      LOG_INFO << "save the file[" << std::string(_buffer) << "] successful!";
+    } // end if (is_save_enable_)
+
     LOG_INFO << "Finished swing leg.";
     PRESS_THEN_GO
     swing_timer_->stop();
@@ -241,6 +289,7 @@ void SlTest::swing_leg() {
 //      prog_eef_traj_seg(targ_foothold_, eef_traj_);
 
     prog_eef_traj_poly(goal_foothold_, eef_traj_);
+
     swing_timer_->start();
   }
 
@@ -261,6 +310,17 @@ void SlTest::swing_leg() {
   ///! Output the trajectory.
   printf("%04ld - %+6.3f %+6.3f %+6.3f\n", span, leg_cmd_->target(JntType::HAA),
       leg_cmd_->target(JntType::HFE), leg_cmd_->target(JntType::KFE));
+
+  if (is_save_enable_) {
+    int idx = t*save_episode_;
+    if (idx > save_episode_) {
+      idx = save_episode_ + ((double)(span - params_->SWING_TIME)/900.0)*wait_episode_;
+    }
+    if (idx < save_data_.cols()) {
+      save_data_.col(idx).head(3) = leg_iface_->joint_position();
+      save_data_.col(idx).tail(3) = leg_cmd_->target;
+    }
+  }
 }
 
 bool SlTest::end_swing_leg() {
@@ -272,7 +332,11 @@ bool SlTest::end_swing_leg() {
    ///! for rviz
   // LOG_INFO << "The ceiling: " << eef_traj_->ceiling();
   return (/*(LegState::TD_STATE == leg_iface_->leg_state())
-       || */((swing_timer_->span() - params_->SWING_TIME) > 1000));
+       || */( ( swing_timer_->span() - params_->SWING_TIME) > 1000 ) );
+}
+
+void SlTest::kick() {
+  // TODO
 }
 
 void SlTest::ws_calc() {

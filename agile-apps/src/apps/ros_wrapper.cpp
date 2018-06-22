@@ -86,6 +86,8 @@ bool RosWrapper::start() {
 
   bool use_control = false;
   ros::param::get("~use_control", use_control);
+  LOG_INFO << "MII-CONTROL: " << (use_control ? "ENABLE" : "DISENABLE");
+
   if (!init(use_control))
     LOG_FATAL << "Robot initializes fail!";
   LOG_INFO << "MiiRobot initialization has completed.";
@@ -362,11 +364,11 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
     }
   } else if (0 == type.compare("linear")) {
     for (double _x = 0; _x <= 1; _x += 0.01) {
-     // double tmp = (lim_hfe[1] - lim_hfe[0])*_x + lim_hfe[0];
-      double tmp = 1.3;
+      double tmp = (lim_hfe[1] - lim_hfe[0])*_x + lim_hfe[0];
+      //double tmp = 1.3;
       hfe->updateJointCommand(tmp);
-     // double tmp1 = (lim_kfe[1] - lim_kfe[0])*_x + lim_kfe[0];
-      double tmp1 = -1.5;
+      double tmp1 = (lim_kfe[1] - lim_kfe[0])*_x + lim_kfe[0];
+      //double tmp1 = -1.5;
       kfe->updateJointCommand(tmp1);
       LOG_INFO << "Add the target: " << tmp1 << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
@@ -376,13 +378,14 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
     for (double _x = 0; _x < 1; _x += 0.01) {
       // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
       double tmp = (lim_hfe[1] - lim_hfe[0])*_x*_x + lim_hfe[0];
-      hfe->updateJointCommand(tmp);
+      kfe->updateJointCommand(tmp);
       LOG_INFO << "Add the target: " << tmp;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
       //return;
     }
   } else if (0 == type.compare("phase")) {
-    kfe->updateJointCommand(msg->data);
+    hfe->updateJointCommand(msg->data);
+    kfe->updateJointCommand(-2.0);
   } else if (0 == type.compare("square")) {
     for (int i = 0; i < (int)msg->data; ++i) {
       kfe->updateJointCommand(lim_kfe[i%2]);

@@ -58,7 +58,7 @@ protected:
   // The constant pointer of the joint command
   const JntCmdType&         jnt_mode_;
 
-  ///! For generateCmd delay
+  ///! For generateCmd delay (in us)
   class TimeControl*        cmd_tick_time_ctrl_;
   uint64_t                  cmd_tick_interval_;
   uint64_t                  sum_tick_interval_;

@@ -22,6 +22,7 @@ enum LTestState {
   UNKNOWN_LT_STATE = -1,
   LT_INIT_POSE = 0,
   LT_SWING,
+  LT_KICK,
   LT_WS_CALC,
   LT_PROD_TRAJ,
   N_LT_STATE,
@@ -37,11 +38,11 @@ public:
 ///! These methods are inherited from super class.
 public:
   ///! The flow of state convert
-  virtual void checkState()    override;
+  virtual void checkState() override;
   ///! call it before the state callback
-  // virtual void prev_tick() override;
+  // virtual void prev_tick()  override;
   ///! call it after the state callback
-  virtual void post_tick() override;
+  virtual void post_tick()  override;
 
   ///! starting the gait
   virtual bool starting()  override;
@@ -54,6 +55,8 @@ private:
   void pose_init();
   ///! The callback for WK_SWING
   void swing_leg();
+  ///! The callback for LT_KICK
+  void kick();
   ///! The callback for LT_WS_CALC
   void ws_calc();
   ///! The callback for LT_PROD_TRAJ
@@ -104,6 +107,14 @@ protected:
   class LTParam*            params_;
   ///! which type of trajectory
   std::string               traj_type_;
+
+  ///! save the data into file.
+  bool            is_save_enable_;
+  int64_t         save_episode_;
+  int64_t         wait_episode_;
+  std::string     save_path_;
+  ///! pos(3-dim), cmd(3-dim)
+  Eigen::MatrixXd save_data_;
 
 ///! The estimate function along with the main process.
 private:

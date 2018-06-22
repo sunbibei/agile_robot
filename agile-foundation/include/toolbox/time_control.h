@@ -35,6 +35,11 @@ public:
   /*!
    * @brief The duration (in ms)
    */
+  int64_t dt_us();
+
+  /*!
+   * @brief The duration (in ms)
+   */
   int64_t dt();
   /*!
    * @brief The duration (in s)

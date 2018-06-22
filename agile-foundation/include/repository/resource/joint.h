@@ -24,6 +24,7 @@ public:
 
   virtual ~Joint();
 
+public:
   const std::string&   joint_name() const;
   const JntType&       joint_type() const;
   const LegType&       leg_type()   const;
