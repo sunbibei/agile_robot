@@ -134,7 +134,7 @@ bool SlTest::auto_init() {
   params_    = new LTParam(Label::make_label(getLabel(), "trajectory"));
   ws_params_ = new WSParam(Label::make_label(getLabel(), "workspace"));
 
-  init_foothold_ << -params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
+  init_foothold_ << -params_->FOOT_STEP*0.5+10, 0, -params_->INIT_HEIGHT;
   goal_foothold_ <<  params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
 
   LOG_INFO << "init: " << init_foothold_.transpose();
@@ -209,7 +209,8 @@ void SlTest::checkState() {
 
     LOG_INFO << "Arrival the initialization pose.";
     PRESS_THEN_GO
-    current_state_ = LTestState::LT_SWING;
+    // current_state_ = LTestState::LT_SWING;
+    current_state_ = LTestState::LT_KICK;
     break;
   }
   case LTestState::LT_SWING:
@@ -258,7 +259,7 @@ void SlTest::checkState() {
     break;
   }
   default:
-    LOG_ERROR << "What fucking walk state!";
+    // LOG_ERROR << "What fucking walk state!";
     break;
   // Nothing to do here.
   }
@@ -266,6 +267,7 @@ void SlTest::checkState() {
 
 void SlTest::pose_init() {
   leg_cmd_eef_ = init_foothold_;
+  // leg_cmd_eef_.x() += 2;
 }
 
 bool SlTest::end_pose_init() {
@@ -337,6 +339,26 @@ bool SlTest::end_swing_leg() {
 
 void SlTest::kick() {
   // TODO
+//  char c = '\0';
+//  std::cout << "Input the adjust. ";
+//  // c = getchar();
+//  std::cin >> c;
+//  if ('8' == c) {
+//    leg_cmd_eef_.z() += 1;
+//  } else if ('2' == c) {
+//    leg_cmd_eef_.z() -= 1;
+//  } else {
+//    std::cout << "You need input the \'8\' or \'2\'" << std::endl;
+//  }
+  static bool _g_s_direction = true;
+  if (_g_s_direction) {
+    leg_cmd_eef_.z() += 8;
+  } else {
+    leg_cmd_eef_.z() -= 8;
+  }
+
+  PRESS_THEN_GO
+  _g_s_direction = !_g_s_direction;
 }
 
 void SlTest::ws_calc() {

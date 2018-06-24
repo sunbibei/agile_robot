@@ -86,7 +86,7 @@ bool RosWrapper::start() {
 
   bool use_control = false;
   ros::param::get("~use_control", use_control);
-  LOG_INFO << "MII-CONTROL: " << (use_control ? "ENABLE" : "DISENABLE");
+  LOG_INFO << "MII-CONTROL: " << (use_control ? "ENABLE" : "DISABLE");
 
   if (!init(use_control))
     LOG_FATAL << "Robot initializes fail!";
