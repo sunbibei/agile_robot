@@ -73,10 +73,10 @@ protected:
   ///! The data of the foot's force sensor.
   const double*          foot_force_;
   ///! The vector of joint position which size is 3.
-  const EVX* jnt_pos_[JntDataType::N_JNT_DATA_TYPES];
+  const Eigen::VectorXd* jnt_pos_[JntDataType::N_JNT_DATA_TYPES];
   ///! The vector of joint command.
   JntCmdType*       jnt_mode_;
-  EVX*              jnt_cmd_;
+  Eigen::VectorXd*  jnt_cmd_;
   std::atomic_bool* jnt_cmd_flag_;
 };
 

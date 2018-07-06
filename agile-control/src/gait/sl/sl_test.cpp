@@ -98,8 +98,7 @@ SlTest::SlTest()
   : current_state_(LTestState::UNKNOWN_LT_STATE),
     leg_type_(LegType::UNKNOWN_LEG), leg_iface_(nullptr),
     leg_cmd_(nullptr), swing_timer_(nullptr),
-    ws_params_(nullptr),
-    params_(nullptr),  thread_alive_(false),
+    ws_params_(nullptr), params_(nullptr),  thread_alive_(false),
     is_save_enable_(false), save_episode_(100),
     wait_episode_(100), save_path_("") {
   ;
@@ -134,7 +133,7 @@ bool SlTest::auto_init() {
   params_    = new LTParam(Label::make_label(getLabel(), "trajectory"));
   ws_params_ = new WSParam(Label::make_label(getLabel(), "workspace"));
 
-  init_foothold_ << -params_->FOOT_STEP*0.5+10, 0, -params_->INIT_HEIGHT;
+  init_foothold_ << -params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
   goal_foothold_ <<  params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
 
   LOG_INFO << "init: " << init_foothold_.transpose();
@@ -156,7 +155,7 @@ bool SlTest::starting() {
   auto _sm       = (StateMachine<LTestState>*)state_machine_;
   _sm->registerStateCallback(LTestState::LT_INIT_POSE, &SlTest::pose_init, this);
   _sm->registerStateCallback(LTestState::LT_SWING,     &SlTest::swing_leg, this);
-  _sm->registerStateCallback(LTestState::LT_KICK,      &SlTest::kick, this);
+  _sm->registerStateCallback(LTestState::LT_KICK,      &SlTest::kick,      this);
   _sm->registerStateCallback(LTestState::LT_WS_CALC,   &SlTest::ws_calc,   this);
   _sm->registerStateCallback(LTestState::LT_PROD_TRAJ, &SlTest::prod_traj, this);
 
@@ -209,8 +208,8 @@ void SlTest::checkState() {
 
     LOG_INFO << "Arrival the initialization pose.";
     PRESS_THEN_GO
-    // current_state_ = LTestState::LT_SWING;
-    current_state_ = LTestState::LT_KICK;
+    current_state_ = LTestState::LT_SWING;
+    // current_state_ = LTestState::LT_KICK;
     break;
   }
   case LTestState::LT_SWING:
