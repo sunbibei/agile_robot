@@ -47,6 +47,10 @@ set(SRC_REP_BOX         ${SRC_REP}/control_toolbox)
 
 set(SRC_TOOLBOX         ${SRC_ROOT}/toolbox)
 
+set(SRC_TEST            ${SRC_TEST_ROOT}/test_registry2.cpp
+                        ${SRC_TEST_ROOT}/main.cpp
+)
+
 # Files define.
 set(SYS_FOUDATION_FILES ${SRC_FOUNDATION}/label.cpp
                         ${SRC_FOUNDATION}/auto_instanceor.cpp

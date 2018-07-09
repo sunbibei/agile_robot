@@ -15,8 +15,8 @@
 
 using namespace agile_robot;
 
-#define PUB
-// #define SUB
+// #define PUB
+#define SUB
 
 
 int main(int argc, char* argv[]) {
@@ -25,16 +25,16 @@ int main(int argc, char* argv[]) {
   FLAGS_colorlogtostderr = true;
   google::SetStderrLogging(google::GLOG_INFO);
 
-  if ( nullptr == Registry2::create_instance()) {
-    std::cout << "ERROR Create Registry2" << std::endl;
-    return -1;
-  }
   if ( nullptr == ThreadPool::create_instance()) {
     std::cout << "ERROR Create ThreadPool" << std::endl;
     return -1;
   }
+  if ( nullptr == Registry2::create_instance()) {
+    std::cout << "ERROR Create Registry2" << std::endl;
+    return -1;
+  }
+
   auto registry = Registry2::instance();
-  registry->init();
 
 #ifdef PUB
   // create the resource.
@@ -47,11 +47,11 @@ int main(int argc, char* argv[]) {
   delta.fill(0.01);
 
   std::cout << "The init of resource: \n" << vec_d.transpose() << std::endl;
-  registry->registerResource("test-vec-d", &vec_d);
+  registry->publish("test-vec-d", &vec_d);
 #endif
 
 #ifdef SUB
-  const Eigen::VectorXd* vec_d = registry->resource<const Eigen::VectorXd*>("test-vec-d");
+  const Eigen::VectorXd& vec_d = *(registry->subscribe<Eigen::VectorXd>("test-vec-d", 100));
 #endif
 
   ThreadPool::instance()->start();
@@ -59,17 +59,13 @@ int main(int argc, char* argv[]) {
   while (true) {
 #ifdef PUB
     vec_d += delta;
-
+#endif
     LOG_INFO << "\n";
     for (int i = 0; i < vec_d.size(); ++i) {
       printf("%5.02f ", vec_d(i));
     }
     printf("\n");
-#endif
 
-#ifdef SUB
-    LOG_INFO << "\n" << vec_d->transpose();
-#endif
     TICKER_CONTROL(500, std::chrono::milliseconds);
   }
 

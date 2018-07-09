@@ -1,7 +1,9 @@
 #include "foundation/utf.h"
 #include "foundation/internal/sync.h"
 
-int main1() {
+// #define IPC_CLEAR
+#ifdef IPC_CLEAR
+int main() {
   google::InitGoogleLogging("ipc_clear");
   google::FlushLogFiles(google::GLOG_INFO);
   FLAGS_colorlogtostderr = true;
@@ -13,3 +15,4 @@ int main1() {
   google::ShutdownGoogleLogging();
   return 0;
 }
+#endif

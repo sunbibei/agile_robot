@@ -49,61 +49,42 @@ template <typename _T>
 using MiiPtr = boost::shared_ptr<_T>;
 
 typedef boost::variant<const short*, const int*, const double*,
-    const Eigen::VectorXi*, const Eigen::MatrixXi*,
-    const Eigen::VectorXd*, const Eigen::MatrixXd*> ResType;
-
-typedef boost::variant<short*, int*, double*,
-    Eigen::VectorXi*, Eigen::MatrixXi*,
-    Eigen::VectorXd*, Eigen::MatrixXd*> CmdType;
+    const Eigen::VectorXi*, const Eigen::VectorXd*> ResType;
 
 /*!
- * @brief \class Registry2, support the data exchange under multi-process.
+ * @brief \class Registry2, support the data exchange under Multi-process.
  */
 class Registry2 {
   SINGLETON_DECLARE(Registry2)
 
 public:
   /*!
-   * @brief initialize something.
-   */
-  bool init();
-  /*!
    * @brief register a resource into the registry2.
    *        Note, The name of resource must be unique, or it will be replaced.
    *        The resource must be a reference to the actual value, The registry
    *        thread will be visit the reference.
    */
-  bool registerResource(const std::string&, ResType);
-
-  /*!
-   * @brief Register a command into the registry2.
-   *        Note, the name of command must be unique, or it will be replaced.
-   *        The resource must be a reference to the actual value, The registry
-   *        thread will be visit the reference.
-   */
-  bool registerCommand (const std::string&, CmdType);
+  bool publish(const std::string&, ResType);
 
   ///! The boost static assert fail! so we need split into two methods.
   template<typename _DataType>
-  _DataType resource(const std::string&);
-
-  template<typename _DataType>
-  _DataType command(const std::string&);
+  const _DataType* subscribe(const std::string&, size_t size);
 
 public:
-  ///! Query the given name whether register in the registry.
-  // bool query(const std::string&);
-
-  ///! Search by the key words and return the results.
-  // std::string search(const std::string&);
-
   ///! print the all of registry.
   void print();
 
 protected:
   void support();
 
+  ///! called when try to obtain the resource or the constructor.
   void syncRegInfo();
+  ///! insert a reg info into the buffer(NO PUBLISHER).
+  void insertRegInfo(std::map<std::string, class __ResStu*>&,
+      const std::string&, ResType&);
+
+  ///! Add a new publisher
+  class __ResStu* addPuber(const std::string&, ResType&, class __RegInfo*);
 
 protected:
   ///! The buffer for the all of data.
@@ -113,8 +94,8 @@ protected:
   ///! For thread safety
   std::mutex lock_;
   ///! The list of resources or command
-  std::map<std::string, class __ResStu*>  res_origin_;
-  std::map<std::string, class __CmdStu*>  cmd_origin_;
+  std::map<std::string, class __ResStu*>  pub_origin_;
+  std::map<std::string, class __ResStu*>  sub_origin_;
   std::list<class __RegInfo*> reg_infos_;
   ///! Whether is the thread alive.
   bool thread_alive_;
@@ -125,32 +106,44 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////
 ////////////        The implementation of template methods         ////////////
 ///////////////////////////////////////////////////////////////////////////////
-ResType __get_res(std::map<std::string, class __ResStu*>& res, const std::string& _n);
-CmdType __get_cmd(std::map<std::string, class __CmdStu*>& cmd, const std::string& _n);
+bool __get_res(std::map<std::string, __ResStu*>&,
+    const std::string&, ResType&);
 
 template <typename _DataType>
-_DataType Registry2::resource(const std::string& _res_name) {
-  ResType var_data = __get_res(res_origin_, _res_name);
-  if (var_data.empty()) {
-    return _DataType(nullptr);
+const _DataType* Registry2::subscribe(const std::string& _res_name, size_t size) {
+  if ( _res_name.size() >= N_MAX_NAME ) {
+    LOG_ERROR << "The max name of resource or command is " << N_MAX_NAME
+        << ", Registry the resource or command with named "
+        << _res_name << " is fail!";
+    return nullptr;
+  }
+  // update the list of registry.
+  syncRegInfo();
+
+  ResType var_data;
+  if (sub_origin_.end() == sub_origin_.find(_res_name)) {
+    auto data_type = new _DataType;
+    if (typeid(_DataType) == typeid(Eigen::VectorXd)
+        || typeid(_DataType) == typeid(Eigen::VectorXi)) {
+      if (size <= 0) {
+        LOG_ERROR << "YOU NEED TO GIVE THE SIZE!";
+        delete data_type;
+        return nullptr;
+      }
+
+      data_type->resize(size);
+      data_type->fill(0.0);
+    }
+
+    var_data = data_type;
+    insertRegInfo(sub_origin_, _res_name, var_data);
+  } else {
+    __get_res(sub_origin_, _res_name, var_data);
   }
 
-  LOG_INFO << var_data.type().name() << " v.s. " << typeid(_DataType).name();
-  assert(var_data.type() == typeid(_DataType));
-  return boost::get<_DataType>(var_data);
-}
-
-template <typename _DataType>
-_DataType Registry2::command(const std::string& _res_name) {
-  return nullptr;
-//  if (cmd_origin_.end() == cmd_origin_.find(_res_name)) {
-//    return _DataType(nullptr);
-//  }
-//
-//  auto var_cmd = cmd_origin_[_res_name]->handle;
-//  assert(var_cmd.type() == typeid(_DataType));
-//
-//  return boost::get<_DataType>(var_cmd);
+  LOG_INFO << var_data.type().name() << " v.s. " << typeid(const _DataType*).name();
+  assert(var_data.type() == typeid(const _DataType*));
+  return boost::get<const _DataType*>(var_data);
 }
 
 } /* namespace middleware */
