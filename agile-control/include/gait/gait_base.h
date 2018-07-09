@@ -106,7 +106,7 @@ protected:
   virtual void stopping() /*= 0*/;
 
   /*!
-   * @brief The current state whether could switch to ohter gait object.
+   * @brief The current state whether could switch to other gait object.
    */
   virtual bool canSwitch() /*= 0*/;
 

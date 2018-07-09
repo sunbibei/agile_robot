@@ -86,12 +86,17 @@ bool RosWrapper::start() {
 
   bool use_control = false;
   ros::param::get("~use_control", use_control);
-  if (!init(use_control)) LOG_FATAL << "Robot initializes fail!";
+  LOG_INFO << "MII-CONTROL: " << (use_control ? "ENABLE" : "DISABLE");
+
+  if (!init(use_control))
+    LOG_FATAL << "Robot initializes fail!";
   LOG_INFO << "MiiRobot initialization has completed.";
+  if (use_control) {
+    initControl();
+    LOG_INFO << "Launched the mii-control has completed.";
+  }
 
   // Label::printfEveryInstance();
-  ///! No launch the framework of control!
-  // initControl();
   double frequency = 50.0;
   ros::param::get("~rt_frequency", frequency);
   if (frequency > 0)
@@ -155,9 +160,9 @@ inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
   to.effort.clear();
   to.name.clear();
   for (const auto& jnt : *from) {
-    to.position.push_back(jnt->joint_position());
-    to.velocity.push_back(jnt->joint_velocity());
-    to.effort.push_back(jnt->joint_torque());
+    to.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
+    to.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
+    to.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
     to.name.push_back(jnt->joint_name());
   }
   to.header.stamp = ros::Time::now();
@@ -228,6 +233,12 @@ void RosWrapper::publishRTMsg() {
   ros::Publisher force_puber
       = nh_.advertise<std_msgs::Int32MultiArray>("foot_forces", 1);
 
+  // TODO
+  ros::Publisher hip_puber
+        = nh_.advertise<std_msgs::Float32>("hip_jnt", 1);
+
+  Joint* hip = JointManager::instance()->getJointHandle(LegType::FL, JntType::HFE);
+
 // TODO Redesigned the Command publisher.
 //  ros::Publisher cmd_puber;
 //  if (!use_ros_control_)
@@ -238,6 +249,9 @@ void RosWrapper::publishRTMsg() {
   sensor_msgs::Imu            __imu_msg;
   std_msgs::Int32MultiArray   __f_msg;
   std_msgs::Float64MultiArray __cmd_msg;
+
+  // TODO
+  std_msgs::Float32 __hip_msg;
 
   __imu_msg.header.frame_id = "imu";
 
@@ -261,7 +275,8 @@ void RosWrapper::publishRTMsg() {
 //    }
 //  }
 
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
+
   while (alive_ && ros::ok()) {
     if (jnt_puber.getNumSubscribers()) {
       __fill_jnt_data(__jnt_msg, jnt_manager_);
@@ -282,12 +297,18 @@ void RosWrapper::publishRTMsg() {
       __fill_force_data(__f_msg, td_list_by_type_);
       force_puber.publish(__f_msg);
     }
+
+    if (hip_puber.getNumSubscribers()) {
+      __hip_msg.data = hip->joint_position();
+      hip_puber.publish(__hip_msg);
+    }
+
 //    if (!use_ros_control_ && cmd_puber.getNumSubscribers()) {
 //      __fill_cmd_data(__cmd_msg, _sub_cmd);
 //      cmd_puber.publish(__cmd_msg);
 //    }
 
-    TIMER_CONTROL(rt_duration_)
+    TICKER_CONTROL(rt_duration_, std::chrono::milliseconds);
   }
 
   alive_ = false;
@@ -318,26 +339,24 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   auto hfe = jnt_manager_->getJointHandle(LegType::FL, JntType::HFE);
   auto kfe = jnt_manager_->getJointHandle(LegType::FL, JntType::KFE);
   LOG_INFO << "Jnt: " << hfe->joint_name();
-  // double limits[] = {-0.15, 0.75};
-  double limits[]  = {0, 1.3};
-//  double limits1[] = {-2.181500873, -1.4821116};
-  double limits1[] = {-1.9, -1.5};
+
+  double lim_hfe[] = {0,  1.3};
+  double lim_kfe[] = {-2.0, -1.5};
+//  double lim_hfe[] = {hfe->joint_position_min(), hfe->joint_position_max()};
+//  double lim_kfe[] = {kfe->joint_position_min(), kfe->joint_position_max()};
   std::string type = "phase";
 
-  // std::vector<double> _y;
-  // _y.reserve(512);
- // jnt->updateJointCommand(limits[0]);
-//  jnt1->updateJointCommand(limits1[0]);
- // LOG_INFO << "Go to initialize position.";
+  //hfe->updateJointCommand(lim_hfe[0]);
+  //LOG_INFO << "Go to initialize position.";
   //sleep(2); // in s
 
   ///! sin
   if (0 == type.compare("sin")) {
     for (double _x = 0; _x < 10 * 3.14; _x += 0.01) {
       // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
-      double tmp = (limits[1] - limits[0])*sin(_x) + limits[0];
+      double tmp = 0.5*(lim_hfe[1] - lim_hfe[0])*sin(_x) + 0.5*(lim_hfe[1] + lim_hfe[0]);
       hfe->updateJointCommand(tmp);
-      double tmp1 = (limits1[1] - limits1[0])*sin(_x) + limits1[0];
+      double tmp1 = 0.5*(lim_kfe[1] - lim_kfe[0])*sin(_x) + 0.5*(lim_kfe[1] + lim_kfe[0]);
       kfe->updateJointCommand(tmp1);
       LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
@@ -345,30 +364,31 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
     }
   } else if (0 == type.compare("linear")) {
     for (double _x = 0; _x <= 1; _x += 0.01) {
-     // double tmp = (limits[1] - limits[0])*_x + limits[0];
-      double tmp = 1.3;
-    //  jnt->updateJointCommand(tmp);
-      double tmp1 = (limits1[1] - limits1[0])*_x + limits1[0];
-    //  double tmp1 = -1.5;
+      double tmp = (lim_hfe[1] - lim_hfe[0])*_x + lim_hfe[0];
+      //double tmp = 1.3;
+      hfe->updateJointCommand(tmp);
+      double tmp1 = (lim_kfe[1] - lim_kfe[0])*_x + lim_kfe[0];
+      //double tmp1 = -1.5;
       kfe->updateJointCommand(tmp1);
-      LOG_INFO << "Add the target: " << tmp << ", " << tmp1;
+      LOG_INFO << "Add the target: " << tmp1 << ", " << tmp1;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
       //return;
     }
   } else if (0 == type.compare("quadratic")) {
     for (double _x = 0; _x < 1; _x += 0.01) {
       // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
-      double tmp = (limits[1] - limits[0])*_x*_x + limits[0];
-      hfe->updateJointCommand(tmp);
+      double tmp = (lim_hfe[1] - lim_hfe[0])*_x*_x + lim_hfe[0];
+      kfe->updateJointCommand(tmp);
       LOG_INFO << "Add the target: " << tmp;
       std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
       //return;
     }
   } else if (0 == type.compare("phase")) {
-    kfe->updateJointCommand(msg->data);
+    hfe->updateJointCommand(msg->data);
+    kfe->updateJointCommand(-2.0);
   } else if (0 == type.compare("square")) {
     for (int i = 0; i < (int)msg->data; ++i) {
-      kfe->updateJointCommand(limits1[i%2]);
+      kfe->updateJointCommand(lim_kfe[i%2]);
       std::this_thread::sleep_for(std::chrono::seconds(4));
     }
   } else {

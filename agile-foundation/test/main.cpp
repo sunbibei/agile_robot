@@ -11,7 +11,8 @@
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instanceor.h"
 
-#define TEST_MAIN
+// #define TEST_MAIN
+#ifdef TEST_MAIN
 
 void print(const std::string& p, const std::string& l) {
   std::cout << "In Callback, " << Label::make_label(p, l) << std::endl;// ": ";
@@ -152,3 +153,4 @@ int main() {
 
 }
 
+#endif

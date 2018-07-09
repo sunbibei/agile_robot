@@ -18,9 +18,9 @@
 #endif
 
 // #include <Eigen/Dense>
-#include <vector>
-#include <string>
-#include <map>
+//#include <vector>
+//#include <string>
+//#include <map>
 // #include <iostream>
 //
 
@@ -37,18 +37,18 @@
 
 // cancel the namespace middleware
 // namespace middleware {
-#define TIMER_INIT \
+#define TICKER_INIT(TYPE) \
     std::chrono::high_resolution_clock::time_point t0; \
-    std::chrono::milliseconds sleep_time; \
-    t0 = std::chrono::high_resolution_clock::now();
+    TYPE sleep_time; \
+    t0 = std::chrono::high_resolution_clock::now()
 
-#define TIMER_CONTROL(duration) \
-    sleep_time = std::chrono::milliseconds(duration) - std::chrono::duration_cast<std::chrono::milliseconds>( \
+#define TICKER_CONTROL(duration, TYPE) \
+    sleep_time = TYPE(duration) - std::chrono::duration_cast<TYPE>( \
         std::chrono::high_resolution_clock::now() - t0); \
     if (sleep_time.count() > 0) { \
       std::this_thread::sleep_for(sleep_time); \
     } \
-    t0 = std::chrono::high_resolution_clock::now();
+    t0 = std::chrono::high_resolution_clock::now()
 
 #define SINGLETON_DECLARE(TYPE, ...) \
     protected: \

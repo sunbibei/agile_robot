@@ -53,7 +53,7 @@ public:
 public:
   /**
    *  @brief  Find the value of @p.@attr in the configure file.
-   *  @param p[in]     The parent of attr
+   *  @param p[in]     The parent tag of attr
    *  @param attr[in]  Attribute name to locate.
    *  @param val[out]  The value associate to @attr.
    *  @param def[in]   default value.

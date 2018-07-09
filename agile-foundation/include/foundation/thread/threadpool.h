@@ -12,6 +12,7 @@
 
 #include <functional>
 #include <thread>
+#include <map>
 
 namespace agile_robot {
 

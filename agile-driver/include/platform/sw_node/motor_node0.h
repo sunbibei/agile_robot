@@ -36,25 +36,29 @@ private:
 
 protected:
   ///! Whether is startup the motor
-  bool                         is_startup_;
+  int                       is_startup_;
   // there are three joint in each leg
-  LegType                      leg_;
+  LegType                   leg_;
   ///! The type of joint.
-  JntType                      jnt_;
+  JntType                   jnt_;
   ///! update each motor, this vector order by the type of joint.
-  class Motor*                 motor_handle_;
-  // The order match the @joints_by_type_
-  class __PrivateLinearParams* jnt_param_;
+  class Motor*              motor_handle_;
   ///! the source of command, this vector order by the type of joint.
   class Joint*              joint_handle_;
   ///! the handle of pid control
   class Pid*                joint_pid_;
   ///! the command of the output of pid
   double                    motor_pidout_;
+  //
+  float                     motor_tor_;
+  //
+  double                       motor_vel_;
+  //
+  double                       motor_pos_;
   // The constant pointer of the joint command
   const JntCmdType&         jnt_mode_;
 
-  ///! For generateCmd delay
+  ///! For generateCmd delay (in us)
   class TimeControl*        cmd_tick_time_ctrl_;
   uint64_t                  cmd_tick_interval_;
   uint64_t                  sum_tick_interval_;

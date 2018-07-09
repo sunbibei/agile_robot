@@ -21,7 +21,7 @@ const size_t MAX_PKTS_SIZE = 512;
 SINGLETON_IMPL(Master)
 
 Master::Master()
-: tick_interval_(1), thread_alive_(false),
+: /*tick_interval_(1), */thread_alive_(false),
   propagate_manager_(PropagateManager::create_instance()),
   sw_node_manager_(SWNodeManager::create_instance()) {
   queue_4_w_.reserve(MAX_PKTS_SIZE);
@@ -65,7 +65,7 @@ bool Master::run() {
 }
 
 void Master::tick() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   while (thread_alive_) {
     // The manager delivers each packet which read from Propagate for hardware update.
@@ -88,50 +88,53 @@ void Master::tick() {
     // else LOG_DEBUG << "No Command from SWNode";
     propagate_manager_->writePackets(queue_4_w_);
 
-    TIMER_CONTROL(tick_interval_)
+    TICKER_CONTROL(200, std::chrono::microseconds);
   }
 }
 
 void Master::tick_r() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   while (thread_alive_) {
     // The manager delivers each packet which read from Propagate for hardware update.
     queue_4_r_.clear();
     propagate_manager_->readPackets(queue_4_r_);
+    // LOG_INFO << "read: " << queue_4_r_.size();
     // just for debug
-    if (false)
-    for (auto& pkt : queue_4_r_) {
-      printf(" <- NODE ID:0x%02X MSG ID: 0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-            (int)pkt.node_id, (int)pkt.msg_id,  (int)pkt.size,
-            (int)pkt.data[0], (int)pkt.data[1], (int)pkt.data[2], (int)pkt.data[3],
-            (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
-    }
+//    if (false)
+//    for (auto& pkt : queue_4_r_) {
+//      printf(" <- NODE ID:0x%02X MSG ID: 0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//            (int)pkt.node_id, (int)pkt.msg_id,  (int)pkt.size,
+//            (int)pkt.data[0], (int)pkt.data[1], (int)pkt.data[2], (int)pkt.data[3],
+//            (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
+//    }
 
     sw_node_manager_->handleMsg(queue_4_r_);
-    TIMER_CONTROL(tick_interval_)
+
+
+    TICKER_CONTROL(200, std::chrono::microseconds);
   }
 }
 
 void Master::tick_w() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::microseconds);
 
   while (thread_alive_) {
     // Collecting all of the new command to control the robot
     queue_4_w_.clear();
     sw_node_manager_->generateCmd(queue_4_w_);
     // just for debug
-    if (false)
-    for (auto& pkt : queue_4_w_) {
-      printf(" -> NODE ID:0x%02X MSG ID: 0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-            (int)pkt.node_id, (int)pkt.msg_id,  (int)pkt.size,
-            (int)pkt.data[0], (int)pkt.data[1], (int)pkt.data[2], (int)pkt.data[3],
-            (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
-    }
+//    if (false)
+//    for (auto& pkt : queue_4_w_) {
+//      printf(" -> NODE ID:0x%02X MSG ID: 0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//            (int)pkt.node_id, (int)pkt.msg_id,  (int)pkt.size,
+//            (int)pkt.data[0], (int)pkt.data[1], (int)pkt.data[2], (int)pkt.data[3],
+//            (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
+//    }
 
     // TODO
     propagate_manager_->writePackets(queue_4_w_);
-    TIMER_CONTROL(tick_interval_)
+    TICKER_CONTROL(200, std::chrono::microseconds);
   }
 }
 

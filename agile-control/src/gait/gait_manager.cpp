@@ -113,6 +113,15 @@ void GaitManager::activate(const std::string& gait_name) {
   actived_gait_ = new_gait->second;
 }
 
+bool GaitManager::query(const std::string& gait_name) {
+  for (auto hw : res_list_) {
+    if (0 == gait_name.compare(hw->gait_name_))
+      return true;
+  }
+
+  return false;
+}
+
 void GaitManager::print() {
   if (_DEBUG_INFO_FLAG) {
     LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";

@@ -171,36 +171,37 @@ public:
    *        return true if the system is stability, or return false.
    *        @_e is error.
    */
-  bool classifier(double _x, double& _e) {
+  bool is_stability(double _x, double& _e) {
     if (INVALID_VALUE == target_) {
       _e = INVALID_VALUE;
-      return true;
+      // return true;
     } else {
       _e = target_ - _x;
     }
+    return (INVALID_VALUE == target_);
 
-    if (BUF_REV_SIZE == x_buf_.size()) {
-      x_buf_.clear();
-      e_buf_.clear();
-    }
-
-    internal_flag_ = (std::abs(_e) <= epsilon_);
-    if (internal_flag_) {
-      // mean filter.
-      _x += (x_buf_.empty()) ? 0 : x_buf_.back();
-      x_buf_.push_back(_x);
-      // printf("modified: %05d %04d %04d\n", _x, x_buf_.size(), _x / x_buf_.size());
-      _x /= x_buf_.size();
-      // re-calculate the error.
-      _e = target_ - _x;
-      e_buf_.push_back(std::abs(_e) + ((e_buf_.empty()) ? 0 : e_buf_.back()));
-    } else {
-      x_buf_.clear();
-      e_buf_.clear();
-    }
-
-    return ((e_buf_.size() >= lapse_)
-        && (std::abs(e_buf_.back()/e_buf_.size()) <= epsilon_));
+//    if (BUF_REV_SIZE == x_buf_.size()) {
+//      x_buf_.clear();
+//      e_buf_.clear();
+//    }
+//
+//    internal_flag_ = (std::abs(_e) <= epsilon_);
+//    if (internal_flag_) {
+//      // mean filter.
+//      _x += (x_buf_.empty()) ? 0 : x_buf_.back();
+//      x_buf_.push_back(_x);
+//      // printf("modified: %05d %04d %04d\n", _x, x_buf_.size(), _x / x_buf_.size());
+//      _x /= x_buf_.size();
+//      // re-calculate the error.
+//      _e = target_ - _x;
+//      e_buf_.push_back(std::abs(_e) + ((e_buf_.empty()) ? 0 : e_buf_.back()));
+//    } else {
+//      x_buf_.clear();
+//      e_buf_.clear();
+//    }
+//
+//    return ((e_buf_.size() >= lapse_)
+//        && (std::abs(e_buf_.back()/e_buf_.size()) <= epsilon_));
   }
 
 };
@@ -262,8 +263,10 @@ bool Pid::control(double _x, double& _u) {
   double error = 0;
   // The system has not went to stabilization.
   // if (stability(_x, error) || (INVALID_VALUE == error)) return false;
-  stability_->classifier(_x, error);
-  if (INVALID_VALUE == error) return false;
+  ///! if the returned value is true, there are no target or we care arrival stability.
+  if (stability_->is_stability(_x, error))
+    return false;
+  // if (INVALID_VALUE == error) return false;
 
   // compute the command
   compute(_x, error, _u);
@@ -274,7 +277,7 @@ bool Pid::control(double _x, double& _u) {
 }
 
 bool Pid::stability(double _x, double& _e) {
-  if (!stability_->classifier(_x, _e)) return false;
+  if (!stability_->is_stability(_x, _e)) return false;
 
   int64_t time = 0;
   time_control_->stop(&time);
@@ -287,7 +290,7 @@ bool Pid::stability(double _x, double& _e) {
 }
 
 void Pid::compute(double _x, double _e, double& _u) {
-  _u =  (errors_->update(_e, time_control_->dt()/1000.0)) ?
+  _u =  (errors_->update(_e, time_control_->dt_s())) ?
         ((*gains_) * (*errors_)) : 0.0;
 }
 

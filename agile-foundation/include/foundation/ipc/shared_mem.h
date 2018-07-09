@@ -11,6 +11,7 @@
 #include "../utf.h"
 
 #include <sys/shm.h>
+#include <map>
 
 class SharedMem {
   SINGLETON_DECLARE(SharedMem)

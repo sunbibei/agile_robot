@@ -70,8 +70,6 @@ protected:
   JntType                      jnt_;
   ///! update each motor, this vector order by the type of joint.
   class Motor*                 motor_handle_;
-  // The order match the @joints_by_type_
-  class __PrivateLinearParams* jnt_param_;
   ///! the source of command, this vector order by the type of joint.
   class Joint*              joint_handle_;
   // The constant pointer of the joint command

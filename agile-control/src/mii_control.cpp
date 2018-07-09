@@ -37,7 +37,7 @@ MiiControl* MiiControl::create_instance(const std::string& prefix) {
 
 MiiControl::MiiControl(const std::string& _prefix)
   : prefix_tag_(_prefix), alive_(true),
-    tick_interval_(20) {
+    tick_interval_(1) {
 }
 
 MiiControl::~MiiControl() {
@@ -53,9 +53,10 @@ bool MiiControl::init() {
     LOG_FATAL << "The MiiCfgReader::create_instance(MiiStringConstRef) "
         << "method must to be called by subclass before MiiRobot::init()";
   }
-  double hz = 50;
+  double hz = 1000;
   cfg->get_value(prefix_tag_, "frequency", hz);
   tick_interval_ = std::chrono::milliseconds(int(1000/hz));
+  LOG_WARNING << "MII-CONTROL: " << hz;
 
   // All of the objects mark with "auto_inst" in the configure file
   // will be instanced here.
@@ -76,7 +77,10 @@ bool MiiControl::init() {
 }
 
 void MiiControl::activate(const std::string& _n) {
-  GaitManager::instance()->activate(_n);
+  if (GaitManager::instance()->query(_n) || 0 == _n.compare("null"))
+    GaitManager::instance()->activate(_n);
+  else
+    LOG_ERROR << "No such named gait in the gait manager";
 }
 
 void MiiControl::create_system_instance() {
@@ -87,13 +91,13 @@ void MiiControl::create_system_instance() {
 }
 
 void MiiControl::tick() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
 
   while (alive_) {
     if (GaitManager::instance()) GaitManager::instance()->tick();
     else break;
 
-    TIMER_CONTROL(tick_interval_)
+    TICKER_CONTROL(tick_interval_, std::chrono::milliseconds);
   }
 }
 

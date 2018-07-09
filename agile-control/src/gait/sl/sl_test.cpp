@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <thread>
+#include <fstream>
 
 namespace agile_control {
 
@@ -97,8 +98,9 @@ SlTest::SlTest()
   : current_state_(LTestState::UNKNOWN_LT_STATE),
     leg_type_(LegType::UNKNOWN_LEG), leg_iface_(nullptr),
     leg_cmd_(nullptr), swing_timer_(nullptr),
-    ws_params_(nullptr),
-    params_(nullptr),  thread_alive_(false) {
+    ws_params_(nullptr), params_(nullptr),  thread_alive_(false),
+    is_save_enable_(false), save_episode_(100),
+    wait_episode_(100), save_path_("") {
   ;
 }
 
@@ -134,8 +136,17 @@ bool SlTest::auto_init() {
   init_foothold_ << -params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
   goal_foothold_ <<  params_->FOOT_STEP*0.5, 0, -params_->INIT_HEIGHT;
 
-  std::cout << "init: " << init_foothold_.transpose() << std::endl;
-  std::cout << "goal: " << goal_foothold_.transpose() << std::endl;
+  LOG_INFO << "init: " << init_foothold_.transpose();
+  LOG_INFO << "goal: " << goal_foothold_.transpose();
+
+  ///! read the configure of save data.
+  std::string _tag = Label::make_label(getLabel(), "log");
+  cfg->get_value(_tag, "enable",       is_save_enable_);
+  cfg->get_value(_tag, "episode",      save_episode_);
+  cfg->get_value(_tag, "wait_episode", wait_episode_);
+  cfg->get_value(_tag, "path",         save_path_);
+
+  save_data_.resize(6, save_episode_ + wait_episode_);
   return true;
 }
 
@@ -144,6 +155,7 @@ bool SlTest::starting() {
   auto _sm       = (StateMachine<LTestState>*)state_machine_;
   _sm->registerStateCallback(LTestState::LT_INIT_POSE, &SlTest::pose_init, this);
   _sm->registerStateCallback(LTestState::LT_SWING,     &SlTest::swing_leg, this);
+  _sm->registerStateCallback(LTestState::LT_KICK,      &SlTest::kick,      this);
   _sm->registerStateCallback(LTestState::LT_WS_CALC,   &SlTest::ws_calc,   this);
   _sm->registerStateCallback(LTestState::LT_PROD_TRAJ, &SlTest::prod_traj, this);
 
@@ -156,7 +168,9 @@ bool SlTest::starting() {
 
   swing_timer_ = new TimeControl;
 
-  LOG_INFO << "The SingleLegTest gait has STARTED!";
+  LOG_INFO << "The SlTest gait has STARTED!";
+
+  PRESS_THEN_GO
   return true;
 }
 
@@ -170,17 +184,17 @@ void SlTest::stopping() {
   delete state_machine_;
   state_machine_ = nullptr;
 
-  LOG_INFO << "The walk gait has STOPPED!";
+  LOG_INFO << "The SlTest gait has STOPPED!";
 }
 
 void SlTest::post_tick() {
   ///! The command frequency control
-  static TimeControl   _s_post_tick(true);
-  static const int64_t _s_post_tick_interval = 20;
-  static int64_t       _s_sum_interval = 0;
-  _s_sum_interval += _s_post_tick.dt();
-  if (_s_sum_interval < _s_post_tick_interval) return;
-  _s_sum_interval = 0;
+//  static TimeControl   _s_post_tick(true);
+//  static const int64_t _s_post_tick_interval = 2;
+//  static int64_t       _s_sum_interval = 0;
+//  _s_sum_interval += _s_post_tick.dt();
+//  if (_s_sum_interval < _s_post_tick_interval) return;
+//  _s_sum_interval = 0;
 
   leg_iface_->eefPositionTarget(leg_cmd_eef_);
   leg_iface_->move();
@@ -195,11 +209,47 @@ void SlTest::checkState() {
     LOG_INFO << "Arrival the initialization pose.";
     PRESS_THEN_GO
     current_state_ = LTestState::LT_SWING;
+    // current_state_ = LTestState::LT_KICK;
     break;
   }
   case LTestState::LT_SWING:
   {
     if (!end_swing_leg()) return;
+
+    if (is_save_enable_) {
+      char _buffer[128] = {0};
+
+      time_t _time;
+      time(&_time);
+      tm* _tm = std::localtime(&_time);
+      sprintf(_buffer, "swing_%4d-%02d-%02d_%02d-%02d-%02d", _tm->tm_year + 1900, _tm->tm_mon,
+          _tm->tm_mday, _tm->tm_hour, _tm->tm_min, _tm->tm_sec);
+
+      std::ofstream _ofd(save_path_ + "/" + std::string(_buffer));
+      if (!_ofd.is_open()) {
+        LOG_WARNING << "Create the file " << std::string(_buffer) << " fail!";
+      } else {
+        FOREACH_JNT(j) {
+          _ofd << JNTTYPE2STR(j) << "_pos" << " ";
+        }
+        FOREACH_JNT(j) {
+          _ofd << JNTTYPE2STR(j) << "_cmd" << " ";
+        }
+        _ofd << std::endl;
+        for (int col = 0; col < save_data_.cols(); ++col) {
+          auto t = save_data_.col(col);
+          for (int i = 0; i < t.size(); ++i) {
+            _ofd << t(i) << " ";
+          }
+          _ofd << std::endl;
+        }
+      }
+
+      _ofd.close();
+      save_data_.fill(0.0);
+
+      LOG_INFO << "save the file[" << std::string(_buffer) << "] successful!";
+    } // end if (is_save_enable_)
 
     LOG_INFO << "Finished swing leg.";
     PRESS_THEN_GO
@@ -208,7 +258,7 @@ void SlTest::checkState() {
     break;
   }
   default:
-    LOG_ERROR << "What fucking walk state!";
+    // LOG_ERROR << "What fucking walk state!";
     break;
   // Nothing to do here.
   }
@@ -216,6 +266,7 @@ void SlTest::checkState() {
 
 void SlTest::pose_init() {
   leg_cmd_eef_ = init_foothold_;
+  // leg_cmd_eef_.x() += 2;
 }
 
 bool SlTest::end_pose_init() {
@@ -239,6 +290,7 @@ void SlTest::swing_leg() {
 //      prog_eef_traj_seg(targ_foothold_, eef_traj_);
 
     prog_eef_traj_poly(goal_foothold_, eef_traj_);
+
     swing_timer_->start();
   }
 
@@ -259,6 +311,17 @@ void SlTest::swing_leg() {
   ///! Output the trajectory.
   printf("%04ld - %+6.3f %+6.3f %+6.3f\n", span, leg_cmd_->target(JntType::HAA),
       leg_cmd_->target(JntType::HFE), leg_cmd_->target(JntType::KFE));
+
+  if (is_save_enable_) {
+    int idx = t*save_episode_;
+    if (idx > save_episode_) {
+      idx = save_episode_ + ((double)(span - params_->SWING_TIME)/900.0)*wait_episode_;
+    }
+    if (idx < save_data_.cols()) {
+      save_data_.col(idx).head(3) = leg_iface_->joint_position();
+      save_data_.col(idx).tail(3) = leg_cmd_->target;
+    }
+  }
 }
 
 bool SlTest::end_swing_leg() {
@@ -269,8 +332,32 @@ bool SlTest::end_swing_leg() {
 
    ///! for rviz
   // LOG_INFO << "The ceiling: " << eef_traj_->ceiling();
-  return ((LegState::TD_STATE == leg_iface_->leg_state())
-       || (swing_timer_->span() > 2000*eef_traj_->ceiling()));
+  return (/*(LegState::TD_STATE == leg_iface_->leg_state())
+       || */( ( swing_timer_->span() - params_->SWING_TIME) > 1000 ) );
+}
+
+void SlTest::kick() {
+  // TODO
+//  char c = '\0';
+//  std::cout << "Input the adjust. ";
+//  // c = getchar();
+//  std::cin >> c;
+//  if ('8' == c) {
+//    leg_cmd_eef_.z() += 1;
+//  } else if ('2' == c) {
+//    leg_cmd_eef_.z() -= 1;
+//  } else {
+//    std::cout << "You need input the \'8\' or \'2\'" << std::endl;
+//  }
+  static bool _g_s_direction = true;
+  if (_g_s_direction) {
+    leg_cmd_eef_.z() += 8;
+  } else {
+    leg_cmd_eef_.z() -= 8;
+  }
+
+  PRESS_THEN_GO
+  _g_s_direction = !_g_s_direction;
 }
 
 void SlTest::ws_calc() {
@@ -570,13 +657,13 @@ void SlTest::prog_eef_traj_poly(const Eigen::Vector3d& _next_fpt, Traj3dSp& _tra
 //}
 
 void SlTest::error_estimate() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
 
   while (thread_alive_) {
     ;
 
 
-    TIMER_CONTROL(1)
+    TICKER_CONTROL(1, std::chrono::milliseconds);
   }
 }
 

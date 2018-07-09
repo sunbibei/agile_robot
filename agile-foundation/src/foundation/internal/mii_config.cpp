@@ -358,13 +358,13 @@ void MiiConfig::parse(const std::string& _fn, TiXmlDocument** _out_xml,
       const std::string& _out_fn, bool print) {
   std::string _f_pv;
   if (!__get_full_fn(s_cfg_paths_, _fn, _f_pv)) {
-    LOG_WARNING << "No such file named '" << _fn << "'";
+    LOG_ERROR << "No such file named '" << _fn << "'";
     return;
   }
 
   TiXmlDocument* _xml = new TiXmlDocument;
   if (!_xml->LoadFile(_f_pv)) {
-    LOG_WARNING << "Load the file named '" << _f_pv << "' has failed!";
+    LOG_ERROR << "Load the file named '" << _f_pv << "' has failed!";
     return;
   }
 

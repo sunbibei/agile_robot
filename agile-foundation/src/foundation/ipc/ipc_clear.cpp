@@ -1,7 +1,7 @@
 #include "foundation/utf.h"
 #include "foundation/internal/sync.h"
 
-int main() {
+int main1() {
   google::InitGoogleLogging("ipc_clear");
   google::FlushLogFiles(google::GLOG_INFO);
   FLAGS_colorlogtostderr = true;

@@ -35,6 +35,11 @@ public:
    */
   void activate(const std::string& gait_name);
 
+  /*!
+   * @brief Query whether is contains the given named gait.
+   */
+  bool query(const std::string& gait_name);
+
   // virtual void add(GaitBase*) override;
 
   // for Debug

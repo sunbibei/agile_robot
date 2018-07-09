@@ -9,8 +9,9 @@
 #define MSG_QUEUE_H_
 
 #include "../utf.h"
-#include "ipc.h"
+
 #include <sys/msg.h>
+#include <map>
 
 typedef struct {
   long    msg_id;

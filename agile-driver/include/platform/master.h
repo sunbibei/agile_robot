@@ -35,7 +35,7 @@ protected:
   // write operator of every tick
   void tick_w();
   // The interval time between twice RW.(in ms)
-  std::chrono::milliseconds  tick_interval_;
+  // std::chrono::milliseconds  tick_interval_;
   bool                       thread_alive_;
 
   class PropagateManager*    propagate_manager_;

@@ -57,10 +57,10 @@ protected:
    */
   std::string                     prefix_tag_;
   // class Master*                 master_;
-  class JointManager*           jnt_manager_;
+  class JointManager*             jnt_manager_;
 
-  std::vector<class ForceSensor*>          td_list_;
-  std::vector<class ForceSensor*>          td_list_by_type_; // type: leg
+  std::vector<class ForceSensor*>            td_list_;
+  std::vector<class ForceSensor*>            td_list_by_type_; // type: leg
   std::map<std::string, class ForceSensor*>  td_list_by_name_;
 
   class ImuSensor*   imu_sensor_;
@@ -76,29 +76,6 @@ private:
   class __RegImuRes*   imu_reg_res_;
   ///! The helper method
   void __reg_resource_and_command(const std::string&);
-
-///! These methods has been deleted.
-// public:
-  /**
-   * @brief This methods add the joint command to Joint object.
-   * @param _name    The name of controlled joint
-   * @param _command The read data of command
-   */
-  // void addJntCmd(const MiiString& _name, double _command);
-  /**
-   * @brief This methods add the joint command to Joint object.
-   * @param _owner  The owner who owns the specific _jnt want to control
-   * @param _jnt    The controlled Joint type
-   * @param command The real data of command
-   */
-  // void addJntCmd(LegType _owner, JntType _jnt, double _command);
-  /**
-   * 获取Joint的名称, 位置, 速度, 力矩及JointState等数据
-   */
-  // void getJointNames(MiiVector<MiiString>&);
-  // void getJointPositions(MiiVector<double>&);
-  // void getJointVelocities(MiiVector<double>&);
-  // void getJointTorques(MiiVector<double>&);
 };
 
 } /* namespace middleware */

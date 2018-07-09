@@ -34,7 +34,7 @@ struct __PrivateLinearParams {
 MotorNode::MotorNode()
   : SWNode("motor_node"), is_startup_(false),
     leg_(LegType::UNKNOWN_LEG),  jnt_(JntType::UNKNOWN_JNT),
-    motor_handle_(nullptr), jnt_param_(nullptr), joint_handle_(nullptr),
+    motor_handle_(nullptr), joint_handle_(nullptr),
     jnt_mode_(JointManager::instance()->getJointCommandMode()),
     cmd_tick_time_ctrl_(nullptr), cmd_tick_interval_(2),
     sum_tick_interval_(0) {
@@ -52,7 +52,6 @@ bool MotorNode::auto_init() {
   cfg->get_value_fatal(getLabel(), "leg", leg_);
   cfg->get_value_fatal(getLabel(), "jnt", jnt_);
 
-  jnt_param_    = nullptr;
   motor_handle_ = nullptr;
   joint_handle_ = nullptr;
 
@@ -60,14 +59,6 @@ bool MotorNode::auto_init() {
   if (!joint_handle_ || !joint_handle_->joint_motor())
     LOG_FATAL << "Can't get the joint '" << LEGTYPE2STR(leg_) << " - "
         << JNTTYPE2STR(jnt_) << "' pointer from JointManager, or the motor within joint.";
-
-  jnt_param_  = new __PrivateLinearParams;
-  double alpha = 0, beta = 0;
-  cfg->get_value_fatal(getLabel(), "scale",  alpha);
-  cfg->get_value_fatal(getLabel(), "offset", beta);
-  jnt_param_->scale  = alpha;
-  jnt_param_->offset = beta;
-  // LOG_DEBUG << jnt->joint_name() << ": " << param->scale << ", " << param->offset;
 
   motor_handle_ = joint_handle_->joint_motor();
 
@@ -85,7 +76,7 @@ bool MotorNode::auto_init() {
 
   Initialize(gains[0], gains[1], gains[2], gains[3], gains[4], gains[5]);
 
-  cfg->get_value_fatal(getLabel(), "interval", cmd_tick_interval_);
+  cfg->get_value_fatal(getLabel(), "cmd_interval", cmd_tick_interval_);
   cmd_tick_time_ctrl_ = new TimeControl();
   cmd_tick_time_ctrl_->start();
   return true;

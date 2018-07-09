@@ -156,7 +156,7 @@ void DataService::start() {
 }
 
 void DataService::tick() {
-  TIMER_INIT
+  TICKER_INIT(std::chrono::milliseconds);
 
   TimeControl* timer = new TimeControl();
   timer->start();
@@ -176,7 +176,7 @@ void DataService::tick() {
       ofd_ << std::setw(8) << std::setprecision(4) << *val << " ";
 
     ofd_ << std::endl;
-    TIMER_CONTROL(tick_duration_)
+    TICKER_CONTROL(tick_duration_, std::chrono::milliseconds);
   }
 
   delete timer;

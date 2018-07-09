@@ -16,6 +16,8 @@
 #include <Eigen/Dense>
 #include <atomic>
 #include <mutex>
+#include <list>
+#include <map>
 
 #define N_INIT_BUF (1024*1024)
 #define N_SNYC     (1024)
@@ -101,6 +103,8 @@ public:
 protected:
   void support();
 
+  void syncRegInfo();
+
 protected:
   ///! The buffer for the all of data.
   char* shm_buffer_;
@@ -111,7 +115,9 @@ protected:
   ///! The list of resources or command
   std::map<std::string, class __ResStu*>  res_origin_;
   std::map<std::string, class __CmdStu*>  cmd_origin_;
-
+  std::list<class __RegInfo*> reg_infos_;
+  ///! Whether is the thread alive.
+  bool thread_alive_;
 };
 
 
@@ -119,28 +125,32 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////
 ////////////        The implementation of template methods         ////////////
 ///////////////////////////////////////////////////////////////////////////////
+ResType __get_res(std::map<std::string, class __ResStu*>& res, const std::string& _n);
+CmdType __get_cmd(std::map<std::string, class __CmdStu*>& cmd, const std::string& _n);
+
 template <typename _DataType>
 _DataType Registry2::resource(const std::string& _res_name) {
-  if (res_origin_.end() == res_origin_.find(_res_name)) {
+  ResType var_data = __get_res(res_origin_, _res_name);
+  if (var_data.empty()) {
     return _DataType(nullptr);
   }
 
-  auto var_data = res_origin_[_res_name];
+  LOG_INFO << var_data.type().name() << " v.s. " << typeid(_DataType).name();
   assert(var_data.type() == typeid(_DataType));
-
   return boost::get<_DataType>(var_data);
 }
 
 template <typename _DataType>
 _DataType Registry2::command(const std::string& _res_name) {
-  if (cmd_origin_.end() == cmd_origin_.find(_res_name)) {
-    return _DataType(nullptr);
-  }
-
-  auto var_cmd = cmd_origin_[_res_name];
-  assert(var_cmd.type() == typeid(_DataType));
-
-  return boost::get<_DataType>(var_cmd);
+  return nullptr;
+//  if (cmd_origin_.end() == cmd_origin_.find(_res_name)) {
+//    return _DataType(nullptr);
+//  }
+//
+//  auto var_cmd = cmd_origin_[_res_name]->handle;
+//  assert(var_cmd.type() == typeid(_DataType));
+//
+//  return boost::get<_DataType>(var_cmd);
 }
 
 } /* namespace middleware */
