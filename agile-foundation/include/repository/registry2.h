@@ -23,7 +23,8 @@
 #define N_SNYC     (1024)
 #define N_MAX_NAME (31)
 
-namespace agile_robot {
+///! cancel the namespaces
+// namespace agile_robot {
 
 /*
 // #define REG_RESOURCE(_n, _var)  \
@@ -102,6 +103,6 @@ protected:
   bool thread_alive_;
 };
 
-} /* namespace middleware */
+// } /* namespace middleware */
 
 #endif /* INCLUDE_REPOSITORY_REGISTRY_H_ */

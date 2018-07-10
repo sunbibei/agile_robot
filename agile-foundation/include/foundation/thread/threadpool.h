@@ -14,7 +14,8 @@
 #include <thread>
 #include <map>
 
-namespace agile_robot {
+///! cancel the namespace
+// namespace agile_robot {
 
 class ThreadPool {
   SINGLETON_DECLARE(ThreadPool)
@@ -75,6 +76,6 @@ void ThreadPool::add(const std::string& __n, _Func&& __f, _BoundArgs&&... __args
   __register_thread_task(__n, f);
 }
 
-} /* namespace middleware */
+// } /* namespace middleware */
 
 #endif /* INCLUDE_SYSTEM_UTILS_THREADMANAGER_H_ */

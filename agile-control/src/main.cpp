@@ -4,12 +4,13 @@
  *  Created on: Nov 20, 2017
  *      Author: bibei
  */
+#include "gait/gait_manager.h"
+#include "foundation/cfg_reader.h"
+#include "foundation/auto_instanceor.h"
+#include "mii_control.h"
+
 #include <iostream>
 #include <ros/ros.h>
-#include "gait/gait_manager.h"
-#include <foundation/cfg_reader.h>
-#include <foundation/auto_instanceor.h>
-
 #include <Eigen/Dense>
 
 void __auto_inst(const std::string& __p, const std::string& __type) {
@@ -40,7 +41,7 @@ void create_system_instance() {
 }
 
 int main1(int argc, char* argv[]) {
-  ros::init(argc, argv, "test_qr");
+  ros::init(argc, argv, "agile-control");
   ros::NodeHandle nh;
 
   agile_control::GaitManager* _manager

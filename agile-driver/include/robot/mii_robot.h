@@ -18,28 +18,16 @@ namespace agile_robot {
 
 class MiiRobot {
 public:
-  /**
-   * @brief The pure virtual function is asked to implemented by subclass.
-   *        These task should be completed in the function what include but not
-   *        limited to: instantiate JointManger, PropagateManager, HwManager, and
-   *        especially MiiCfgReader. Throwing a fatal exception if something is wrong.
-   */
-  virtual void create_system_instance();
-
-  virtual bool init(bool use_mii_control);
+  virtual bool init();
 
   virtual bool start();
 
-  virtual void supportRegistry();
 public:
   /**
    * @brief Instead of the upper methods, you also use the JointManager directly.
    */
   class JointManager* joint_manager()           { return jnt_manager_; }
   const class JointManager& joint_manager_ref() { return *jnt_manager_; }
-
-public:
-  static void auto_inst(const std::string& __p, const std::string& __type);
 
 protected:
   /**
@@ -49,6 +37,23 @@ protected:
    */
   MiiRobot(const std::string& __tag);
   virtual ~MiiRobot();
+
+protected:
+  /**
+   * @brief The pure virtual function is asked to implemented by subclass.
+   *        These task should be completed in the function what include but not
+   *        limited to: instantiate JointManger, PropagateManager, HwManager, and
+   *        especially MiiCfgReader. Throwing a fatal exception if something is wrong.
+   */
+  virtual void create_system_instance();
+
+  /**
+   * @brief Support the Registry2
+   */
+  virtual void supportRegistry2();
+
+private:
+  void __reg_resource_and_command(const std::string& _prefix);
 
 protected:
   /**
@@ -64,18 +69,13 @@ protected:
   std::map<std::string, class ForceSensor*>  td_list_by_name_;
 
   class ImuSensor*   imu_sensor_;
-
-  bool                      mii_ctrl_alive_;
   
-  std::chrono::milliseconds tick_interval_;
+  std::chrono::microseconds tick_interval_;
+
 
 private:
-  bool                 use_mii_control_;
+  bool is_alive;
   class __RegJntRes*   jnt_reg_res_;
-  class __RegForceRes* td_reg_res_;
-  class __RegImuRes*   imu_reg_res_;
-  ///! The helper method
-  void __reg_resource_and_command(const std::string&);
 };
 
 } /* namespace middleware */

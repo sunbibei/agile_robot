@@ -7,7 +7,7 @@
 
 #include <robot/body/data_body.h>
 #include <foundation/cfg_reader.h>
-#include <repository/registry.h>
+#include <repository/registry2.h>
 
 namespace agile_control {
 
@@ -20,20 +20,28 @@ struct _ImuSensor {
   const Eigen::MatrixXd* quat_cov_;
 
   _ImuSensor(const std::string& tag) {
-    auto cfg = MiiCfgReader::instance();
-    std::vector<std::string> strs;
-    cfg->get_value_fatal(tag, "quaternion", strs);
-    quat_     = GET_RESOURCE(strs[0], const Eigen::VectorXd*);
-    quat_cov_ = GET_RESOURCE(strs[1], const Eigen::MatrixXd*);
-
-    cfg->get_value_fatal(tag, "linear_acc", strs);
-    lin_acc_     = GET_RESOURCE(strs[0], const Eigen::VectorXd*);
-    lin_acc_cov_ = GET_RESOURCE(strs[1], const Eigen::MatrixXd*);
-
-    cfg->get_value_fatal(tag, "angular_vel", strs);
-    ang_vel_     = GET_RESOURCE(strs[0], const Eigen::VectorXd*);
-    ang_vel_cov_ = GET_RESOURCE(strs[1], const Eigen::MatrixXd*);
+    ang_vel_ = nullptr;
+    ang_vel_cov_ = nullptr;
+    lin_acc_ = nullptr;
+    lin_acc_cov_ = nullptr;
+    quat_ = nullptr;
+    quat_cov_ = nullptr;
   }
+//  _ImuSensor(const std::string& tag) {
+//    auto cfg = MiiCfgReader::instance();
+//    std::vector<std::string> strs;
+//    cfg->get_value_fatal(tag, "quaternion", strs);
+//    quat_     = GET_RESOURCE(strs[0], const Eigen::VectorXd*);
+//    quat_cov_ = GET_RESOURCE(strs[1], const Eigen::MatrixXd*);
+//
+//    cfg->get_value_fatal(tag, "linear_acc", strs);
+//    lin_acc_     = GET_RESOURCE(strs[0], const Eigen::VectorXd*);
+//    lin_acc_cov_ = GET_RESOURCE(strs[1], const Eigen::MatrixXd*);
+//
+//    cfg->get_value_fatal(tag, "angular_vel", strs);
+//    ang_vel_     = GET_RESOURCE(strs[0], const Eigen::VectorXd*);
+//    ang_vel_cov_ = GET_RESOURCE(strs[1], const Eigen::MatrixXd*);
+//  }
 };
 
 struct _BodyTopology {

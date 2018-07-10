@@ -19,8 +19,6 @@ void termial(int signo) {
   is_alive = false;
 }
 
-namespace agile_robot {
-
 class Registry2Monitor {
 public:
   Registry2Monitor(Registry2* reg)
@@ -43,10 +41,6 @@ private:
   Registry2* reg_;
   size_t     n_last_reg_;
 };
-
-}
-
-using namespace agile_robot;
 
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging("registry2-monitor");

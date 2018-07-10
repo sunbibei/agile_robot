@@ -42,33 +42,32 @@ set(SRC_ROOT            src)
 set(SRC_APP             ${SRC_ROOT}/apps)
 
 # Files define.
-set(BIN_FILES           ${SRC_ROOT}/main.cpp
-                        ${SRC_APP}/ros_wrapper.cpp
+set(ROBOT_FILES         ${SRC_ROOT}/robot.cpp
+                        ${SRC_APP}/robot_wrapper.cpp
 )
 
-# set(EX_FILES            ${SRC_EXAMPLES}/qr_driver_test.cpp
-#                         ${SRC_EXAMPLES}/qr_driver_test2.cpp
-#                         ${SRC_EXAMPLES}/qr_driver_test3.cpp
-# )
-
-# ## Declare a C++ library
-# add_library(${PROJECT_NAME}_test_lib
-#   ${EX_FILES}
-# )
+# Files define.
+set(CONTROL_FILES       ${SRC_ROOT}/control.cpp
+                        ${SRC_APP}/control_wrapper.cpp
+)
 
 ## Declare a C++ executable
-add_executable(${PROJECT_NAME}
-  ${BIN_FILES}
+add_executable(${PROJECT_NAME}_robot
+  ${ROBOT_FILES}
+)
+
+add_executable(${PROJECT_NAME}_control
+  ${CONTROL_FILES}
 )
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_test_lib
-#   ${catkin_LIBRARIES}
-# )
-
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}_robot
   ${catkin_LIBRARIES}
   agile_driver_sys_robot
+)
+
+target_link_libraries(${PROJECT_NAME}_control
+  ${catkin_LIBRARIES}
   agile_control_framwork
 )
 
@@ -79,7 +78,8 @@ target_link_libraries(${PROJECT_NAME}
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME}_robot
+                ${PROJECT_NAME}_control
                 # ${PROJECT_NAME}_test_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

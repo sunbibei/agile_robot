@@ -12,7 +12,8 @@
 #include <chrono>
 #include <iostream>
 
-namespace agile_robot {
+///! cancel the namespaces
+// namespace agile_robot {
 
 ///! The id of type, easy to swap in shared memory.
 enum DataType : char {
@@ -315,4 +316,4 @@ void Registry2::print() {
   }
 }
 
-} /* namespace middleware */
+// } /* namespace middleware */

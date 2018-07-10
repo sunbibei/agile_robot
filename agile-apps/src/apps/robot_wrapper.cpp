@@ -4,9 +4,7 @@
  *  Created on: Dec 5, 2016
  *      Author: silence
  */
-#include "apps/ros_wrapper.h"
-
-#include "repository/registry.h"
+#include "apps/robot_wrapper.h"
 #include "repository/resource/motor.h"
 #include "repository/resource/imu_sensor.h"
 #include "repository/resource/force_sensor.h"
@@ -16,49 +14,35 @@
 #include "foundation/auto_instanceor.h"
 #include "foundation/thread/threadpool.h"
 
-///! qr-next-control
-#include "mii_control.h"
-
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32MultiArray.h>
 
-#define MII_CTRL_THREAD ("mii_control")
-#define RT_PUB_THREAD   ("rt_publisher")
+#include <Eigen/Dense>
 
-SINGLETON_IMPL_NO_CREATE(RosWrapper)
+SINGLETON_IMPL_NO_CREATE(RobotWrapper)
 
-RosWrapper* RosWrapper::create_instance(const std::string& __tag) {
+RobotWrapper* RobotWrapper::create_instance(const std::string& __tag) {
   if (nullptr != instance_) {
     LOG_WARNING << "This method 'create_instance()' is called twice.";
   } else {
-    instance_ = new RosWrapper(Label::make_label(__tag, "wrapper"));
+    instance_ = new RobotWrapper(Label::make_label(__tag, "wrapper"));
   }
   return instance_;
 }
 
-RosWrapper::RosWrapper(const std::string& __tag)
+RobotWrapper::RobotWrapper(const std::string& __tag)
   : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag), alive_(true),
-    rt_duration_(1000/50), mii_control_(nullptr) {
-  // LOG_DEBUG << "Enter the roswrapper construction";
-  // google::InitGoogleLogging("qr_driver");
-  // google::SetLogDestination(google::GLOG_INFO, "/path/to/log/INFO_");
-  // FLAGS_colorlogtostderr = true;
-  // google::FlushLogFiles(google::GLOG_INFO);
-  // LOG_DEBUG << "Leave the roswrapper construction";
+    rt_duration_(1000/50) {
   ; // Nothing to do here, all of variables initialize in the method @start()
 }
 
-RosWrapper::~RosWrapper() {
-  // LOG_DEBUG << "Enter the roswrapper deconstruction";
+RobotWrapper::~RobotWrapper() {
   halt();
-  // LOG_DEBUG << "Leave the roswrapper deconstruction";
-  // google::ShutdownGoogleLogging();
 }
 
-void RosWrapper::create_system_instance() {
+void RobotWrapper::create_system_instance() {
   std::string str;
-  // if (nh_.getParam("configure", cfg)) {
   if (!ros::param::get("~configure", str)) {
     LOG_FATAL << "RosWapper can't find the 'configure' parameter "
         << "in the parameter server. Did you forget define this parameter.";
@@ -74,27 +58,18 @@ void RosWrapper::create_system_instance() {
   if (nullptr == AutoInstanceor::create_instance(str))
     LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
 
-  // LOG_DEBUG << "==========RosWrapper::create_system_instance==========>>";
   MiiRobot::create_system_instance();
 }
 
-bool RosWrapper::start() {
+bool RobotWrapper::start() {
   bool debug = false;
   ros::param::get("~debug", debug);
   google::SetStderrLogging(debug ?
       google::GLOG_INFO : google::GLOG_WARNING);
 
-  bool use_control = false;
-  ros::param::get("~use_control", use_control);
-  LOG_INFO << "MII-CONTROL: " << (use_control ? "ENABLE" : "DISABLE");
-
-  if (!init(use_control))
+  if (!MiiRobot::init())
     LOG_FATAL << "Robot initializes fail!";
   LOG_INFO << "MiiRobot initialization has completed.";
-  if (use_control) {
-    initControl();
-    LOG_INFO << "Launched the mii-control has completed.";
-  }
 
   // Label::printfEveryInstance();
   double frequency = 50.0;
@@ -102,55 +77,15 @@ bool RosWrapper::start() {
   if (frequency > 0)
     rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 
-  ThreadPool::instance()->add(RT_PUB_THREAD, &RosWrapper::publishRTMsg, this);
+  ThreadPool::instance()->add("rt-publisher", &RobotWrapper::publishRTMsg, this);
 
 // For debug
 #ifdef DEBUG_TOPIC
-  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("debug", 100,
-      &RosWrapper::cbForDebug, this);
+  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("/robot/debug", 100,
+      &RobotWrapper::cbForDebug, this);
 #endif
 
   return MiiRobot::start();
-}
-
-void RosWrapper::initControl() {
-  // Use the MII Control
-  std::string str;
-  if (!ros::param::get("~gait_lib", str)) {
-    LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-  AutoInstanceor::instance()->add_library(str);
-
-  bool rl_trial = false;
-  if (ros::param::get("~rl_trial", rl_trial) && rl_trial) {
-    if (!ros::param::get("~rl_lib", str)) {
-      LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
-          << "in the parameter server. Did you forget define this parameter.";
-    }
-    AutoInstanceor::instance()->add_library(str);
-  }
-
-  if (!ros::param::get("~gait_cfg", str)) {
-    LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-  MiiCfgReader::instance()->add_config(str);
-
-  mii_control_ = agile_control::MiiControl::create_instance("ctrl");
-  if ((nullptr == mii_control_) || !mii_control_->init())
-    LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
-
-  ThreadPool::instance()->add(MII_CTRL_THREAD, &agile_control::MiiControl::tick,
-      agile_control::MiiControl::instance());
-
-  if (!ros::param::get("~gait_topic", str)) {
-    LOG_INFO << "No 'gait_topic' parameter, using the default name of topic"
-        << " -- gait_control";
-    str = "gait_control";
-  }
-  gait_ctrl_sub_ = nh_.subscribe<std_msgs::String>(str, 1,
-      &RosWrapper::gaitControlCb, this);
 }
 
 inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
@@ -223,7 +158,7 @@ inline void __fill_cmd_data(std_msgs::Float64MultiArray& __cmd_msg, Eigen::Vecto
   }
 }
 
-void RosWrapper::publishRTMsg() {
+void RobotWrapper::publishRTMsg() {
   ros::Publisher jnt_puber
       = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
   ros::Publisher motor_puber
@@ -314,28 +249,15 @@ void RosWrapper::publishRTMsg() {
   alive_ = false;
 }
 
-void RosWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
-  static auto _s_inst = agile_control::MiiControl::instance();
-  if (nullptr == _s_inst) return;
-
-  if (msg->data.compare("p")) {
-    _s_inst->activate("null");
-  }
-
-  _s_inst->activate(msg->data);
-}
-
-void RosWrapper::halt() {
+void RobotWrapper::halt() {
   alive_ = false;
   // agile_control::MiiControl::instance()->destroy_instance();
   // AutoInstanceor::destroy_instance();
   MiiCfgReader::destroy_instance();
-
-  mii_control_->destroy_instance();
 }
 
 #ifdef DEBUG_TOPIC
-void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
+void RobotWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   auto hfe = jnt_manager_->getJointHandle(LegType::FL, JntType::HFE);
   auto kfe = jnt_manager_->getJointHandle(LegType::FL, JntType::KFE);
   LOG_INFO << "Jnt: " << hfe->joint_name();

@@ -30,22 +30,17 @@
 
 using namespace agile_robot;
 
-class RosWrapper : public MiiRobot {
-SINGLETON_DECLARE(RosWrapper, const std::string&)
+class RobotWrapper : public MiiRobot {
+SINGLETON_DECLARE(RobotWrapper, const std::string&)
 
 public:
-  virtual void create_system_instance() override;
   virtual bool start() override;
   void halt();
 
 private:
-  ///! Initialize the framework of control, If use_ros_control_ is true,
-  ///!   Initialize the ros-control, or mii-control.
-  void initControl();
+  virtual void create_system_instance() override;
   ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
   void publishRTMsg();
-  void gaitControlCb(const std_msgs::String::ConstPtr&);
-  ros::Subscriber gait_ctrl_sub_;
   // Just for test
 #ifdef DEBUG_TOPIC
   void cbForDebug(const std_msgs::Float32ConstPtr&);
@@ -58,10 +53,7 @@ private:
   std::string       root_tag_;
 
   bool alive_;
-  // About ROS control
   std::chrono::milliseconds  rt_duration_;
-  // The instance of mii-control
-  agile_control::MiiControl* mii_control_;
 };
 
 #endif /* INCLUDE_QR_ROS_WRAPPER_H_ */

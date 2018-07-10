@@ -13,7 +13,7 @@
 #include "repository/resource/joint_manager.h"
 #include "repository/resource/joint.h"
 #include "repository/resource/motor.h"
-#include "repository/registry.h"
+#include "repository/registry2.h"
 
 #include "toolbox/time_control.h"
 #include "toolbox/pid.h"
@@ -91,7 +91,8 @@ bool MotorNode0::auto_init() {
   if (is_reg) {
     std::string name = joint_handle_->joint_name() + "_cmd";
     cfg->get_value(_sub_tag, "name", name);
-    REG_RESOURCE(name, &motor_pidout_);
+    Registry2::instance()->publish(name, &motor_pidout_);
+    // REG_RESOURCE(name, &motor_pidout_);
   }
   //get motors' velocity and acceleration
   _sub_tag = Label::make_label(getLabel(), "motor_information");
@@ -100,7 +101,8 @@ bool MotorNode0::auto_init() {
     if (is_reg) {
       std::string name = joint_handle_->joint_name() + "_motor_inf";
       cfg->get_value(_sub_tag, "fl_motor_vel", name);
-      REG_RESOURCE(name, &motor_vel_);
+      Registry2::instance()->publish(name, &motor_vel_);
+      // REG_RESOURCE(name, &motor_vel_);
     }
 
   cmd_tick_time_ctrl_ = new TimeControl();

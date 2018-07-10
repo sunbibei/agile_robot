@@ -11,7 +11,8 @@
 #include <chrono>
 #include <thread>
 
-namespace agile_robot {
+///! cancel the namespace
+// namespace agile_robot {
 
 struct __PrivateThreadVar {
   std::string    thread_name_;
@@ -126,4 +127,4 @@ bool ThreadPool::is_running(const std::string& __n) {
       && (thread_vars_.find(__n)->second->thread_alive_));
 }
 
-} /* namespace middleware */
+// } /* namespace middleware */

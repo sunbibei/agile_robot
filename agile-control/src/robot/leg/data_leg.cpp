@@ -6,7 +6,7 @@
  */
 
 #include "foundation/cfg_reader.h"
-#include "repository/registry.h"
+#include "repository/registry2.h"
 
 #include "robot/leg/data_leg.h"
 
@@ -22,30 +22,36 @@ DataLeg::DataLeg()
 }
 
 bool DataLeg::auto_init() {
-  auto cfg    = MiiCfgReader::instance();
+  auto cfg = MiiCfgReader::instance();
+  auto reg = Registry2::instance();
   cfg->get_value_fatal(getLabel(), "leg", leg_type_);
 
   std::string tmp_str;
-  cfg->get_value_fatal(getLabel(), "mode", tmp_str);
-  jnt_mode_ = (JntCmdType*)GET_COMMAND_NO_FLAG(tmp_str, int*);
+//  cfg->get_value_fatal(getLabel(), "mode", tmp_str);
+//  jnt_mode_ = (JntCmdType*)GET_COMMAND_NO_FLAG(tmp_str, int*);
 
   cfg->get_value_fatal(getLabel(), "command", tmp_str);
-  jnt_cmd_ = GET_COMMAND(tmp_str, &jnt_cmd_flag_, Eigen::VectorXd*);
+  jnt_cmd_ = new Eigen::VectorXd((int)JntType::N_JNTS);
+  reg->publish(tmp_str, jnt_cmd_);
 
   cfg->get_value_fatal(getLabel(), "tdlo", tmp_str);
-  foot_force_  = GET_RESOURCE(tmp_str, const double*);
+  foot_force_ = new double;
+  reg->subscribe(tmp_str, foot_force_);
 
   cfg->get_value_fatal(getLabel(), "pos", tmp_str);
-  jnt_pos_[JntDataType::POS] = GET_RESOURCE(tmp_str, const EVX*);
+  jnt_pos_[JntDataType::POS] = new Eigen::VectorXd((int)JntType::N_JNTS);
+  reg->subscribe(tmp_str, jnt_pos_[JntDataType::POS]);
 
   cfg->get_value_fatal(getLabel(), "vel", tmp_str);
-  jnt_pos_[JntDataType::VEL] = GET_RESOURCE(tmp_str, const EVX*);
+  jnt_pos_[JntDataType::VEL] = new Eigen::VectorXd((int)JntType::N_JNTS);
+  reg->subscribe(tmp_str, jnt_pos_[JntDataType::VEL]);
 
   cfg->get_value_fatal(getLabel(), "tor", tmp_str);
-  jnt_pos_[JntDataType::TOR] = GET_RESOURCE(tmp_str, const EVX*);
+  jnt_pos_[JntDataType::TOR] = new Eigen::VectorXd((int)JntType::N_JNTS);
+  reg->subscribe(tmp_str, jnt_pos_[JntDataType::TOR]);
 
   if (false && _DEBUG_INFO_FLAG) {
-    LOG_INFO << "get command (" << leg_type_ << "): " << jnt_cmd_;
+    // LOG_INFO << "get command (" << leg_type_ << "): " << jnt_cmd_;
     LOG_INFO << "get resource(JntDataType::TD /" << leg_type_ << "): " << foot_force_;
     LOG_INFO << "get resource(JntDataType::POS/" << leg_type_ << "): " << jnt_pos_[JntDataType::POS];
     LOG_INFO << "get resource(JntDataType::VEL/" << leg_type_ << "): " << jnt_pos_[JntDataType::VEL];
@@ -54,7 +60,7 @@ bool DataLeg::auto_init() {
 
   ///! Assert the all of resource is a valid pointer, Or your should not
   ///! launch the mii-control.
-  assert(jnt_mode_ && jnt_cmd_ && jnt_cmd_flag_ && foot_force_
+  assert(/*jnt_mode_ && */jnt_cmd_ && jnt_cmd_flag_ && foot_force_
       && jnt_pos_[JntDataType::POS]);
   return true;
 }

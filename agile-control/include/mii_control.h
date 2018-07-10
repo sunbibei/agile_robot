@@ -14,7 +14,9 @@
 namespace agile_control {
 
 class MiiControl {
-  SINGLETON_DECLARE(MiiControl, const std::string&)
+public:
+  MiiControl(const std::string&);
+  virtual ~MiiControl();
 
 public:
   /*!
@@ -22,10 +24,7 @@ public:
    */
   virtual bool init();
 
-  /*!
-   * @brief Starting to work
-   */
-  virtual void tick();
+  virtual bool start();
 
   /*!
    * @brief Switch to the different gait mode. This action is sync, the method
@@ -37,12 +36,18 @@ public:
 
 protected:
   /*!
+   * @brief Starting to work
+   */
+  virtual void tick();
+
+  /*!
    * @brief The all of singleton has created.
    */
   virtual void create_system_instance();
 
 protected:
   std::string prefix_tag_;
+  class GaitManager* gait_manager_;
 
   bool alive_;
   std::chrono::milliseconds tick_interval_;

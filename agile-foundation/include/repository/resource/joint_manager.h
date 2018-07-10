@@ -67,6 +67,10 @@ public:
    *        for (int i = 0; i < jnt_names.size(); ++i)
    *          joint_position_const_pointer(jnt_names[i], jnt_pos_[i]);
    */
+  const double* joint_position_const_pointer(LegType _owner, JntType _type);
+  const double* joint_velocity_const_pointer(LegType _owner, JntType _type);
+  const double* joint_torque_const_pointer  (LegType _owner, JntType _type);
+  // override
   void joint_position_const_pointer(LegType _owner, JntType _type, const double* & _c_p);
   void joint_velocity_const_pointer(LegType _owner, JntType _type, const double* & _c_p);
   void joint_torque_const_pointer  (LegType _owner, JntType _type, const double* & _c_p);

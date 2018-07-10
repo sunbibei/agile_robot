@@ -5,44 +5,34 @@
  *      Author: bibei
  */
 
-#include <foundation/cfg_reader.h>
-#include <foundation/auto_instanceor.h>
-#include <foundation/thread/threadpool.h>
-#include <robot/agile_robot.h>
+#include "foundation/cfg_reader.h"
+#include "foundation/auto_instanceor.h"
+#include "foundation/thread/threadpool.h"
+#include "repository/registry2.h"
 
 #include "mii_control.h"
+#include "robot/agile_robot.h"
 #include "gait/gait_manager.h"
 
-#include <thread>
-
 namespace agile_control {
-
-// #define MII_CTRL ("mii-control")
-
-SINGLETON_IMPL_NO_CREATE(MiiControl)
 
 void __auto_inst(const std::string& _p, const std::string& _type) {
   if (!AutoInstanceor::instance()->make_instance(_p, _type))
     LOG_ERROR << "Create instance(" << _type << " " << _p << ") fail!";
 }
 
-MiiControl* MiiControl::create_instance(const std::string& prefix) {
-  if (nullptr != instance_) {
-    LOG_WARNING << "This method 'create_instance()' is called twice.";
-  } else {
-    instance_ = new MiiControl(prefix);
-  }
-  return instance_;
-}
-
 MiiControl::MiiControl(const std::string& _prefix)
-  : prefix_tag_(_prefix), alive_(true),
-    tick_interval_(1) {
+  : prefix_tag_(_prefix), gait_manager_(nullptr),
+    alive_(true), tick_interval_(1) {
 }
 
 MiiControl::~MiiControl() {
   alive_ = false; // exit the thread
-  GaitManager::instance()->destroy_instance();
+  GaitManager::destroy_instance();
+  AgileRobot::destroy_instance();
+  Registry2::destroy_instance();
+  SharedMem::destroy_instance();
+  ThreadPool::destroy_instance();
 }
 
 bool MiiControl::init() {
@@ -76,6 +66,10 @@ bool MiiControl::init() {
   return true;
 }
 
+bool MiiControl::start() {
+  return ThreadPool::instance()->start();
+}
+
 void MiiControl::activate(const std::string& _n) {
   if (GaitManager::instance()->query(_n) || 0 == _n.compare("null"))
     GaitManager::instance()->activate(_n);
@@ -84,8 +78,18 @@ void MiiControl::activate(const std::string& _n) {
 }
 
 void MiiControl::create_system_instance() {
+  if (nullptr == ThreadPool::create_instance())
+    LOG_FATAL << "Create the singleton 'ThreadPool' has failed.";
+
+  if (nullptr == SharedMem::create_instance())
+    LOG_FATAL << "Create the singleton 'SharedMem' has failed.";
+
+  if (nullptr == Registry2::create_instance())
+    LOG_FATAL << "Create the singleton 'Registry' has failed.";
+
   if (nullptr == GaitManager::create_instance())
     LOG_FATAL << "Create the singleton 'GaitManager' has failed.";
+
   if (nullptr == AgileRobot::create_instance())
     LOG_FATAL << "Create the singleton 'QrRobot' has failed.";
 }
@@ -94,8 +98,7 @@ void MiiControl::tick() {
   TICKER_INIT(std::chrono::milliseconds);
 
   while (alive_) {
-    if (GaitManager::instance()) GaitManager::instance()->tick();
-    else break;
+    GaitManager::instance()->tick();
 
     TICKER_CONTROL(tick_interval_, std::chrono::milliseconds);
   }

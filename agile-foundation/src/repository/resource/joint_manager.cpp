@@ -94,6 +94,16 @@ double JointManager::operator()(LegType owner, JntType type, JntDataType data) {
   }
 }
 
+const double* JointManager::joint_position_const_pointer(LegType _owner, JntType _type) {
+  return jnt_list_by_type_[_owner][_type]->joint_position_const_pointer();
+}
+const double* JointManager::joint_velocity_const_pointer(LegType _owner, JntType _type) {
+  return jnt_list_by_type_[_owner][_type]->joint_velocity_const_pointer();
+}
+const double* JointManager::joint_torque_const_pointer  (LegType _owner, JntType _type) {
+  return jnt_list_by_type_[_owner][_type]->joint_torque_const_pointer();
+}
+
 void JointManager::joint_position_const_pointer(LegType _owner, JntType _type, const double* & _c_p) {
   _c_p = jnt_list_by_type_[_owner][_type]->joint_position_const_pointer();
 }

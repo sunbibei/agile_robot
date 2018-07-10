@@ -68,7 +68,7 @@ void TestMiiRobot::create_system_instance() {
 }
 
 bool TestMiiRobot::start() {
-  if (!init(false)) LOG_FATAL << "Robot initializes fail!";
+  if (!init()) LOG_FATAL << "Robot initializes fail!";
 
   LOG_INFO << "MiiRobot initialization has completed.";
   // ThreadPool::instance()->add(RT_PUB_THREAD, &RosWrapper::publishRTMsg, this);

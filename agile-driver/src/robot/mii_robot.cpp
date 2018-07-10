@@ -9,7 +9,7 @@
 #include "repository/resource/imu_sensor.h"
 #include "repository/resource/joint.h"
 #include "repository/resource/joint_manager.h"
-#include "repository/registry.h"
+#include "repository/registry2.h"
 
 #include "foundation/label.h"
 #include "foundation/cfg_reader.h"
@@ -20,77 +20,29 @@
 #include "platform/propagate/propagate_manager.h"
 #include "robot/mii_robot.h"
 
-#include <atomic>
-
 namespace agile_robot {
-
-#define REGISTY_THREAD  ("mii-control-support")
 
 struct __RegJntRes {
   ///! Order by { JntType::KNEE, JntType::HIP, JntType::YAW }
   Eigen::VectorXd*  resource[LegType::N_LEGS][JntDataType::N_JNT_DATA_TYPES];
   Eigen::VectorXd*  command[LegType::N_LEGS];
-  JntCmdType        cmd_mode;
-  std::atomic_bool* cmd_flag[LegType::N_LEGS];
-  double*           command_pointer[LegType::N_LEGS][JntType::N_JNTS];
-  __RegJntRes() : cmd_mode(JntCmdType::UNKNOWN_CMD_TYPE) {
+  __RegJntRes() {
     for (auto& c : command)
       c = nullptr;
-    for (auto& f : cmd_flag)
-      f = nullptr;
     for (auto& rs : resource)
       for (auto& r : rs)
         r = nullptr;
-    for (auto& cps : command_pointer)
-      for (auto& cp : cps)
-        cp = nullptr;
   }
-
   ~__RegJntRes() {
     for (auto& c : command)
       if (c) delete c;
     for (auto& rs : resource)
       for (auto& r : rs)
         if (r) delete r;
-    for (auto& cps : command_pointer)
-      for (auto& cp : cps)
-        if (cp) delete cp;
   }
 };
 
-struct __RegForceRes {
-  ; // const double* force_pointer[LegType::N_LEGS];
-};
-
-struct __RegImuRes {
-  Eigen::VectorXd*   orientation;
-  Eigen::VectorXd*   ang_vel;
-  Eigen::VectorXd*   lin_acc;
-
-  Eigen::MatrixXd*   orientation_cov;
-  Eigen::MatrixXd*   ang_vel_cov;
-  Eigen::MatrixXd*   lin_acc_cov;
-
-  __RegImuRes() {
-    orientation     = nullptr;
-    ang_vel         = nullptr;
-    lin_acc         = nullptr;
-    orientation_cov = nullptr;
-    ang_vel_cov     = nullptr;
-    lin_acc_cov     = nullptr;
-  }
-
-  ~__RegImuRes() {
-    if (orientation)     delete orientation;
-    if (ang_vel)         delete ang_vel;
-    if (lin_acc)         delete lin_acc;
-    if (orientation_cov) delete orientation_cov;
-    if (ang_vel_cov)     delete ang_vel_cov;
-    if (lin_acc_cov)     delete lin_acc_cov;
-  }
-};
-
-void MiiRobot::auto_inst(const std::string& __p, const std::string& __type) {
+void __auto_inst(const std::string& __p, const std::string& __type) {
   if (!AutoInstanceor::instance()->make_instance(__p, __type)) {
     LOG_ERROR << "Create instance(" << __type << " " << __p << ") fail!";
   }
@@ -98,10 +50,25 @@ void MiiRobot::auto_inst(const std::string& __p, const std::string& __type) {
 
 MiiRobot::MiiRobot(const std::string& __tag)
 : prefix_tag_(__tag), jnt_manager_(nullptr), imu_sensor_(nullptr),
-  mii_ctrl_alive_(false), tick_interval_(20),use_mii_control_(false),
-  jnt_reg_res_(new __RegJntRes), td_reg_res_(new __RegForceRes),
-  imu_reg_res_(new __RegImuRes) {
+  tick_interval_(20), is_alive(true), jnt_reg_res_(nullptr) {
   ;
+}
+
+MiiRobot::~MiiRobot() {
+  is_alive = false;
+  ///! safety control for joint, add the stop command during the shutdown.
+  for (auto& j : *jnt_manager_)
+    j->stop();
+  sleep(1);
+
+  Master::destroy_instance();
+  JointManager::destroy_instance();
+  // destroy the auto_instancor.
+  AutoInstanceor::destroy_instance();
+
+  ThreadPool::destroy_instance();
+  // LOG_DEBUG << "The deconstructor of MiiRobot almost finished.";
+  // Label::printfEveryInstance();
 }
 
 /**
@@ -114,19 +81,22 @@ void MiiRobot::create_system_instance() {
   if (nullptr == Master::create_instance())
     LOG_FATAL << "Create the singleton 'Master' has failed.";
 
-  if (nullptr == Registry::create_instance())
+  if (nullptr == SharedMem::create_instance())
+    LOG_FATAL << "Create the singleton 'SharedMem' has failed.";
+
+  if (nullptr == Registry2::create_instance())
     LOG_FATAL << "Create the singleton 'Registry' has failed.";
 
   if (nullptr == JointManager::create_instance())
     LOG_FATAL << "Create the singleton 'JointManager' has failed.";
 }
 
-bool MiiRobot::init(bool use_mii_control) {
+bool MiiRobot::init() {
   create_system_instance();
 
   auto cfg = MiiCfgReader::instance();
   if (nullptr == cfg) {
-    LOG_FATAL << "The MiiCfgReader::create_instance(MiiStringConstRef) "
+    LOG_FATAL << "The MiiCfgReader::create_instance(const std::string&) "
         << "method must to be called by subclass before MiiRobot::init()";
   }
 
@@ -147,18 +117,14 @@ bool MiiRobot::init(bool use_mii_control) {
 
   LOG_DEBUG << "The mode of control is '" << str << "'.";
 
-  use_mii_control_ = use_mii_control;
-  // cfg->get_value(prefix_tag_, "mii_control", use_mii_control_);
   // All of the objects mark with "auto_inst" in the configure file
   // will be instanced here.
   LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";
-  cfg->regAttrCb("auto_inst", MiiRobot::auto_inst);
+  cfg->regAttrCb("auto_inst", __auto_inst);
   // Just for debug
   LOG_DEBUG << "Auto instance has finished. The results list as follow:";
-  if (!use_mii_control_) Label::printfEveryInstance();
+  Label::printfEveryInstance();
 
-//  master_  = Master::instance();
-//  master_->init();
   Master::instance()->init();
 
   jnt_manager_ = JointManager::instance();
@@ -180,159 +146,92 @@ bool MiiRobot::init(bool use_mii_control) {
   cfg->get_value(Label::make_label(prefix_tag_, "imu"), "labels", imu_name);
   imu_sensor_  = Label::getHardwareByName<ImuSensor>(imu_name);
 
-  if (use_mii_control_) {
-    __reg_resource_and_command(Label::make_label(prefix_tag_, "registry"));
-    Registry::instance()->print();
-
-    double frequency = 50;
-    cfg->get_value(prefix_tag_, "frequency", frequency);
-    tick_interval_ = std::chrono::milliseconds((int)(1000.0/frequency));
-    ThreadPool::instance()->add(REGISTY_THREAD, &MiiRobot::supportRegistry, this);
-  }
-
+  __reg_resource_and_command(Label::make_label(prefix_tag_, "registry2"));
+  Registry2::instance()->print();
+  double frequency = 1000;
+  cfg->get_value(prefix_tag_, "frequency", frequency);
+  tick_interval_ = std::chrono::microseconds((int)(1000000/frequency));
+  ThreadPool::instance()->add("support-registry2", &MiiRobot::supportRegistry2, this);
   return true;
 }
 
 void MiiRobot::__reg_resource_and_command(const std::string& _prefix) {
-  for (const auto& t : {LegType::FL, LegType::HL, LegType::FR, LegType::HR}) {
-    jnt_reg_res_->command[t] = new Eigen::VectorXd((int)JntType::N_JNTS);
-    for (const auto& d : {JntDataType::POS, JntDataType::VEL, JntDataType::TOR})
-      jnt_reg_res_->resource[t][d] = new Eigen::VectorXd((int)JntType::N_JNTS);
-    for (const auto& j : {JntType::KFE, JntType::HFE, JntType::HAA})
-      jnt_reg_res_->command_pointer[t][j] = new double;
-  }
-
-  imu_reg_res_->orientation     = new Eigen::VectorXd(4);
-  imu_reg_res_->orientation_cov = new Eigen::MatrixXd(3, 3);
-  imu_reg_res_->lin_acc         = new Eigen::VectorXd(3);
-  imu_reg_res_->lin_acc_cov     = new Eigen::MatrixXd(3, 3);
-  imu_reg_res_->ang_vel         = new Eigen::VectorXd(3);
-  imu_reg_res_->ang_vel_cov     = new Eigen::MatrixXd(3, 3);
-
-  // Register the single joint constant pointer
-  /*for (const auto& j : *jnt_manager_) {
-    MiiString post = std::to_string(j->owner_type()) + "-" + std::to_string(j->joint_type());
-    REG_RESOURCE("jnt-pos-" + post, j->joint_position_const_pointer());
-    REG_RESOURCE("jnt-vel-" + post, j->joint_velocity_const_pointer());
-    REG_RESOURCE("jnt-tor-" + post, j->joint_torque_const_pointer());
-
-    // REG_COMMAND ("jnt-cmd-" + post, jnt_reg_res_->command_pointer[j->owner_type()][j->joint_type()]);
-  }*/
-
+  auto reg = Registry2::instance();
   auto cfg = MiiCfgReader::instance();
-
-
   int count = 0;
   LegType leg = LegType::UNKNOWN_LEG;
   std::string _leg_tag = Label::make_label(_prefix, "legs");
-
   std::string str;
   cfg->get_value_fatal(_leg_tag, "mode", str);
-  jnt_reg_res_->cmd_mode = jnt_manager_->getJointCommandMode();
-  REG_COMMAND_NO_FLAG(str, (int*)(&jnt_reg_res_->cmd_mode));
 
+//  jnt_reg_res_->cmd_mode = jnt_manager_->getJointCommandMode();
+//  REG_COMMAND_NO_FLAG(str, (int*)(&jnt_reg_res_->cmd_mode));
   std::string _legs_tag = Label::make_label(_leg_tag, "leg_" + std::to_string(count));
   while (cfg->get_value(_legs_tag, "leg", leg)) {
+    // publish the data of touchdown
+    cfg->get_value_fatal(_legs_tag, "tdlo", str);
+    reg->publish(str, td_list_by_type_[leg]->force_data_const_pointer());
 
-    cfg->get_value_fatal(_legs_tag, "command", str);
-    REG_COMMAND(str, jnt_reg_res_->command[leg], &jnt_reg_res_->cmd_flag[leg]);
-
-    cfg->get_value_fatal(_legs_tag, "td_resource", str);
-    REG_RESOURCE(str, td_list_by_type_[leg]->force_data_const_pointer());
-
+    // publish the position of joint.
     cfg->get_value_fatal(_legs_tag, "pos", str);
-    REG_RESOURCE(str, jnt_reg_res_->resource[leg][JntDataType::POS]);
+    jnt_reg_res_->resource[leg][JntDataType::POS]
+                    = new Eigen::VectorXd((int)JntType::N_JNTS);
+    reg->publish(str, jnt_reg_res_->resource[leg][JntDataType::POS]);
 
+    // publish the velocity of joint.
     cfg->get_value_fatal(_legs_tag, "vel", str);
-    REG_RESOURCE(str, jnt_reg_res_->resource[leg][JntDataType::VEL]);
+    jnt_reg_res_->resource[leg][JntDataType::VEL]
+                    = new Eigen::VectorXd((int)JntType::N_JNTS);
+    reg->publish(str, jnt_reg_res_->resource[leg][JntDataType::VEL]);
 
+    // publish the torque of joint.
     cfg->get_value_fatal(_legs_tag, "tor", str);
-    REG_RESOURCE(str, jnt_reg_res_->resource[leg][JntDataType::TOR]);
+    jnt_reg_res_->resource[leg][JntDataType::TOR]
+                    = new Eigen::VectorXd((int)JntType::N_JNTS);
+    reg->publish(str, jnt_reg_res_->resource[leg][JntDataType::TOR]);
 
+    // subscribe the command.
+    cfg->get_value_fatal(_legs_tag, "command", str);
+    jnt_reg_res_->command[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
+    reg->subscribe(str, jnt_reg_res_->command[leg]);
+
+    // advance the @_legs_tag
     _legs_tag = Label::make_label(_leg_tag, "leg_" + std::to_string(++count));
   }
-
-  std::vector<std::string> strs;
-  std::string _imu_tag = Label::make_label(_prefix, "imu");
-  if (cfg->get_value(_imu_tag, "quaternion", strs)) {
-    REG_RESOURCE(strs[0],        imu_reg_res_->orientation);
-    if (2 == strs.size()) REG_RESOURCE(strs[1], imu_reg_res_->orientation_cov);
-  }
-  if (cfg->get_value(_imu_tag, "linear_acc", strs)) {
-    REG_RESOURCE(strs[0],     imu_reg_res_->lin_acc);
-    if (2 == strs.size()) REG_RESOURCE(strs[1], imu_reg_res_->lin_acc_cov);
-  }
-  if (cfg->get_value(_imu_tag, "angular_vel", strs)) {
-    REG_RESOURCE(strs[0],     imu_reg_res_->ang_vel);
-    if (2 == strs.size()) REG_RESOURCE(strs[1], imu_reg_res_->ang_vel_cov);
-  }
 }
 
-void MiiRobot::supportRegistry() {
-  TICKER_INIT(std::chrono::milliseconds);
-
-  mii_ctrl_alive_ = true;
-
+void MiiRobot::supportRegistry2() {
+  TICKER_INIT(std::chrono::microseconds);
   const JntCmdType& mode = jnt_manager_->getJointCommandMode();
-  while (mii_ctrl_alive_) {
+  while (is_alive) {
     /// read joint states
-    for (const auto& l : {LegType::FL, LegType::HL, LegType::FR, LegType::HR})
-      for (const auto& d : {JntDataType::POS, JntDataType::VEL, JntDataType::TOR})
-        for (const auto& j : {JntType::KFE, JntType::HFE, JntType::HAA})
-          (*(jnt_reg_res_->resource[l][d]))(j) = (*jnt_manager_)(l, j, d);
-    
+    FOREACH_LEG(l) {
+      FOREACH_JNTDATATYPE(d) {
+        FOREACH_JNT(j) {
+          if (nullptr != jnt_reg_res_->resource[l][d])
+            (*(jnt_reg_res_->resource[l][d]))(j) = (*jnt_manager_)(l, j, d);
+        } // end foreach jnt
+      } // end foreach jntdatatype
+    } // end foreach leg
+
     // TODO IMU
-
     // write
-    if (use_mii_control_) {
-      if (mode != jnt_reg_res_->cmd_mode)
-        jnt_manager_->setJointCommandMode(jnt_reg_res_->cmd_mode);
+    FOREACH_LEG(l) {
+      if (nullptr == jnt_reg_res_->command[l]) continue;
 
-      for (const auto& l : {LegType::FL, LegType::HL, LegType::FR, LegType::HR}) {
-        auto flag = jnt_reg_res_->cmd_flag[l];
-        if ((nullptr == flag) || !flag->load()) continue;
-
-        flag->store(false);
-        auto& cmd_ref = *jnt_reg_res_->command[l];
-        for (const auto& j : {JntType::KFE, JntType::HFE, JntType::HAA})
-          jnt_manager_->addJointCommand(l, j, cmd_ref(j));
-      }
+      auto& cmd_ref = *jnt_reg_res_->command[l];
+      FOREACH_JNT(j)
+        jnt_manager_->addJointCommand(l, j, cmd_ref(j));
     }
-
-    TICKER_CONTROL(tick_interval_, std::chrono::milliseconds);
+    TICKER_CONTROL(tick_interval_, std::chrono::microseconds);
   }
-
 }
-
-MiiRobot::~MiiRobot() {
-  ///! safety control for joint, add the stop command during the shutdown.
-  for (auto& j : *jnt_manager_)
-    j->stop();
-  sleep(1);
-
-  // LOG_DEBUG << "The deconstructor of MiiRobot is starting to work.";
-  mii_ctrl_alive_ = false;
-  Master::destroy_instance();
-  JointManager::destroy_instance();
-  // destroy the auto_instancor.
-  AutoInstanceor::destroy_instance();
-
-  ThreadPool::destroy_instance();
-
-  if (jnt_reg_res_) delete jnt_reg_res_;
-  if (td_reg_res_)  delete td_reg_res_;
-  if (imu_reg_res_) delete imu_reg_res_;
-  // LOG_DEBUG << "The deconstructor of MiiRobot almost finished.";
-  // Label::printfEveryInstance();
-}
-
 
 bool MiiRobot::start() {
   bool ret0 = Master::instance()->run();
   bool ret1 = ThreadPool::instance()->start();
   return (ret0 && ret1);
 }
-
 
 ///! These methods has been deleted.
 /*

@@ -66,7 +66,7 @@ set(SYS_FOUDATION_FILES ${SRC_FOUNDATION}/label.cpp
                         ${SRC_FOUNDATION}/ipc/shared_mem.cpp
 )
 
-set(SYS_REGISTRY_FILES  ${SRC_REP}/registry.cpp
+set(SYS_REGISTRY_FILES  # ${SRC_REP}/registry.cpp
                         ${SRC_REP}/registry2.cpp
 )
 
@@ -80,7 +80,7 @@ set(SYS_REPOSITORY_FILES  ${SRC_REP_RES}/imu_sensor.cpp
                           ${SRC_REP_EST}/touchdown_estimator.cpp
 
                           ${SRC_REP_BOX}/pid.cpp
-                          ${SRC_REP}/data_service.cpp
+                          # ${SRC_REP}/data_service.cpp
 )
 
 set(SYS_TOOLBOX_FILES     ${SRC_TOOLBOX}/time_control.cpp

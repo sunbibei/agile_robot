@@ -131,6 +131,8 @@ enum JntDataType {
   TOR = 2,
   N_JNT_DATA_TYPES = 3
 };
+#define FOREACH_JNTDATATYPE(l) for (const auto& l : {JntDataType::POS, JntDataType::VEL, JntDataType::TOR})
+
 #define JNTDATATYPE2STR(l) \
     ( ( (const char*[]){"UNKNOWN_TYPE", "POS", "VEL", "TOR", "N_JNT_DATA_TYPES"} )[(l) + 1] )
 
