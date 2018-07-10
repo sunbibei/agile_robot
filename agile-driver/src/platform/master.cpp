@@ -50,17 +50,17 @@ bool Master::run() {
     return false;
   }
 
-  // LOG_DEBUG << "<<==========Master::run==========";
+  LOG_DEBUG << "<<==========Master::run==========";
   if (!propagate_manager_->run()) {
     LOG_WARNING << "PropagateManager::run fail!";
     return false;
   }
-  // LOG_DEBUG << "Starting PropagateManager";
+  LOG_DEBUG << "Starting PropagateManager";
 
   thread_alive_ = true;
   ThreadPool::instance()->add(MASTER_W_THREAD, &Master::tick_w, this);
   ThreadPool::instance()->add(MASTER_R_THREAD, &Master::tick_r, this);
-  // LOG_DEBUG << "==========Master::run==========>>";
+  LOG_DEBUG << "==========Master::run==========>>";
   return true;
 }
 

@@ -32,7 +32,8 @@ RobotWrapper* RobotWrapper::create_instance(const std::string& __tag) {
 }
 
 RobotWrapper::RobotWrapper(const std::string& __tag)
-  : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag), alive_(true),
+  : MiiRobot(Label::make_label(__tag, "robot")), nh_("agile_robot"),
+    root_tag_(__tag), alive_(true),
     rt_duration_(1000/50) {
   ; // Nothing to do here, all of variables initialize in the method @start()
 }
@@ -42,28 +43,38 @@ RobotWrapper::~RobotWrapper() {
 }
 
 void RobotWrapper::create_system_instance() {
-  std::string str;
-  if (!ros::param::get("~configure", str)) {
+  std::string prefix;
+  std::vector<std::string> cfgs;
+  if (!nh_.getParam("configure/prefix", prefix)
+      || !nh_.getParam("configure/file", cfgs)) {
     LOG_FATAL << "RosWapper can't find the 'configure' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
-  if (nullptr == MiiCfgReader::create_instance(str))
-    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
 
-  if (!ros::param::get("~library", str)) {
+  ros::param::get(prefix, prefix);
+  if (nullptr == MiiCfgReader::create_instance(prefix + "/" + cfgs[0]))
+    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
+  for (int i = 1; i < cfgs.size(); ++i)
+    MiiCfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
+
+  if (!nh_.getParam("library/prefix", prefix)
+      || !nh_.getParam("library/file", cfgs)) {
     LOG_FATAL << "RosWapper can't find the 'library' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
-  LOG_DEBUG << str;
-  if (nullptr == AutoInstanceor::create_instance(str))
+
+  ros::param::get(prefix, prefix);
+  if (nullptr == AutoInstanceor::create_instance(prefix + "/" + cfgs[0]))
     LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
+  for (int i = 1; i < cfgs.size(); ++i)
+    AutoInstanceor::instance()->add_library(prefix + "/" + cfgs[i]);
 
   MiiRobot::create_system_instance();
 }
 
 bool RobotWrapper::start() {
   bool debug = false;
-  ros::param::get("~debug", debug);
+  nh_.getParam("debug", debug);
   google::SetStderrLogging(debug ?
       google::GLOG_INFO : google::GLOG_WARNING);
 
@@ -73,7 +84,7 @@ bool RobotWrapper::start() {
 
   // Label::printfEveryInstance();
   double frequency = 50.0;
-  ros::param::get("~rt_frequency", frequency);
+  nh_.getParam("rt_frequency", frequency);
   if (frequency > 0)
     rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 

@@ -6,37 +6,141 @@
  */
 
 #include <string>
+#include <vector>
+
+#include <fcntl.h>
 #include <ros/ros.h>
 #include <sys/wait.h>
 
 #include "foundation/cfg_reader.h"
 
+static bool g_is_alive = true;
+static std::vector<std::string> g_apps_list
+  = std::vector<std::string>{"robot", "control", "monitor", "log"};
+
+void termial(int signo) {
+  LOG_WARNING << "Handle the SIGINT of signal...";
+  g_is_alive = false;
+}
+
+/*!
+ * @brief Setup the env for the agile-system.
+ *        Add the devel_lib_root:  the/path/to/devel/lib
+ */
+void setup_env() {
+  std::string cfg;
+  if (!ros::param::get("~configure", cfg)) {
+    printf("\033[0;31mNo parameter with named configure or prefix!\033[0m\n");
+    exit(-1);
+  }
+  if (nullptr == MiiCfgReader::create_instance(cfg)) {
+    printf("\033[0;31mCreate the CfgReader fail!\033[0m\n");
+    exit(-1);
+  }
+  std::string apps_root;
+  if (!ros::param::get("apps_root", apps_root)) {
+    printf("\033[0;31mNo such parameters with named apps_root...\033[0m\n");
+    exit(-1);
+  }
+
+  std::string pkgs_root = apps_root.substr(0, apps_root.rfind('/'));
+  ros::param::set("pkgs_root", pkgs_root);
+
+  std::string libs_root = pkgs_root.substr(0, pkgs_root.rfind('/'));
+  libs_root  = libs_root.substr(0, libs_root.rfind('/'));
+  libs_root += "/devel/lib";
+  ros::param::set("libs_root", libs_root);
+
+  printf("ENV: \n");
+  printf("    libs_root:  %s\n", libs_root.c_str());
+  printf("    pkgs_root:  %s\n", pkgs_root.c_str());
+  printf("    apps_root:  %s\n", apps_root.c_str());
+}
+
 void apps_launcher() {
   auto cfg = MiiCfgReader::instance();
+  std::string prefix = "";
+  ros::param::get("~prefix", prefix);
+  std::string root = Label::make_label(prefix, "launcher");
+
+  std::string screen;
+  cfg->get_value(root, "screen", screen);
+
+  std::string output;
+  cfg->get_value(root, "output", output);
+
+  printf("screen: %s\noutput: %s\n", screen.c_str(), output.c_str());
+  bool enable = false;
+  ///! launch each process
+  for (const auto& app : g_apps_list) {
+    // if (0 == output.compare(app)) continue;
+    std::string tag = Label::make_label(root, app);
+    if (!cfg->get_value(tag, "enable", enable) || !enable)
+      continue;
+
+    std::vector<std::string> strs;
+    cfg->get_value_fatal(tag, "argv", strs);
+    char** argv  = new char*[strs.size() + 1];
+    char** pargv = argv;
+    for (const auto& arg : strs) {
+      *pargv = new char[arg.size() + 1];
+      memcpy(*pargv, arg.c_str(), arg.size());
+      (*pargv)[arg.size()] = '\0';
+
+      ++pargv;
+    }
+    *pargv = nullptr;
+
+//    int in, out;
+    pid_t pid = fork();
+    if (0 == pid) { // child process
+      ///! cancel the output redirection.
+//      char _buffer[128] = {0};
+//      time_t _time;
+//      time(&_time);
+//      tm* _tm = std::localtime(&_time);
+//      sprintf(_buffer, "%s_%4d-%02d-%02d_%02d-%02d-%02d", app.c_str(),
+//          _tm->tm_year + 1900, _tm->tm_mon, _tm->tm_mday,
+//          _tm->tm_hour, _tm->tm_min, _tm->tm_sec);
+//
+//      output += ("/" + std::string(_buffer) + "");
+//      out = open(output.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0664);
+//      dup2(out, STDOUT_FILENO);
+//      close(out);
+      ///! execute the sub-process.
+      std::string params;
+      if (cfg->get_value(tag, "params", params)) {
+        std::string command = "rosparam load " + params;
+        system(command.c_str());
+      }
+
+      execvp(argv[0], argv);
+      ///! What fucking! failed...
+      pargv = argv;
+      fprintf(stderr, "Failed to execute ");
+      while (nullptr != pargv) fprintf(stderr, "%s ", *pargv);
+      fprintf(stderr, "\n");
+      exit(-1);/* end child process */
+    }
+  }
 }
 
 int main(int argc, char* argv[]) {
-  ros::init(argc, argv, "agile-apps");
+  // signal(SIGINT, termial);
+  ros::init(argc, argv, "system_entry");
+  ros::NodeHandle nh("agile_apps");
 
-  std::string prefix;
-  std::string configure;
-  if (!ros::param::get("~configure", configure)
-      || !ros::param::get("~prefix", prefix) ) {
-    printf("\033[0;31mNo parameter with named configure or prefix!\033[0m\n");
-    return -1;
-  }
-
-  if (nullptr == MiiCfgReader::create_instance(configure)) {
-    printf("\033[0;31mCreate the CfgReader fail!\033[0m\n");
-    return -1;
-  }
-
+  // setup the ENV
+  setup_env();
   // launch the each APPS
   apps_launcher();
 
-  // waiting for the all of process exiting.
+  // waiting for the all of child-process exiting.
   int status = 0;
   wait(&status);
+
+  // Waiting for shutdown by user
+  ros::waitForShutdown();
 
   // destroy the CfgReader.
   MiiCfgReader::destroy_instance();

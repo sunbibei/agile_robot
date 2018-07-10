@@ -85,5 +85,6 @@ int main(int argc, char* argv[]) {
   wait(&status);
 
   LOG_INFO << "Exit the Registry2Monitor";
+  google::ShutdownGoogleLogging();
   return 0;
 }

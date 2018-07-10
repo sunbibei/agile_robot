@@ -164,6 +164,7 @@ void MiiRobot::__reg_resource_and_command(const std::string& _prefix) {
   std::string str;
   cfg->get_value_fatal(_leg_tag, "mode", str);
 
+  jnt_reg_res_ = new __RegJntRes;
 //  jnt_reg_res_->cmd_mode = jnt_manager_->getJointCommandMode();
 //  REG_COMMAND_NO_FLAG(str, (int*)(&jnt_reg_res_->cmd_mode));
   std::string _legs_tag = Label::make_label(_leg_tag, "leg_" + std::to_string(count));
@@ -171,25 +172,21 @@ void MiiRobot::__reg_resource_and_command(const std::string& _prefix) {
     // publish the data of touchdown
     cfg->get_value_fatal(_legs_tag, "tdlo", str);
     reg->publish(str, td_list_by_type_[leg]->force_data_const_pointer());
-
     // publish the position of joint.
     cfg->get_value_fatal(_legs_tag, "pos", str);
     jnt_reg_res_->resource[leg][JntDataType::POS]
                     = new Eigen::VectorXd((int)JntType::N_JNTS);
     reg->publish(str, jnt_reg_res_->resource[leg][JntDataType::POS]);
-
     // publish the velocity of joint.
     cfg->get_value_fatal(_legs_tag, "vel", str);
     jnt_reg_res_->resource[leg][JntDataType::VEL]
                     = new Eigen::VectorXd((int)JntType::N_JNTS);
     reg->publish(str, jnt_reg_res_->resource[leg][JntDataType::VEL]);
-
     // publish the torque of joint.
     cfg->get_value_fatal(_legs_tag, "tor", str);
     jnt_reg_res_->resource[leg][JntDataType::TOR]
                     = new Eigen::VectorXd((int)JntType::N_JNTS);
     reg->publish(str, jnt_reg_res_->resource[leg][JntDataType::TOR]);
-
     // subscribe the command.
     cfg->get_value_fatal(_legs_tag, "command", str);
     jnt_reg_res_->command[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
@@ -229,7 +226,9 @@ void MiiRobot::supportRegistry2() {
 
 bool MiiRobot::start() {
   bool ret0 = Master::instance()->run();
+  LOG_DEBUG << "Master: " << ret0;
   bool ret1 = ThreadPool::instance()->start();
+  LOG_DEBUG << "ThreadPool: " << ret1;
   return (ret0 && ret1);
 }
 

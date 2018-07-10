@@ -49,7 +49,7 @@ private:
 
 private:
   // The ROS handle
-  ros::NodeHandle nh_;
+  ros::NodeHandle   nh_;
   std::string       root_tag_;
 
   bool alive_;

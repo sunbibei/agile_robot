@@ -41,6 +41,10 @@ set(SRC_ROOT            src)
 
 set(SRC_APP             ${SRC_ROOT}/apps)
 
+set(ENTRY_FILES         ${SRC_ROOT}/main.cpp
+
+)
+
 # Files define.
 set(ROBOT_FILES         ${SRC_ROOT}/robot.cpp
                         ${SRC_APP}/robot_wrapper.cpp
@@ -52,6 +56,10 @@ set(CONTROL_FILES       ${SRC_ROOT}/control.cpp
 )
 
 ## Declare a C++ executable
+add_executable(${PROJECT_NAME}
+  ${ENTRY_FILES}
+)
+
 add_executable(${PROJECT_NAME}_robot
   ${ROBOT_FILES}
 )
@@ -61,6 +69,10 @@ add_executable(${PROJECT_NAME}_control
 )
 
 ## Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
 target_link_libraries(${PROJECT_NAME}_robot
   ${catkin_LIBRARIES}
   agile_driver_sys_robot
@@ -78,7 +90,8 @@ target_link_libraries(${PROJECT_NAME}_control
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS ${PROJECT_NAME}_robot
+install(TARGETS ${PROJECT_NAME}
+                ${PROJECT_NAME}_robot
                 ${PROJECT_NAME}_control
                 # ${PROJECT_NAME}_test_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

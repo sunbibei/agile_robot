@@ -50,7 +50,7 @@ bool PropagateManager::run() {
     LOG_WARNING << "Call PropagateManager::run() twice!";
     return false;
   }
-  // LOG_DEBUG << "<<==========PropagateManager::run==========";
+  LOG_DEBUG << "<<==========PropagateManager::run==========";
 
   for (auto& c : res_list_) {
     propa_list_by_bus_[c->bus_id_] = c;
@@ -65,15 +65,17 @@ bool PropagateManager::run() {
           << res_list_[i]->getLabel() << "\t" << res_list_[i];
     LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
   }
+
+
   bool all_fail = true;
   for (auto c : res_list_) {
     // for (auto c = begin(); c != end(); ++c) {
-    // LOG_DEBUG << c->getLabel() << " is starting.";
+    LOG_DEBUG << c->getLabel() << " is starting.";
     if (!c->start())
       LOG_ERROR << "The propagate '" << c->propa_name_ << "' starting FAIL.";
     else
       all_fail = false;
-    //   LOG_DEBUG << "The propagate '" << c->propa_name_ << "' has started.";
+    LOG_DEBUG << "The propagate '" << c->propa_name_ << "' has started.";
   }
   if (all_fail && !_DEBUG_INFO_FLAG) return false;
 
