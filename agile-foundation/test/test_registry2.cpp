@@ -15,8 +15,8 @@
 
 using namespace agile_robot;
 
-// #define PUB
-#define SUB
+#define PUB
+// #define SUB
 
 
 int main(int argc, char* argv[]) {
@@ -36,35 +36,76 @@ int main(int argc, char* argv[]) {
 
   auto registry = Registry2::instance();
 
-#ifdef PUB
   // create the resource.
-  Eigen::VectorXd vec_d;
-  vec_d.resize(100);
+  Eigen::VectorXd vec_d; // test for vectorxd
+  vec_d.resize(3);
   vec_d.fill(0.0);
 
   Eigen::VectorXd delta;
-  delta.resize(100);
+  delta.resize(3);
   delta.fill(0.01);
 
-  std::cout << "The init of resource: \n" << vec_d.transpose() << std::endl;
+  Eigen::VectorXi vec_i; // test for vectorxi
+  vec_i.resize(3);
+  vec_i.fill(0.0);
+
+  Eigen::VectorXi delta_i;
+  delta_i.resize(3);
+  delta_i.fill(1);
+
+  double res_d = 0.0; // test for double
+  int    res_i = 100; // test for int
+
+#ifdef PUB
   registry->publish("test-vec-d", &vec_d);
+  registry->publish("test-res-d", &res_d);
+  registry->subscribe("test-vec-i", &vec_i);
+  registry->subscribe("test-res-i", &res_i);
 #endif
 
 #ifdef SUB
-  const Eigen::VectorXd& vec_d = *(registry->subscribe<Eigen::VectorXd>("test-vec-d", 100));
+  registry->subscribe("test-vec-d", &vec_d);
+  registry->subscribe("test-res-d", &res_d);
+  registry->publish("test-vec-i", &vec_i);
+  registry->publish("test-res-i", &res_i);
 #endif
+
+  registry->print();
 
   ThreadPool::instance()->start();
   TICKER_INIT(std::chrono::milliseconds);
   while (true) {
 #ifdef PUB
     vec_d += delta;
+    res_d += 0.001;
 #endif
-    LOG_INFO << "\n";
+
+#ifdef SUB
+    vec_i += delta_i;
+    res_i += 100;
+#endif
+
+    LOG_INFO << "test-vec-d:";
     for (int i = 0; i < vec_d.size(); ++i) {
-      printf("%5.02f ", vec_d(i));
+      printf("%6.02f ", vec_d(i));
     }
     printf("\n");
+
+    LOG_WARNING << "test-vec-i:";
+    for (int i = 0; i < vec_i.size(); ++i) {
+      printf("%6d ", vec_i(i));
+    }
+    printf("\n");
+
+    LOG_INFO << "test-res-d:";
+    printf("%6.03f\n", res_d);
+
+    LOG_WARNING << "test-res-i:";
+    printf("%6d\n", res_i);
+
+    if (1000 == res_i) {
+      registry->print();
+    }
 
     TICKER_CONTROL(500, std::chrono::milliseconds);
   }

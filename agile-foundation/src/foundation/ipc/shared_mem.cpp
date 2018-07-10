@@ -61,6 +61,7 @@ bool SharedMem::create_shm(const std::string& _n, size_t _s) {
   key_t _key = __find_ava_key(_n, IpcType::IPC_SHM);
   ///! First, try to find the memory.
   int   _shm_id = shmget(_key, 0, 0);
+  bool is_create = false;
   if (-1 == _shm_id) { // Could not found.
     _shm_id = shmget(_key, _s, IPC_CREAT | 0666);
     if (-1 == _shm_id) {
@@ -70,13 +71,15 @@ bool SharedMem::create_shm(const std::string& _n, size_t _s) {
       LOG_INFO << "Create the named shared memory '" << _n << "'";
       __add_key_map(_n, _key, _shm_id, IpcType::IPC_SHM);
     }
+    is_create = true;
   } else { // Found
     ; // Nothing to do here.
     LOG_INFO << "Found the named shared memory '" << _n << "'";
   }
 
   key_map_.insert(std::make_pair(_n, _key));
-  get_addr_from_shm(_n);
+  void* addr = get_addr_from_shm(_n);
+  if (is_create) memset(addr, 0x00, _s);
   return true;
 }
 

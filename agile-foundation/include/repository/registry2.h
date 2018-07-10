@@ -67,8 +67,7 @@ public:
   bool publish(const std::string&, ResType);
 
   ///! The boost static assert fail! so we need split into two methods.
-  template<typename _DataType>
-  const _DataType* subscribe(const std::string&, size_t size);
+  bool subscribe(const std::string&, ResType);
 
 public:
   ///! print the all of registry.
@@ -100,51 +99,6 @@ protected:
   ///! Whether is the thread alive.
   bool thread_alive_;
 };
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-////////////        The implementation of template methods         ////////////
-///////////////////////////////////////////////////////////////////////////////
-bool __get_res(std::map<std::string, __ResStu*>&,
-    const std::string&, ResType&);
-
-template <typename _DataType>
-const _DataType* Registry2::subscribe(const std::string& _res_name, size_t size) {
-  if ( _res_name.size() >= N_MAX_NAME ) {
-    LOG_ERROR << "The max name of resource or command is " << N_MAX_NAME
-        << ", Registry the resource or command with named "
-        << _res_name << " is fail!";
-    return nullptr;
-  }
-  // update the list of registry.
-  syncRegInfo();
-
-  ResType var_data;
-  if (sub_origin_.end() == sub_origin_.find(_res_name)) {
-    auto data_type = new _DataType;
-    if (typeid(_DataType) == typeid(Eigen::VectorXd)
-        || typeid(_DataType) == typeid(Eigen::VectorXi)) {
-      if (size <= 0) {
-        LOG_ERROR << "YOU NEED TO GIVE THE SIZE!";
-        delete data_type;
-        return nullptr;
-      }
-
-      data_type->resize(size);
-      data_type->fill(0.0);
-    }
-
-    var_data = data_type;
-    insertRegInfo(sub_origin_, _res_name, var_data);
-  } else {
-    __get_res(sub_origin_, _res_name, var_data);
-  }
-
-  LOG_INFO << var_data.type().name() << " v.s. " << typeid(const _DataType*).name();
-  assert(var_data.type() == typeid(const _DataType*));
-  return boost::get<const _DataType*>(var_data);
-}
 
 } /* namespace middleware */
 

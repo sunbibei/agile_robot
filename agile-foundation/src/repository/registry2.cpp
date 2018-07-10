@@ -87,6 +87,7 @@ SINGLETON_IMPL(Registry2)
 
 const std::string RegDataName = "registry2-data";
 const std::string SyncName    = "registry2-sync";
+const char VALID_FLAG         = 0x88;
 Registry2::Registry2()
   : shm_buffer_(nullptr), buff_top_(nullptr),
     thread_alive_(true) {
@@ -138,15 +139,32 @@ bool Registry2::publish(const std::string& _n, ResType _handle) {
     return false;
   }
 
-  // update the buff_top_;
-  syncRegInfo();
-
   insertRegInfo(pub_origin_, _n, _handle);
+  return true;
+}
+
+bool Registry2::subscribe(const std::string& _n, ResType _handle) {
+  if ( _n.size() >= N_MAX_NAME ) {
+    LOG_ERROR << "The max name of resource or command is " << N_MAX_NAME
+        << ", Registry the resource or command with named "
+        << _n << " is fail!";
+    return false;
+  }
+
+  if (sub_origin_.end() == sub_origin_.find(_n)) {
+    insertRegInfo(sub_origin_, _n, _handle);
+  } else {
+    _handle = sub_origin_[_n]->handle;
+  }
+
   return true;
 }
 
 void Registry2::insertRegInfo(std::map<std::string, class __ResStu*>& _o,
     const std::string& _n, ResType& _h) {
+  // update the buff_top_;
+  syncRegInfo();
+
   __RegInfo* info = nullptr;
   for ( const auto& _i : reg_infos_) {
     if (0 == strcmp(_i->data_name, _n.c_str())) {
@@ -160,6 +178,7 @@ void Registry2::insertRegInfo(std::map<std::string, class __ResStu*>& _o,
     LOG_ERROR << "The information of registry does not match!";
     return;
   }
+
   _o[_n] = res;
 }
 
@@ -176,7 +195,8 @@ __ResStu* Registry2::addPuber(const std::string& _n, ResType& _h, __RegInfo* _i)
     _i->data_name[_n.size()] = '\0';
     _i->data_type = type;
     _i->n_res     = size;
-
+    ///! Add into the registry list.
+    reg_infos_.push_back(_i);
     // update the new top of buffer with the specify data.
     buff_top_ += (sizeof(__RegInfo) + _i->n_res);
     ((__RegInfo*) buff_top_)->data_type = DataType::DT_UNKONWN;
@@ -217,7 +237,7 @@ void Registry2::support() {
 
 }
 
-inline std::string __getTypeName(const ResType& t) {
+std::string __getTypeName(const ResType& t) {
   if (typeid(const short*) == t.type()) {
     return "short   ";
   } else if (typeid(const int*) == t.type()) {
@@ -236,27 +256,44 @@ inline std::string __getTypeName(const ResType& t) {
 ///! print the all of registry.
 void Registry2::print() {
   if (_DEBUG_INFO_FLAG) {
-    LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
-    LOG_WARNING << "The size of resource Registry: " << pub_origin_.size();
-    LOG_WARNING << "-------------------------------------------------------------";
-    LOG_WARNING << "COUNT\tNAME\t\tTYPE\t\tADDR";
+    syncRegInfo();
+
+    LOG_WARNING;
+    printf("The list of PUBLISH in this process\n");
+    printf("-------------------------------------------\n");
+    printf("COUNT   TYPE      ADDR   NAME\n");
+ // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
     int count = 0;
     for (const auto& l : pub_origin_) {
-      LOG_INFO << count++ << "\t" << l.first << "\t" << __getTypeName(l.second->handle)
-          << "  " << l.second;
+      ++count;
+      printf("%5d %8s %8p %-31s\n", count,
+          __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
     }
-    syncRegInfo();
-    LOG_WARNING << "-------------------------------------------------------------";
-    LOG_WARNING << "registry information: " << reg_infos_.size();
-    LOG_WARNING << "-------------------------------------------------------------";
+    printf("___________________________________________\n");
+
+    printf("The list of SUBSCRIBE in this process\n");
+    printf("-------------------------------------------\n");
+    printf("COUNT   TYPE      ADDR   NAME\n");
+ // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
+    count = 0;
+    for (const auto& l : sub_origin_) {
+      ++count;
+      printf("%5d %8s %8p %-31s\n", count,
+          __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
+    }
+    printf("___________________________________________\n");
+
+    printf("The list of REGISTRY INFO in this process\n");
+    printf("-------------------------------------------\n");
     printf("COUNT TYPE SIZE       ADDR     NAME\n");
   //printf("    1 0000 0000 0x7fc53c2af028 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    int count = 0;
+    count = 0;
     for (const auto& i : reg_infos_) {
       ++count;
-      printf("%5d %4d %4d %p %-31s\n", count, i->data_type, i->n_res, i->addr, i->data_name);
+      printf("%5d %4d %4ld %p %-31s\n", count, i->data_type, i->n_res, i->addr, i->data_name);
     }
-    LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
+    printf("___________________________________________\n");
+    LOG_WARNING;
   }
 }
 
