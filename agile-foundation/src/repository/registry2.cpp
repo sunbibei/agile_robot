@@ -22,6 +22,8 @@ enum DataType : char {
   DT_DOUBLE,
   DT_VEC_I,
   DT_VEC_D,
+  DT_MAT_I,
+  DT_MAT_D,
 };
 
 ///! The information of registry, The structure must not be malloc by NEW,
@@ -77,6 +79,16 @@ void __parseResType(const ResType& res, DataType& type, size_t& size, void*& add
     auto _res = boost::get<const Eigen::VectorXd*>(res);
     size = _res->size() * sizeof(double);
     addr = (void* ) _res->data();
+  } else if (typeid(const Eigen::MatrixXd*) == res.type()) {
+    type = DataType::DT_MAT_D;
+    auto _res = boost::get<const Eigen::MatrixXd*>(res);
+    size = _res->size() * sizeof(double);
+    addr = (void* ) _res->data();
+  } else if (typeid(const Eigen::MatrixXi*) == res.type()) {
+    type = DataType::DT_MAT_I;
+    auto _res = boost::get<const Eigen::MatrixXi*>(res);
+    size = _res->size() * sizeof(int);
+    addr = (void* ) _res->data();
   } else {
     type = DataType::DT_UNKONWN;
     size = 0;
@@ -91,9 +103,8 @@ const char VALID_FLAG         = 0x88;
 Registry2::Registry2()
   : shm_buffer_(nullptr), buff_top_(nullptr),
     thread_alive_(true) {
-  if (nullptr == SharedMem::instance()) {
-    SharedMem::create_instance();
-  }
+  if (nullptr == SharedMem::instance())
+    LOG_FATAL << "YOU NEED CREATE THE instance of SharedMem firstly!";
 
   auto shm_manager = SharedMem::instance();
   // Create the buffer for data
@@ -104,12 +115,12 @@ Registry2::Registry2()
   syncRegInfo();
 
   ///! Add the register support thread.
-  ThreadPool::instance()->add("registry2", &Registry2::support, this);
+  if (nullptr != ThreadPool::instance())
+    ThreadPool::instance()->add("registry2", &Registry2::support, this);
 }
 
 Registry2::~Registry2() {
   thread_alive_ = false;
-  SharedMem::destroy_instance();
 }
 
 void Registry2::syncRegInfo() {
@@ -259,40 +270,47 @@ void Registry2::print() {
     syncRegInfo();
 
     LOG_WARNING;
-    printf("The list of PUBLISH in this process\n");
-    printf("-------------------------------------------\n");
-    printf("COUNT   TYPE      ADDR   NAME\n");
- // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
-    int count = 0;
-    for (const auto& l : pub_origin_) {
-      ++count;
-      printf("%5d %8s %8p %-31s\n", count,
-          __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
+    if (!pub_origin_.empty()) {
+      printf("The list of PUBLISH in this process\n");
+      printf("-------------------------------------------\n");
+      printf("COUNT   TYPE      ADDR   NAME\n");
+   // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
+      int count = 0;
+      for (const auto& l : pub_origin_) {
+        ++count;
+        printf("%5d %8s %8p %-31s\n", count,
+            __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
+      }
+      printf("___________________________________________\n");
     }
-    printf("___________________________________________\n");
 
-    printf("The list of SUBSCRIBE in this process\n");
-    printf("-------------------------------------------\n");
-    printf("COUNT   TYPE      ADDR   NAME\n");
- // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
-    count = 0;
-    for (const auto& l : sub_origin_) {
-      ++count;
-      printf("%5d %8s %8p %-31s\n", count,
-          __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
+    if (!sub_origin_.empty()) {
+      printf("The list of SUBSCRIBE in this process\n");
+      printf("-------------------------------------------\n");
+      printf("COUNT   TYPE      ADDR   NAME\n");
+   // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
+      int count = 0;
+      for (const auto& l : sub_origin_) {
+        ++count;
+        printf("%5d %8s %8p %-31s\n", count,
+            __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
+      }
+      printf("___________________________________________\n");
     }
-    printf("___________________________________________\n");
 
-    printf("The list of REGISTRY INFO in this process\n");
-    printf("-------------------------------------------\n");
-    printf("COUNT TYPE SIZE       ADDR     NAME\n");
-  //printf("    1 0000 0000 0x7fc53c2af028 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\n");
-    count = 0;
-    for (const auto& i : reg_infos_) {
-      ++count;
-      printf("%5d %4d %4ld %p %-31s\n", count, i->data_type, i->n_res, i->addr, i->data_name);
+    if (!reg_infos_.empty()) {
+      printf("The list of REGISTRY INFO in this process\n");
+      printf("-------------------------------------------\n");
+      printf("COUNT TYPE SIZE       ADDR     NAME\n");
+    //printf("    1 0000 0000 0x7fc53c2af028 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\n");
+      int count = 0;
+      for (const auto& i : reg_infos_) {
+        ++count;
+        printf("%5d %4d %4ld %p %-31s\n", count, i->data_type, i->n_res, i->addr, i->data_name);
+      }
+      printf("___________________________________________\n");
     }
-    printf("___________________________________________\n");
+
     LOG_WARNING;
   }
 }

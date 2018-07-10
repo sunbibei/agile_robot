@@ -45,8 +45,8 @@ public:
   static void clear();
 
 private:
-  std::map<std::string, key_t>                   key_map_;
-  std::map<std::string, void*>                   addr_list_;
+  std::map<std::string, key_t> key_map_;
+  std::map<std::string, void*> addr_list_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

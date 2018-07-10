@@ -67,6 +67,7 @@ set(SYS_FOUDATION_FILES ${SRC_FOUNDATION}/label.cpp
 )
 
 set(SYS_REGISTRY_FILES  ${SRC_REP}/registry.cpp
+                        ${SRC_REP}/registry2.cpp
 )
 
 set(SYS_REPOSITORY_FILES  ${SRC_REP_RES}/imu_sensor.cpp
@@ -107,6 +108,10 @@ add_executable(ipc_clear
   ${SRC_FOUNDATION}/ipc/ipc_clear.cpp
 )
 
+add_executable(registry_monitor
+  ${SRC_REP}/registry_monitor.cpp
+)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -128,6 +133,10 @@ target_link_libraries(${PROJECT_NAME}_repository
 
 target_link_libraries(ipc_clear
   ${PROJECT_NAME}
+)
+
+target_link_libraries(registry_monitor
+  ${PROJECT_NAME}_registry
 )
 
 # target_link_libraries(${PROJECT_NAME}_repository

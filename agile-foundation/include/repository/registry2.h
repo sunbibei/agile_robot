@@ -49,7 +49,8 @@ template <typename _T>
 using MiiPtr = boost::shared_ptr<_T>;
 
 typedef boost::variant<const short*, const int*, const double*,
-    const Eigen::VectorXi*, const Eigen::VectorXd*> ResType;
+    const Eigen::VectorXi*, const Eigen::VectorXd*,
+    const Eigen::MatrixXi*, const Eigen::MatrixXd*> ResType;
 
 /*!
  * @brief \class Registry2, support the data exchange under Multi-process.
@@ -57,6 +58,7 @@ typedef boost::variant<const short*, const int*, const double*,
 class Registry2 {
   SINGLETON_DECLARE(Registry2)
 
+  friend class Registry2Monitor;
 public:
   /*!
    * @brief register a resource into the registry2.

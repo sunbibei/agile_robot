@@ -1,7 +1,7 @@
 #include "foundation/utf.h"
 #include "foundation/internal/sync.h"
 
-// #define IPC_CLEAR
+#define IPC_CLEAR
 #ifdef IPC_CLEAR
 int main() {
   google::InitGoogleLogging("ipc_clear");
