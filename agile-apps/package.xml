@@ -16,10 +16,9 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>hardware_interface</build_depend>
   <build_depend>cmake_modules</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>controller_interface</build_depend>
+  <build_depend>rospack</build_depend>
   <build_depend>agile_driver</build_depend>
   <build_depend>agile_control</build_depend>
   <build_depend>agile_foundation</build_depend>
@@ -28,12 +27,12 @@
   <run_depend>agile_foundation</run_depend>
   <run_depend>cmake_modules</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>controller_interface</run_depend>
+  <run_depend>rospack</run_depend>
   <run_depend>agile_driver</run_depend>
   <run_depend>agile_control</run_depend>
+  <run_depend>agile_foundation</run_depend>
 
   <export>
-    <controller_interface plugin="${prefix}/examples/config/test_controller_plugins.xml"/>
   </export>
 
 </package>

@@ -50,7 +50,7 @@ bool PropagateManager::run() {
     LOG_WARNING << "Call PropagateManager::run() twice!";
     return false;
   }
-  LOG_DEBUG << "<<==========PropagateManager::run==========";
+  // LOG_DEBUG << "<<==========PropagateManager::run==========";
 
   for (auto& c : res_list_) {
     propa_list_by_bus_[c->bus_id_] = c;

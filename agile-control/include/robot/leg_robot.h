@@ -13,9 +13,6 @@
 
 #include <Eigen/Dense>
 
-///! whether the colored output the joint position.
-#define DIS_JNT_LIMIT
-
 namespace agile_control {
 /*!
  * @brief Any sub-class inherit from LegRobot, is need be implemented as a singleton.

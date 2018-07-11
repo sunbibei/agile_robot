@@ -19,13 +19,13 @@
 #include <chrono>
 #include <boost/scoped_ptr.hpp>
 
-#include "robot/mii_robot.h"
+#include "mii_robot.h"
 ///! qr-next-control
 #include <mii_control.h>
 
 #define DEBUG_TOPIC
 #ifdef DEBUG_TOPIC
-#include <repository/resource/joint.h>
+#include <repository/joint.h>
 #endif
 
 using namespace agile_robot;
@@ -37,10 +37,10 @@ public:
   virtual bool start() override;
   void halt();
 
-private:
-  virtual void create_system_instance() override;
   ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
   void publishRTMsg();
+private:
+  virtual void create_system_instance() override;
   // Just for test
 #ifdef DEBUG_TOPIC
   void cbForDebug(const std_msgs::Float32ConstPtr&);

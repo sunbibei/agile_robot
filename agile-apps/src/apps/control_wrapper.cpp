@@ -23,8 +23,8 @@ ControlWrapper* ControlWrapper::create_instance(const std::string& __tag) {
 }
 
 ControlWrapper::ControlWrapper(const std::string& _prefix)
-  : MiiControl(Label::make_label(_prefix, "control")), root_tag_(_prefix),
-    alive_(true) {
+  : MiiControl(Label::make_label(_prefix, "control")), nh_("agile_control"),
+    root_tag_(_prefix), alive_(true) {
   ;
 }
 
@@ -44,7 +44,8 @@ bool ControlWrapper::start() {
   ThreadPool::instance()->add("mii-control", &ControlWrapper::tick, this);
 
   std::string str;
-  if (!ros::param::get("~gait_topic", str)) {
+  if (!nh_.getParam("gait_topic", str)) {
+  // if (!ros::param::get("~gait_topic", str)) {
     LOG_INFO << "No 'gait_topic' parameter, using the default name of topic"
         << " -- gait_control";
     str = "gait_control";
@@ -54,30 +55,39 @@ bool ControlWrapper::start() {
 
   // For debug
   #ifdef DEBUG_TOPIC
-  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("/control/debug", 100,
+  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("debug", 100,
       &ControlWrapper::cbForDebug, this);
   #endif
 
-  return true;
+  return MiiControl::start();
 }
 
 void ControlWrapper::create_system_instance() {
-  std::string str;
-  // if (nh_.getParam("configure", cfg)) {
-  if (!ros::param::get("~gait_cfg", str)) {
+  std::string prefix;
+  std::vector<std::string> cfgs;
+  if (!nh_.getParam("configure/prefix", prefix)
+      || !nh_.getParam("configure/file", cfgs)) {
     LOG_FATAL << "RosWapper can't find the 'configure' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
-  if (nullptr == MiiCfgReader::create_instance(str))
-    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
 
-  if (!ros::param::get("~gait_lib", str)) {
+  ros::param::get(prefix, prefix);
+  if (nullptr == MiiCfgReader::create_instance(prefix + "/" + cfgs[0]))
+    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
+  for (int i = 1; i < cfgs.size(); ++i)
+    MiiCfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
+
+  if (!nh_.getParam("library/prefix", prefix)
+      || !nh_.getParam("library/file", cfgs)) {
     LOG_FATAL << "RosWapper can't find the 'library' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
-  LOG_DEBUG << str;
-  if (nullptr == AutoInstanceor::create_instance(str))
+
+  ros::param::get(prefix, prefix);
+  if (nullptr == AutoInstanceor::create_instance(prefix + "/" + cfgs[0]))
     LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
+  for (int i = 1; i < cfgs.size(); ++i)
+    AutoInstanceor::instance()->add_library(prefix + "/" + cfgs[i]);
 
   MiiControl::create_system_instance();
 }

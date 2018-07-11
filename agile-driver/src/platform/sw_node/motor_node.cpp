@@ -11,9 +11,9 @@
 #include "foundation/utf.h"
 #include "foundation/cfg_reader.h"
 
-#include "repository/resource/joint_manager.h"
-#include "repository/resource/joint.h"
-#include "repository/resource/motor.h"
+#include "repository/joint_manager.h"
+#include "repository/joint.h"
+#include "repository/motor.h"
 #include "foundation/thread/threadpool.h"
 
 #include <boost/algorithm/string.hpp>

@@ -5,11 +5,7 @@
  *      Author: bibei
  */
 
-#include <robot/leg_robot.h>
-
-#ifdef DIS_JNT_LIMIT
-#include <repository/resource/joint_manager.h>
-#endif
+#include "robot/leg_robot.h"
 
 namespace agile_control {
 
@@ -49,41 +45,68 @@ RobotBody* LegRobot::robot_body() {
 }
 
 inline void __print_color_helper(LegType l) {
+  auto leg = LegRobot::instance()->robot_leg(l);
+  auto poss = leg->joint_position();
   FOREACH_JNT(j) {
-#ifdef DIS_JNT_LIMIT
-    static auto _jnts  = agile_robot::JointManager::instance();
-    const auto _jnt   = _jnts->getJointHandle(LegType(l), JntType(j));
-    double _min = _jnt->joint_position_min();
-    double _max = _jnt->joint_position_max();
-    double _val = _jnt->joint_position();
+    double _min = leg->joint_position_min(j);
+    double _max = leg->joint_position_max(j);
+    double _val = poss((int)j);
     if (_val <= _min)
       printf("| \033[31;1m%+7.04f\033[0m", _val);
     else if (_val >= _max)
       printf("| \033[33;1m%+7.04f\033[0m", _val);
     else
-#endif
       printf("| %+7.04f", _val);
   }
   printf("|");
 }
 
 inline void __print_color_helper(LegType l, const Eigen::VectorXd& jnt) {
+  auto leg = LegRobot::instance()->robot_leg(l);
   FOREACH_JNT(j) {
-#ifdef DIS_JNT_LIMIT
-    static auto _jnts  = agile_robot::JointManager::instance();
-    const auto _jnt   = _jnts->getJointHandle(LegType(l), JntType(j));
-    double _min = _jnt->joint_position_min();
-    double _max = _jnt->joint_position_max();
+    double _min = leg->joint_position_min(j);
+    double _max = leg->joint_position_max(j);
     if (jnt(j) <= _min)
       printf("| \033[31;1m%+7.04f\033[0m", jnt(j));
     else if (jnt(j) >= _max)
       printf("| \033[33;1m%+7.04f\033[0m", jnt(j));
     else
-#endif
       printf("| %+7.04f", jnt(j));
   }
   printf("|");
 }
+
+//inline void __print_color_helper(LegType l) {
+//  FOREACH_JNT(j) {
+//    const auto _jnt   = _jnts->getJointHandle(LegType(l), JntType(j));
+//    double _min = _jnt->joint_position_min();
+//    double _max = _jnt->joint_position_max();
+//    double _val = _jnt->joint_position();
+//    if (_val <= _min)
+//      printf("| \033[31;1m%+7.04f\033[0m", _val);
+//    else if (_val >= _max)
+//      printf("| \033[33;1m%+7.04f\033[0m", _val);
+//    else
+//      printf("| %+7.04f", _val);
+//  }
+//  printf("|");
+//}
+//
+//inline void __print_color_helper(LegType l, const Eigen::VectorXd& jnt) {
+//  FOREACH_JNT(j) {
+//    static auto _jnts  = agile_robot::JointManager::instance();
+//    const auto _jnt   = _jnts->getJointHandle(LegType(l), JntType(j));
+//    double _min = _jnt->joint_position_min();
+//    double _max = _jnt->joint_position_max();
+//    if (jnt(j) <= _min)
+//      printf("| \033[31;1m%+7.04f\033[0m", jnt(j));
+//    else if (jnt(j) >= _max)
+//      printf("| \033[33;1m%+7.04f\033[0m", jnt(j));
+//    else
+//      printf("| %+7.04f", jnt(j));
+//  }
+//  printf("|");
+//}
 
 ///! print joint position of the single leg
 void print_jnt_pos(LegType l) {

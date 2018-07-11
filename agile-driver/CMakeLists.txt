@@ -17,8 +17,6 @@ find_package(Eigen3  REQUIRED)
 catkin_package(
   LIBRARIES
     controlcan
-    ${PROJECT_NAME}_sys_platform
-    ${PROJECT_NAME}_sys_robot
   INCLUDE_DIRS
     include
   DEPENDS
@@ -60,29 +58,37 @@ set(SRC_TEST_ROOT       test)
 
 set(SRC_SYS             ${SRC_ROOT})
 set(SRC_SYS_PLATFORM    ${SRC_SYS}/platform)
-set(SRC_SYS_ROBOT       ${SRC_SYS}/robot)
-set(SRC_SYS_UTILS       ${SRC_SYS}/utils)
+set(SRC_SYS_REP         ${SRC_ROOT}/repository)
 
 # Files define.
-set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/sw_node/sw_node_manager.cpp
+set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/log_robot.cpp
+
                         ${SRC_SYS_PLATFORM}/sw_node/sw_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/leg_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/motor_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/motor_node0.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/power_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/test_node.cpp
-
-                        ${SRC_SYS_PLATFORM}/propagate/propagate_manager.cpp
+                        
                         ${SRC_SYS_PLATFORM}/propagate/propagate.cpp
                         ${SRC_SYS_PLATFORM}/propagate/can_usb.cpp
                         ${SRC_SYS_PLATFORM}/propagate/motor_can.cpp
                         ${SRC_SYS_PLATFORM}/propagate/leg_can.cpp
                         ${SRC_SYS_PLATFORM}/propagate/gazebo_propagate.cpp
+                        ${SRC_SYS_PLATFORM}/propagate/fake_can.cpp
 
-                        ${SRC_SYS_PLATFORM}/master.cpp
+                        ${SRC_SYS_REP}/imu_sensor.cpp
+                        ${SRC_SYS_REP}/joint.cpp
+                        ${SRC_SYS_REP}/motor.cpp
+                        ${SRC_SYS_REP}/power.cpp
+                        ${SRC_SYS_REP}/force_sensor.cpp
+                        ${SRC_SYS_REP}/joint_manager.cpp
 )
 
-set(SYS_ROBOT_FILES     ${SRC_SYS_ROBOT}/mii_robot.cpp
+set(SYS_ROBOT_FILES     ${SRC_SYS_PLATFORM}/sw_node/sw_node_manager.cpp
+                        ${SRC_SYS_PLATFORM}/propagate/propagate_manager.cpp
+                        ${SRC_SYS_PLATFORM}/master.cpp
+                        ${SRC_ROOT}/mii_robot.cpp
 )
 
 set(SYS_TEST_FILES      ${SRC_TEST_ROOT}/main.cpp)
@@ -101,7 +107,7 @@ target_link_libraries(${PROJECT_NAME}_sys_platform
   ${catkin_LIBRARIES}
   ${EIGEN3_LIBRARIES}
   agile_foundation
-  agile_foundation_repository
+  agile_foundation_toolbox
   controlcan
   # pcanbasic
 )
@@ -109,7 +115,6 @@ target_link_libraries(${PROJECT_NAME}_sys_platform
 target_link_libraries(${PROJECT_NAME}_sys_robot
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}_sys_platform
-  agile_foundation_registry
 )
 
 #############

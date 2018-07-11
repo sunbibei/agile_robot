@@ -7,13 +7,13 @@
 
 #include "platform/sw_node/power_node.h"
 #include "foundation/cfg_reader.h"
-#include "repository/resource/power.h"
+#include "repository/power.h"
 
 namespace agile_robot {
 
 PowerNode::PowerNode(const std::string& __l)
   : SWNode(__l), power_info_(nullptr) {
-
+  ;
 }
 
 bool PowerNode::auto_init() {

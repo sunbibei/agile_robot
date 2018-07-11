@@ -36,15 +36,8 @@ include_directories(
 
 set(SRC_ROOT            src)
 set(SRC_TEST_ROOT       test)
+
 set(SRC_FOUNDATION      ${SRC_ROOT}/foundation)
-
-set(SRC_FDT_THREAD      ${SRC_FOUNDATION}/thread)
-
-set(SRC_REP             ${SRC_ROOT}/repository)
-set(SRC_REP_RES         ${SRC_REP}/resource)
-set(SRC_REP_EST         ${SRC_REP}/estimator)
-set(SRC_REP_BOX         ${SRC_REP}/control_toolbox)
-
 set(SRC_TOOLBOX         ${SRC_ROOT}/toolbox)
 
 set(SRC_TEST            ${SRC_TEST_ROOT}/test_registry2.cpp
@@ -59,28 +52,14 @@ set(SYS_FOUDATION_FILES ${SRC_FOUNDATION}/label.cpp
                         ${SRC_FOUNDATION}/internal/mii_config.cpp
                         ${SRC_FOUNDATION}/internal/expr.cpp
                         
-                        ${SRC_FDT_THREAD}/threadpool.cpp
+                        ${SRC_FOUNDATION}/thread/threadpool.cpp
 
                         ${SRC_FOUNDATION}/internal/sync.cpp
                         ${SRC_FOUNDATION}/ipc/msg_queue.cpp
                         ${SRC_FOUNDATION}/ipc/shared_mem.cpp
-)
 
-set(SYS_REGISTRY_FILES  # ${SRC_REP}/registry.cpp
-                        ${SRC_REP}/registry2.cpp
-)
-
-set(SYS_REPOSITORY_FILES  ${SRC_REP_RES}/imu_sensor.cpp
-                          ${SRC_REP_RES}/joint.cpp
-                          ${SRC_REP_RES}/motor.cpp
-                          ${SRC_REP_RES}/power.cpp
-                          ${SRC_REP_RES}/force_sensor.cpp
-                          ${SRC_REP_RES}/joint_manager.cpp
-
-                          ${SRC_REP_EST}/touchdown_estimator.cpp
-
-                          ${SRC_REP_BOX}/pid.cpp
-                          # ${SRC_REP}/data_service.cpp
+                        ${SRC_FOUNDATION}/registry/registry.cpp
+                        ${SRC_FOUNDATION}/registry/registry2.cpp
 )
 
 set(SYS_TOOLBOX_FILES     ${SRC_TOOLBOX}/time_control.cpp
@@ -92,24 +71,8 @@ add_library(${PROJECT_NAME}
   ${SYS_FOUDATION_FILES}
 )
 
-add_library(${PROJECT_NAME}_registry
-  ${SYS_REGISTRY_FILES}
-)
-
-add_library(${PROJECT_NAME}_repository
-  ${SYS_REPOSITORY_FILES}
-)
-
 add_library(${PROJECT_NAME}_toolbox
   ${SYS_TOOLBOX_FILES}
-)
-
-add_executable(ipc_clear
-  ${SRC_FOUNDATION}/ipc/ipc_clear.cpp
-)
-
-add_executable(registry_monitor
-  ${SRC_REP}/registry_monitor.cpp
 )
 
 ## Specify libraries to link a library or executable target against
@@ -117,26 +80,6 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${TinyXML_LIBRARIES}
   glog
-)
-
-target_link_libraries(${PROJECT_NAME}_registry
-  ${EIGEN3_LIBRARIES}
-  ${PROJECT_NAME}
-)
-
-target_link_libraries(${PROJECT_NAME}_repository
-  ${catkin_LIBRARIES}
-  ${EIGEN3_LIBRARIES}
-  ${PROJECT_NAME}
-  ${PROJECT_NAME}_toolbox
-)
-
-target_link_libraries(ipc_clear
-  ${PROJECT_NAME}
-)
-
-target_link_libraries(registry_monitor
-  ${PROJECT_NAME}_registry
 )
 
 # target_link_libraries(${PROJECT_NAME}_repository
@@ -153,10 +96,7 @@ install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS ${PROJECT_NAME}
-                ${PROJECT_NAME}_registry
-                ${PROJECT_NAME}_repository
                 ${PROJECT_NAME}_toolbox
-                ipc_clear
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

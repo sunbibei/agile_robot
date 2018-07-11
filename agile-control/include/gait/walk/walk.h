@@ -14,7 +14,7 @@
 #include <Eigen/Dense>
 
 ///! whether the colored output the joint position.
-#define DIS_JNT_LIMIT
+// #define DIS_JNT_LIMIT
 ///! whether record the EEF trajectory
 // #define RECORDER_EEF_TRAJ
 #ifdef  RECORDER_EEF_TRAJ

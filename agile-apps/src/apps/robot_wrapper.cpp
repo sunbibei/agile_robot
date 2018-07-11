@@ -5,10 +5,10 @@
  *      Author: silence
  */
 #include "apps/robot_wrapper.h"
-#include "repository/resource/motor.h"
-#include "repository/resource/imu_sensor.h"
-#include "repository/resource/force_sensor.h"
-#include "repository/resource/joint_manager.h"
+#include "repository/motor.h"
+#include "repository/imu_sensor.h"
+#include "repository/force_sensor.h"
+#include "repository/joint_manager.h"
 
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instanceor.h"
@@ -88,15 +88,22 @@ bool RobotWrapper::start() {
   if (frequency > 0)
     rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 
-  ThreadPool::instance()->add("rt-publisher", &RobotWrapper::publishRTMsg, this);
+  ThreadPool::instance()->add("rt-pub", &RobotWrapper::publishRTMsg, this);
 
 // For debug
 #ifdef DEBUG_TOPIC
-  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("/robot/debug", 100,
+  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("debug", 100,
       &RobotWrapper::cbForDebug, this);
 #endif
 
   return MiiRobot::start();
+}
+
+void RobotWrapper::halt() {
+  alive_ = false;
+  // agile_control::MiiControl::instance()->destroy_instance();
+  // AutoInstanceor::destroy_instance();
+  MiiCfgReader::destroy_instance();
 }
 
 inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
@@ -258,13 +265,6 @@ void RobotWrapper::publishRTMsg() {
   }
 
   alive_ = false;
-}
-
-void RobotWrapper::halt() {
-  alive_ = false;
-  // agile_control::MiiControl::instance()->destroy_instance();
-  // AutoInstanceor::destroy_instance();
-  MiiCfgReader::destroy_instance();
 }
 
 #ifdef DEBUG_TOPIC
