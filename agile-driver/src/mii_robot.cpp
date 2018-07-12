@@ -154,7 +154,7 @@ bool MiiRobot::init() {
   double frequency = 1000;
   cfg->get_value(prefix_tag_, "frequency", frequency);
   tick_interval_ = std::chrono::microseconds((int)(1000000/frequency));
-  // ThreadPool::instance()->add("support-registry2", &MiiRobot::supportRegistry2, this);
+  ThreadPool::instance()->add("support-registry2", &MiiRobot::supportRegistry2, this);
   return true;
 }
 

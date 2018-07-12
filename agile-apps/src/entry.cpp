@@ -77,7 +77,7 @@ void setup_env() {
   printf("\033[0m\n");
 }
 
-void apps_launcher() {
+void launcher() {
   auto cfg = MiiCfgReader::instance();
   std::string prefix = "";
   ros::param::get("~prefix", prefix);
@@ -98,7 +98,7 @@ void apps_launcher() {
       continue;
 
     std::vector<std::string> strs;
-    cfg->get_value_fatal(tag, "argv", strs);
+    cfg->get_value_fatal(tag, "command", strs);
     char** argv  = new char*[strs.size() + 1];
     char** pargv = argv;
     for (const auto& arg : strs) {
@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
   // setup the ENV
   setup_env();
   // launch the each APPS
-  apps_launcher();
+  launcher();
 
   // Waiting for shutdown by user
   ros::waitForShutdown();
