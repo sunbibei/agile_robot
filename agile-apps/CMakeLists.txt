@@ -55,6 +55,11 @@ set(CONTROL_FILES       ${SRC_ROOT}/control.cpp
 )
 
 ## Declare a C++ executable
+add_executable(${PROJECT_NAME}_old
+  ${SRC_ROOT}/main.cpp
+  ${SRC_APP}/ros_wrapper.cpp
+)
+
 add_executable(${PROJECT_NAME}
   ${ENTRY_FILES}
 )
@@ -108,7 +113,8 @@ target_link_libraries(registry_monitor
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME}_old
+                ${PROJECT_NAME}
                 ${PROJECT_NAME}_robot
                 ${PROJECT_NAME}_control
                 # ${PROJECT_NAME}_test_lib
