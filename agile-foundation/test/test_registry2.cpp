@@ -15,8 +15,8 @@
 
 // using namespace agile_robot;
 
-// #define PUB
-#define SUB
+#define PUB
+//#define SUB
 
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging("test-registry2");
