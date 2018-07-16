@@ -62,6 +62,7 @@ bool ThreadPool::init() {
 
 bool ThreadPool::start() {
   bool ret = true;
+  LOG_DEBUG << "The size of threads: " << thread_vars_.size();
   for (auto& f : thread_vars_) {
     ret  = ret && start(f.first);
   }
@@ -69,7 +70,6 @@ bool ThreadPool::start() {
 }
 
 bool ThreadPool::start(const std::string& __n) {
-  // LOG_DEBUG << "This thread is starting -- " << __n;
   // start the specific named threads
   auto iter = thread_vars_.find(__n);
   if (thread_vars_.end() == iter) {
@@ -89,6 +89,7 @@ bool ThreadPool::start(const std::string& __n) {
     return false;
   }
 
+  // LOG_DEBUG << "This thread is starting -- " << __n;
   var->thread_handle_  = new std::thread(
       std::bind(&ThreadPool::__internal_thread_task, this, var));
   return true;

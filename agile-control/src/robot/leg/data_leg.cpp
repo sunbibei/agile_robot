@@ -6,7 +6,7 @@
  */
 
 #include "foundation/cfg_reader.h"
-#include "repository/registry2.h"
+#include "foundation/registry/registry2.h"
 
 #include "robot/leg/data_leg.h"
 
@@ -16,7 +16,7 @@ namespace agile_control {
 DataLeg::DataLeg()
   : Label("robot-leg"), leg_type_(LegType::UNKNOWN_LEG),
     foot_force_(nullptr), jnt_mode_(nullptr),
-    jnt_cmd_(nullptr), jnt_cmd_flag_(nullptr) {
+    jnt_cmd_(nullptr)/*, jnt_cmd_flag_(nullptr)*/ {
   for (auto& c : jnt_pos_)
     c = nullptr;
 }
@@ -60,7 +60,7 @@ bool DataLeg::auto_init() {
 
   ///! Assert the all of resource is a valid pointer, Or your should not
   ///! launch the mii-control.
-  assert(/*jnt_mode_ && */jnt_cmd_ && jnt_cmd_flag_ && foot_force_
+  assert(/*jnt_mode_ && */jnt_cmd_ && /*jnt_cmd_flag_ &&*/ foot_force_
       && jnt_pos_[JntDataType::POS]);
   return true;
 }
@@ -70,6 +70,9 @@ DataLeg::~DataLeg() {
 }
 
 LegType DataLeg::leg_type() { return leg_type_; }
+
+double DataLeg::joint_position_max(JntType jnt) const { return jnt_pos_max_[jnt]; }
+double DataLeg::joint_position_min(JntType jnt) const { return jnt_pos_min_[jnt]; }
 
 double         DataLeg::foot_force()               const { return *foot_force_; }
 const double&  DataLeg::foot_force_const_ref()     const { return *foot_force_; }
@@ -104,14 +107,14 @@ void DataLeg::joint_command(JntType jnt, double val) {
   else
     (*jnt_cmd_)(jnt) = val;
 
-  jnt_cmd_flag_->store(true);
+  // jnt_cmd_flag_->store(true);
 }
 
 void DataLeg::joint_command(const EVX& vals) {
   if (JntType::N_JNTS != vals.size()) return;
 
   *jnt_cmd_ = vals;
-  jnt_cmd_flag_->store(true);
+  // jnt_cmd_flag_->store(true);
 }
 
 void DataLeg::joint_mode(JntCmdType mode) {

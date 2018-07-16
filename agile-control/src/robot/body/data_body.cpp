@@ -5,9 +5,9 @@
  *      Author: bibei
  */
 
-#include <robot/body/data_body.h>
-#include <foundation/cfg_reader.h>
-#include <repository/registry2.h>
+#include "robot/body/data_body.h"
+#include "foundation/cfg_reader.h"
+#include "foundation/registry/registry2.h"
 
 namespace agile_control {
 

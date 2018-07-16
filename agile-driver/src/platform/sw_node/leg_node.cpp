@@ -8,10 +8,10 @@
 #include "foundation/utf.h"
 #include "foundation/cfg_reader.h"
 
-#include "repository/resource/force_sensor.h"
-#include "repository/resource/joint_manager.h"
-#include "repository/resource/joint.h"
-#include "repository/resource/motor.h"
+#include "repository/force_sensor.h"
+#include "repository/joint_manager.h"
+#include "repository/joint.h"
+#include "repository/motor.h"
 
 #include "platform/proto/agile_proto.h"
 #include "platform/sw_node/leg_node.h"

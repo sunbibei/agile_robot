@@ -1,0 +1,17 @@
+agile_control:
+  prefix:     ctrl
+  # the path of configure and library: $(rosparam ${prefix})/${file}
+  configure:
+    prefix: apps_root
+    file:
+      - config/leg_gait.cfg
+
+  library:
+    prefix: libs_root
+    file:
+      - libagile_control_repository.so
+
+  debug:        true
+  gait_topic:   gait_manager
+  
+

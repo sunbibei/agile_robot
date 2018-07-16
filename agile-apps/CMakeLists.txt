@@ -6,9 +6,8 @@ add_definitions(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   roscpp
+  rospack
 
-  controller_manager
-  hardware_interface
   agile_driver
   agile_control
   agile_foundation
@@ -41,7 +40,7 @@ set(SRC_ROOT            src)
 
 set(SRC_APP             ${SRC_ROOT}/apps)
 
-set(ENTRY_FILES         ${SRC_ROOT}/main.cpp
+set(ENTRY_FILES         ${SRC_ROOT}/entry.cpp
 
 )
 
@@ -56,6 +55,11 @@ set(CONTROL_FILES       ${SRC_ROOT}/control.cpp
 )
 
 ## Declare a C++ executable
+# add_executable(${PROJECT_NAME}_old
+#   ${SRC_ROOT}/main.cpp
+#   ${SRC_APP}/ros_wrapper.cpp
+# )
+
 add_executable(${PROJECT_NAME}
   ${ENTRY_FILES}
 )
@@ -68,9 +72,18 @@ add_executable(${PROJECT_NAME}_control
   ${CONTROL_FILES}
 )
 
+add_executable(ipc_clear
+  ${SRC_ROOT}/ipc_clear.cpp
+)
+
+add_executable(registry_monitor
+  ${SRC_ROOT}/registry_monitor.cpp
+)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  agile_foundation
 )
 
 target_link_libraries(${PROJECT_NAME}_robot
@@ -83,6 +96,16 @@ target_link_libraries(${PROJECT_NAME}_control
   agile_control_framwork
 )
 
+target_link_libraries(ipc_clear
+  ${catkin_LIBRARIES}
+  agile_foundation
+)
+
+target_link_libraries(registry_monitor
+  ${catkin_LIBRARIES}
+  agile_foundation
+)
+
 #############
 ## Install ##
 #############
@@ -90,7 +113,8 @@ target_link_libraries(${PROJECT_NAME}_control
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS # ${PROJECT_NAME}_old
+                ${PROJECT_NAME}
                 ${PROJECT_NAME}_robot
                 ${PROJECT_NAME}_control
                 # ${PROJECT_NAME}_test_lib

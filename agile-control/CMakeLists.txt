@@ -6,7 +6,6 @@ add_definitions(-std=c++11)
 find_package(catkin REQUIRED
   COMPONENTS
   cmake_modules
-  agile_driver
   agile_foundation
 )
 
@@ -16,7 +15,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES
-  CATKIN_DEPENDS agile_driver agile_foundation
+  CATKIN_DEPENDS agile_foundation
   DEPENDS
 )
 
@@ -82,7 +81,7 @@ add_library(${PROJECT_NAME}_framwork
 target_link_libraries(${PROJECT_NAME}_repository
   ${catkin_LIBRARIES}
   agile_foundation
-  agile_foundation_registry
+  agile_foundation_toolbox
 )
 
 target_link_libraries(${PROJECT_NAME}_framwork
@@ -118,15 +117,15 @@ endforeach(dir)
 #############
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}_test
-  ${TEST_FILES}
-)
+# catkin_add_gtest(${PROJECT_NAME}_test
+#   ${TEST_FILES}
+# )
 
-if(TARGET ${PROJECT_NAME}-test)
-  target_link_libraries(${PROJECT_NAME}_test
-    ${PROJECT_NAME}_repository
-  )
-endif()
+# if(TARGET ${PROJECT_NAME}-test)
+#   target_link_libraries(${PROJECT_NAME}_test
+#     ${PROJECT_NAME}_repository
+#   )
+# endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

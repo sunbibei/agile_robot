@@ -10,7 +10,7 @@
   <!-- include file="$(find agile_gazebo)/launch/upload_robot.urdf.launch" / -->
 
   <!-- Load hardware interface -->
-  <node name="leg_bringup" pkg="agile_apps" type="agile_apps" output="screen">
+  <node name="leg_bringup" pkg="agile_apps" type="agile_apps_old" output="screen">
     <param name="prefix"    value="leg" />
     <param if="$(arg sim)"     name="configure" value="$(find agile_apps)/config/leg_robot_sim.cfg" />
     <param unless="$(arg sim)" name="configure" value="$(find agile_apps)/config/leg_robot.cfg" />
@@ -29,4 +29,3 @@
   <!-- node name="agile_robot_state_puber" pkg="robot_state_publisher" type="robot_state_publisher" /-->
 
 </launch>
-

@@ -10,7 +10,17 @@
 #include <foundation/label.h>
 #endif
 
+#include <thread>
+#include <chrono>
+#include <sys/wait.h>
 #include <apps/robot_wrapper.h>
+
+static bool is_alive = true;
+
+void termial(int signo) {
+  LOG_WARNING << "Ready to shutdown the agile-robot...";
+  is_alive = false;
+}
 
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging("agile_robot");
@@ -26,8 +36,17 @@ int main(int argc, char* argv[]) {
   ros::AsyncSpinner spinner(3);
   spinner.start();
 
+  // signal(SIGINT, termial);
+
   // Waiting for shutdown by user
   ros::waitForShutdown();
+
+//  LOG_INFO << "waiting for the shutdown by user... ...";
+//  TICKER_INIT(std::chrono::milliseconds);
+//  while (is_alive) {
+//    ;
+//    TICKER_CONTROL(500, std::chrono::milliseconds);
+//  }
 
   RobotWrapper::destroy_instance();
 #ifdef  CHECK_INST_

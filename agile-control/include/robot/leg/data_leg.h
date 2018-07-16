@@ -25,6 +25,9 @@ public:
 public:
   LegType leg_type();
 
+  double joint_position_max(JntType) const;
+  double joint_position_min(JntType) const;
+
   double         foot_force()               const;
   const double&  foot_force_const_ref()     const;
   const double*  foot_force_const_pointer() const;
@@ -77,7 +80,12 @@ protected:
   ///! The vector of joint command.
   JntCmdType*       jnt_mode_;
   Eigen::VectorXd*  jnt_cmd_;
-  std::atomic_bool* jnt_cmd_flag_;
+
+  ///! deleted!
+  // std::atomic_bool* jnt_cmd_flag_;
+
+  double            jnt_pos_min_[JntType::N_JNTS];
+  double            jnt_pos_max_[JntType::N_JNTS];
 };
 
 } /* namespace qr_control */

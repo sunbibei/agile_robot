@@ -10,10 +10,10 @@
 #include "foundation/cfg_reader.h"
 #include "foundation/utf.h"
 
-#include "repository/resource/joint_manager.h"
-#include "repository/resource/joint.h"
-#include "repository/resource/motor.h"
-#include "repository/registry2.h"
+#include "repository/joint_manager.h"
+#include "repository/joint.h"
+#include "repository/motor.h"
+#include "foundation/registry/registry2.h"
 
 #include "toolbox/time_control.h"
 #include "toolbox/pid.h"

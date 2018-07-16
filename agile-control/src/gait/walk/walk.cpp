@@ -17,7 +17,7 @@
 #include <robot/agile_robot.h>
 
 #ifdef DIS_JNT_LIMIT
-#include <repository/resource/joint_manager.h>
+#include <repository/joint_manager.h>
 #endif
 
 #include <limits>

@@ -1,0 +1,17 @@
+agile_robot:
+  prefix:     leg
+  # the path of configure and library: $(rosparam ${prefix})/${file}
+  configure:
+    prefix: apps_root
+    file:
+      - config/leg_robot.cfg
+
+  library:
+    prefix: libs_root
+    file:
+      - libagile_driver_sys_platform.so
+
+  debug:        true
+  rt_frequency: 200
+  
+
