@@ -248,7 +248,7 @@ public:
     }
 
     return ((e_buf_.size() >= lapse_)
-        && (std::abs(e_buf_.back()/e_buf_.size()) <= epsilon_));
+        && (std::abs((double)e_buf_.back()/e_buf_.size()) <= epsilon_));
   }
 
 };

@@ -7,6 +7,10 @@
 
 #include "repository/resource/joint_manager.h"
 
+#ifndef NAN
+#define NAN  (0.0/0.0)
+#endif
+
 namespace agile_robot {
 
 SINGLETON_IMPL(JointManager)
