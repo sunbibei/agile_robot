@@ -76,8 +76,9 @@ set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/log_robot.cpp
                         ${SRC_SYS_PLATFORM}/propagate/leg_can.cpp
                         ${SRC_SYS_PLATFORM}/propagate/gazebo_propagate.cpp
                         ${SRC_SYS_PLATFORM}/propagate/fake_can.cpp
+)
 
-                        ${SRC_SYS_REP}/imu_sensor.cpp
+set(SYS_REP_FILES       ${SRC_SYS_REP}/imu_sensor.cpp
                         ${SRC_SYS_REP}/joint.cpp
                         ${SRC_SYS_REP}/motor.cpp
                         ${SRC_SYS_REP}/power.cpp
