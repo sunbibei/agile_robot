@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Load the URDF/Xacro model of our robot -->
+  <!-- include file="$(find agile_gazebo)/launch/upload_robot.urdf.launch" / -->
+
+  <!-- FOR setup the env -->
+  <param name="pkg_name"       value="agile_apps" />
+
+  <!-- Launch the system entry -->
+  <node name="leg_entry" pkg="agile_apps" type="agile_apps" output="screen">
+    <param name="prefix"     value="apps"                                     />
+    <param name="configure"  value="$(find agile_apps)/config/leg_agile_apps.cfg" />
+  </node>
+
+  <!-- Convert joint states to /tf tranforms -->
+  <!-- node name="agile_robot_state_puber" pkg="robot_state_publisher" type="robot_state_publisher" /-->
+
+</launch>
+
