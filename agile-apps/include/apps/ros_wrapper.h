@@ -18,7 +18,7 @@
 
 #include "mii_robot.h"
 ///! qr-next-control
-#include <mii_control.h>
+#include "mii_control.h"
 
 #define DEBUG_TOPIC
 #ifdef DEBUG_TOPIC
@@ -27,22 +27,27 @@
 
 using namespace agile_robot;
 
-class RosWrapper : public MiiRobot {
-SINGLETON_DECLARE(RosWrapper, const std::string&)
+using agile_control::MiiControl;
 
-public:
+class RosWrapper : public MiiRobot, public MiiControl {
+SINGLETON_DECLARE(RosWrapper, const std::string&, const std::string&)
+
+protected:
+  virtual bool init() override;
   virtual void create_system_instance() override;
-  virtual bool start() override;
-  void halt();
 
 private:
-  ///! Initialize the framework of control, If use_ros_control_ is true,
-  ///!   Initialize the ros-control, or mii-control.
-  void initControl();
+  ///! The helper methods.
+  void sys_inst_robot(const std::string&);
+  void sys_inst_control(const std::string&);
+
   ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
   void publishRTMsg();
+  /*!
+   * @brief The callback for gait_topic.
+   */
   void gaitControlCb(const std_msgs::String::ConstPtr&);
-  ros::Subscriber gait_ctrl_sub_;
+
   // Just for test
 #ifdef DEBUG_TOPIC
   void cbForDebug(const std_msgs::Float32ConstPtr&);
@@ -52,13 +57,14 @@ private:
 private:
   // The ROS handle
   ros::NodeHandle nh_;
-  std::string       root_tag_;
+  std::string     robot_root_;
+  std::string     control_root_;
 
-  bool alive_;
+  bool            alive_;
+  ros::Subscriber gait_ctrl_sub_;
+
   // About ROS control
   std::chrono::milliseconds  rt_duration_;
-  // The instance of mii-control
-  agile_control::MiiControl* mii_control_;
 };
 
 #endif /* INCLUDE_QR_ROS_WRAPPER_H_ */

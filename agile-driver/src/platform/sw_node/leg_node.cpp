@@ -229,5 +229,6 @@ void LegNode::__parse_heart_beat_2(const unsigned char* __p) {
 
 } /* namespace middleware */
 
-#include <class_loader/class_loader_register_macro.h>
+// #include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(agile_robot::LegNode, Label)

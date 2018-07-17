@@ -46,8 +46,6 @@ public:
   template<typename _Func, typename... _BoundArgs>
   void add(const std::string& __n, _Func&& __f, _BoundArgs&&... __args);
 
-  bool init();
-
   bool start();
   bool start(const std::string& __n);
   void stop();

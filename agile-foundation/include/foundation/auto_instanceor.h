@@ -18,7 +18,8 @@
 // namespace middleware {
 
 class AutoInstanceor {
-  SINGLETON_DECLARE(AutoInstanceor, const std::string&)
+  // SINGLETON_DECLARE(AutoInstanceor, const std::string&)
+  SINGLETON_DECLARE(AutoInstanceor)
 
 public:
   /*template<class _Base>

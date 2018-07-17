@@ -804,5 +804,6 @@ void Creep::prog_eef_traj(const Eigen::Vector3d& _next_fpt) {
 
 } /* namespace qr_control */
 
-#include <class_loader/class_loader_register_macro.h>
+// #include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(agile_control::Creep, Label)

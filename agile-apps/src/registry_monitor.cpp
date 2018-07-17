@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
   signal(SIGINT, termial);
 
   auto monitor = new Registry2Monitor(Registry2::instance());
-  LOG_ERROR << "Ready to monitoring the Registry2...\n";
+  LOG_WARNING << "Ready to monitoring the Registry2...\n";
   TICKER_INIT(std::chrono::seconds);
   while (is_alive) {
     monitor->print();

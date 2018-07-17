@@ -669,5 +669,6 @@ void SlTest::error_estimate() {
 
 } /* namespace gaile_control */
 
-#include <class_loader/class_loader_register_macro.h>
+// #include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(agile_control::SlTest, Label)

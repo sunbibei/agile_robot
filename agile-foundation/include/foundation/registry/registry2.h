@@ -5,8 +5,8 @@
  *      Author: bibei
  */
 
-#ifndef INCLUDE_REPOSITORY_REGISTRY_H_
-#define INCLUDE_REPOSITORY_REGISTRY_H_
+#ifndef INCLUDE_REPOSITORY_REGISTRY2_H_
+#define INCLUDE_REPOSITORY_REGISTRY2_H_
 
 #include "foundation/utf.h"
 #include "foundation/ipc/shared_mem.h"

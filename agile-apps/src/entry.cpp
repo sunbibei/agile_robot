@@ -34,10 +34,12 @@ void setup_env() {
     printf("\033[0;31mNo parameter with named configure or prefix!\033[0m\n");
     exit(-1);
   }
-  if (nullptr == MiiCfgReader::create_instance(cfg)) {
+  if (nullptr == MiiCfgReader::create_instance()) {
     printf("\033[0;31mCreate the CfgReader fail!\033[0m\n");
     exit(-1);
   }
+  MiiCfgReader::instance()->add_config(cfg);
+
   std::string pkg_name;
   if (!ros::param::get("pkg_name", pkg_name)) {
     printf("\033[0;31mNo such parameters with named pkg_name, using the default"

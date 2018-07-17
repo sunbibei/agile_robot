@@ -25,6 +25,7 @@ void __auto_inst(const std::string& _p, const std::string& _type) {
 MiiControl::MiiControl(const std::string& _prefix)
   : prefix_tag_(_prefix), gait_manager_(nullptr),
     alive_(true), tick_interval_(1) {
+  ; // Nothing to do here.
 }
 
 MiiControl::~MiiControl() {
@@ -37,13 +38,11 @@ MiiControl::~MiiControl() {
 }
 
 bool MiiControl::init() {
-  create_system_instance();
-
   auto cfg = MiiCfgReader::instance();
-  if (nullptr == cfg) {
-    LOG_FATAL << "The MiiCfgReader::create_instance(MiiStringConstRef) "
+  if (nullptr == cfg)
+    LOG_FATAL << "The MiiCfgReader::create_instance(const std::string&) "
         << "method must to be called by subclass before MiiRobot::init()";
-  }
+
   double hz = 1000;
   cfg->get_value(prefix_tag_, "frequency", hz);
   tick_interval_ = std::chrono::milliseconds(int(1000/hz));
@@ -60,16 +59,19 @@ bool MiiControl::init() {
   GaitManager::instance()->init();
 
   std::string act_gait;
-   if (cfg->get_value(Label::make_label(prefix_tag_, "gait"), "activate", act_gait))
-     activate(act_gait);
+  if (cfg->get_value(Label::make_label(prefix_tag_, "gait"), "activate", act_gait))
+    activate(act_gait);
 
   GaitManager::instance()->print();
+
+  // registry the thread
+  ThreadPool::instance()->add("mii-control", &MiiControl::tick, this);
   return true;
 }
 
-bool MiiControl::start() {
-  return ThreadPool::instance()->start();
-}
+//bool MiiControl::run() {
+//  return ThreadPool::instance()->start();
+//}
 
 void MiiControl::activate(const std::string& _n) {
   if (GaitManager::instance()->query(_n) || 0 == _n.compare("null"))

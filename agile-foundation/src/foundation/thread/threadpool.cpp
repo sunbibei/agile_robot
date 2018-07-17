@@ -56,10 +56,6 @@ void ThreadPool::__internal_thread_task(__PrivateThreadVar* var) {
   LOG_DEBUG << "The thread has  exited -- " << var->thread_name_;
 }
 
-bool ThreadPool::init() {
-  return true;
-}
-
 bool ThreadPool::start() {
   bool ret = true;
   LOG_DEBUG << "The size of threads: " << thread_vars_.size();
@@ -78,15 +74,16 @@ bool ThreadPool::start(const std::string& __n) {
     return false;
   }
   auto var = iter->second;
-  if ((nullptr == var) || (0 != __n.compare(var->thread_name_))
-      || (nullptr != var->thread_handle_) || (var->thread_alive_)) {
-    LOG_WARNING << "The " << __n << " thread launchs fail, something is wrong!"
+  if ((nullptr == var) || (0 != __n.compare(var->thread_name_))) {
+    LOG_WARNING << "The " << __n << " thread launch fail, something is wrong!"
         << ((((nullptr == var) || (0 != __n.compare(var->thread_name_)))) ?
-            ("Register Wrong!")
-            : (((nullptr != var->thread_handle_) || (var->thread_alive_)) ?
-                ("Thread has launched ago!")
-                : ("What fucking wrong!")));
+            ("Register Wrong!") : ("What fucking wrong!"));
     return false;
+  }
+
+  if ((nullptr != var->thread_handle_) && (var->thread_alive_)) {
+    // This thread has launched ago.
+    return true;
   }
 
   // LOG_DEBUG << "This thread is starting -- " << __n;

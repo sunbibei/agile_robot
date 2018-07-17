@@ -10,8 +10,6 @@
 #include <foundation/label.h>
 #endif
 
-#include <thread>
-#include <chrono>
 #include <sys/wait.h>
 #include <apps/robot_wrapper.h>
 
@@ -29,29 +27,25 @@ int main(int argc, char* argv[]) {
 
   ros::init(argc, argv, "agile_robot");
 
-  if (nullptr == RobotWrapper::create_instance("leg"))
-    LOG_FATAL << "Can't get the instance of RosWrapper!";
-  RobotWrapper::instance()->start();
+  MiiApp* application = RobotWrapper::create_instance("leg");
 
-  ros::AsyncSpinner spinner(3);
-  spinner.start();
+  if (nullptr == application)
+    LOG_FATAL << "Can't get the instance of RobotWrapper!";
 
-  // signal(SIGINT, termial);
+  application->start();
 
   // Waiting for shutdown by user
+  // signal(SIGINT, termial);
+  ros::AsyncSpinner spinner(3);
+  spinner.start();
   ros::waitForShutdown();
 
-//  LOG_INFO << "waiting for the shutdown by user... ...";
-//  TICKER_INIT(std::chrono::milliseconds);
-//  while (is_alive) {
-//    ;
-//    TICKER_CONTROL(500, std::chrono::milliseconds);
-//  }
-
   RobotWrapper::destroy_instance();
+
 #ifdef  CHECK_INST_
   Label::printfEveryInstance();
 #endif
+
   LOG_INFO << "The shutdown of agile-apps has finished... ...";
   google::ShutdownGoogleLogging();
   return 0;

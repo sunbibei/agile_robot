@@ -8,7 +8,7 @@
   <param name="pkg_name"       value="agile_apps" />
 
   <!-- Launch the system entry -->
-  <node name="leg_entry" pkg="agile_apps" type="agile_apps" output="screen">
+  <node name="leg_launcher" pkg="agile_apps" type="mii_launcher" output="screen">
     <param name="prefix"     value="apps"                                     />
     <param name="configure"  value="$(find agile_apps)/config/leg_agile_apps.cfg" />
   </node>

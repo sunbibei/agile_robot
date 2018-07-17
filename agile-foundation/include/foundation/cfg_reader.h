@@ -21,7 +21,7 @@
 // namespace middleware {
 
 class MiiCfgReader final {
-  SINGLETON_DECLARE(MiiCfgReader, const std::string&)
+  SINGLETON_DECLARE(MiiCfgReader)
 
 public:
 

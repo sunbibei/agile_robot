@@ -22,15 +22,19 @@ void __auto_inst(const std::string& __p, const std::string& __type) {
 
 void create_system_instance() {
   // Just for test
-  auto auto_inst = AutoInstanceor::create_instance("/home/bibei/Workspaces/qr_ws/devel/lib/libqr_control_repository.so");
+  auto auto_inst = AutoInstanceor::create_instance();
   if (nullptr == auto_inst) {
     LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
   }
-  auto cfg = MiiCfgReader::create_instance("/home/bibei/Workspaces/qr_ws/src/qr-control/config/control_config.xml");
+  auto cfg = MiiCfgReader::create_instance();
   if (!cfg) {
     LOG_FATAL << "The MiiCfgReader::create_instance(MiiStringConstRef) "
         << "method must to be called by subclass before GaitManager::init()";
   }
+
+  auto_inst->add_library("/home/bibei/Workspaces/qr_ws/devel/lib/libqr_control_repository.so");
+  cfg->add_config("/home/bibei/Workspaces/qr_ws/src/qr-control/config/control_config.xml");
+
   // All of the objects mark with "auto_inst" in the configure file
   // will be instanced here.
   LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";

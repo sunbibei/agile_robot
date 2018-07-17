@@ -241,5 +241,6 @@ bool MotorNode0::__fill_pos_cmd(std::vector<Packet>& pkts) {
 
 } /* namespace agile_robot */
 
-#include <class_loader/class_loader_register_macro.h>
+// #include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(agile_robot::MotorNode0, Label)

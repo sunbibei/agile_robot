@@ -23,23 +23,25 @@
 SINGLETON_IMPL_NO_CREATE(RobotWrapper)
 
 RobotWrapper* RobotWrapper::create_instance(const std::string& __tag) {
-  if (nullptr != instance_) {
+  if (nullptr != s_inst_) {
     LOG_WARNING << "This method 'create_instance()' is called twice.";
   } else {
-    instance_ = new RobotWrapper(Label::make_label(__tag, "wrapper"));
+    s_inst_ = new RobotWrapper(Label::make_label(__tag, "wrapper"));
   }
-  return instance_;
+  return s_inst_;
 }
 
 RobotWrapper::RobotWrapper(const std::string& __tag)
   : MiiRobot(Label::make_label(__tag, "robot")), nh_("agile_robot"),
-    root_tag_(__tag), alive_(true),
-    rt_duration_(1000/50) {
+    root_tag_(__tag), alive_(true), rt_duration_(1000/50) {
   ; // Nothing to do here, all of variables initialize in the method @start()
 }
 
 RobotWrapper::~RobotWrapper() {
-  halt();
+  alive_ = false;
+  // agile_control::MiiControl::instance()->destroy_instance();
+  // AutoInstanceor::destroy_instance();
+  MiiCfgReader::destroy_instance();
 }
 
 void RobotWrapper::create_system_instance() {
@@ -52,9 +54,9 @@ void RobotWrapper::create_system_instance() {
   }
 
   ros::param::get(prefix, prefix);
-  if (nullptr == MiiCfgReader::create_instance(prefix + "/" + cfgs[0]))
+  if (nullptr == MiiCfgReader::create_instance())
     LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
-  for (int i = 1; i < cfgs.size(); ++i)
+  for (size_t i = 0; i < cfgs.size(); ++i)
     MiiCfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
 
   if (!nh_.getParam("library/prefix", prefix)
@@ -64,19 +66,18 @@ void RobotWrapper::create_system_instance() {
   }
 
   ros::param::get(prefix, prefix);
-  if (nullptr == AutoInstanceor::create_instance(prefix + "/" + cfgs[0]))
+  if (nullptr == AutoInstanceor::create_instance())
     LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
-  for (int i = 1; i < cfgs.size(); ++i)
+  for (size_t i = 0; i < cfgs.size(); ++i)
     AutoInstanceor::instance()->add_library(prefix + "/" + cfgs[i]);
 
   MiiRobot::create_system_instance();
 }
 
-bool RobotWrapper::start() {
+bool RobotWrapper::init() {
   bool debug = false;
   nh_.getParam("debug", debug);
-  google::SetStderrLogging(debug ?
-      google::GLOG_INFO : google::GLOG_WARNING);
+  google::SetStderrLogging(debug ? google::GLOG_INFO : google::GLOG_WARNING);
 
   if (!MiiRobot::init())
     LOG_FATAL << "Robot initializes fail!";
@@ -88,6 +89,7 @@ bool RobotWrapper::start() {
   if (frequency > 0)
     rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 
+  // registry the thread
   ThreadPool::instance()->add("rt-pub", &RobotWrapper::publishRTMsg, this);
 
 // For debug
@@ -96,14 +98,7 @@ bool RobotWrapper::start() {
       &RobotWrapper::cbForDebug, this);
 #endif
 
-  return MiiRobot::start();
-}
-
-void RobotWrapper::halt() {
-  alive_ = false;
-  // agile_control::MiiControl::instance()->destroy_instance();
-  // AutoInstanceor::destroy_instance();
-  MiiCfgReader::destroy_instance();
+  return true;
 }
 
 inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {

@@ -21,15 +21,15 @@ using namespace agile_control;
 class ControlWrapper: public MiiControl {
   SINGLETON_DECLARE(ControlWrapper, const std::string&)
 
-public:
-  virtual bool start() override;
-  void halt();
-
-private:
+protected:
+  virtual bool init() override;
   virtual void create_system_instance() override;
 
+  /*!
+   * @brief The callback for gait_topic.
+   */
   void gaitControlCb(const std_msgs::String::ConstPtr&);
-  ros::Subscriber gait_ctrl_sub_;
+
   // Just for test
 #ifdef DEBUG_TOPIC
   void cbForDebug(const std_msgs::Float32ConstPtr&);
@@ -40,7 +40,7 @@ private:
   // The ROS handle
   ros::NodeHandle nh_;
   std::string     root_tag_;
-
+  ros::Subscriber gait_ctrl_sub_;
   bool alive_;
 };
 

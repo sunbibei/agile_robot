@@ -1315,5 +1315,6 @@ Eigen::Vector2d __cross_point(
 
 } /* namespace qr_control */
 
-#include <class_loader/class_loader_register_macro.h>
+// #include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(agile_control::Walk, Label)

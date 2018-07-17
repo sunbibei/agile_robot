@@ -41,7 +41,6 @@ set(SRC_ROOT            src)
 set(SRC_APP             ${SRC_ROOT}/apps)
 
 set(ENTRY_FILES         ${SRC_ROOT}/entry.cpp
-
 )
 
 # Files define.
@@ -55,20 +54,20 @@ set(CONTROL_FILES       ${SRC_ROOT}/control.cpp
 )
 
 ## Declare a C++ executable
-# add_executable(${PROJECT_NAME}_old
-#   ${SRC_ROOT}/main.cpp
-#   ${SRC_APP}/ros_wrapper.cpp
-# )
+add_executable(mii_apps
+  ${SRC_ROOT}/main.cpp
+  ${SRC_APP}/ros_wrapper.cpp
+)
 
-add_executable(${PROJECT_NAME}
+add_executable(mii_launcher
   ${ENTRY_FILES}
 )
 
-add_executable(${PROJECT_NAME}_robot
+add_executable(mii_robot
   ${ROBOT_FILES}
 )
 
-add_executable(${PROJECT_NAME}_control
+add_executable(mii_control
   ${CONTROL_FILES}
 )
 
@@ -81,17 +80,24 @@ add_executable(registry_monitor
 )
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(mii_apps
+  ${catkin_LIBRARIES}
+  agile_foundation
+  agile_driver_sys_robot
+  agile_control_framwork
+)
+
+target_link_libraries(mii_launcher
   ${catkin_LIBRARIES}
   agile_foundation
 )
 
-target_link_libraries(${PROJECT_NAME}_robot
+target_link_libraries(mii_robot
   ${catkin_LIBRARIES}
   agile_driver_sys_robot
 )
 
-target_link_libraries(${PROJECT_NAME}_control
+target_link_libraries(mii_control
   ${catkin_LIBRARIES}
   agile_control_framwork
 )
@@ -113,10 +119,10 @@ target_link_libraries(registry_monitor
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS # ${PROJECT_NAME}_old
-                ${PROJECT_NAME}
-                ${PROJECT_NAME}_robot
-                ${PROJECT_NAME}_control
+install(TARGETS mii_apps
+                mii_launcher
+                mii_robot
+                mii_control
                 # ${PROJECT_NAME}_test_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

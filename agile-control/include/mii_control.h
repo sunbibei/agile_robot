@@ -9,23 +9,13 @@
 #define INCLUDE_MII_CONTROL_H_
 
 #include <chrono>
-#include <foundation/utf.h>
+#include "foundation/utf.h"
+#include "foundation/app.h"
 
 namespace agile_control {
 
-class MiiControl {
+class MiiControl : virtual public MiiApp {
 public:
-  MiiControl(const std::string&);
-  virtual ~MiiControl();
-
-public:
-  /*!
-   * @brief This method will completed the initialization for MII Control.
-   */
-  virtual bool init();
-
-  virtual bool start();
-
   /*!
    * @brief Switch to the different gait mode. This action is sync, the method
    *        is not change the gait right now, but add the gait mode into the
@@ -35,21 +25,41 @@ public:
   virtual void activate(const std::string& _gn = "null");
 
 protected:
+  /**
+   * @brief Constructed function.
+   * @param _tag        Every necessary parameters will be found in this __tag
+   */
+  MiiControl(const std::string& __tag);
+  virtual bool init() override;
+  /**
+   * @brief The pure virtual function is asked to implemented by subclass.
+   *        These task should be completed in the function what include but not
+   *        limited to: instantiate JointManger, PropagateManager, HwManager, and
+   *        especially MiiCfgReader. Throwing a fatal exception if something is wrong.
+   */
+  virtual void create_system_instance() override;
+
+  /*!
+   * @brief The running stage, ONLY this method, returned immediately.
+   */
+  // using the default implemented.
+  // virtual bool run() override;
+
+  /*!
+   * @brief The destroying stage
+   */
+  virtual ~MiiControl();
+
   /*!
    * @brief Starting to work
    */
   virtual void tick();
 
-  /*!
-   * @brief The all of singleton has created.
-   */
-  virtual void create_system_instance();
-
 protected:
-  std::string prefix_tag_;
+  std::string        prefix_tag_;
   class GaitManager* gait_manager_;
 
-  bool alive_;
+  bool                      alive_;
   std::chrono::milliseconds tick_interval_;
 
 };

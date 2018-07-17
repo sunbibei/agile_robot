@@ -54,7 +54,7 @@
     protected: \
     TYPE(__VA_ARGS__); \
     virtual ~TYPE(); \
-    static TYPE* instance_; \
+    static TYPE* s_inst_; \
     public: \
     static TYPE* create_instance(__VA_ARGS__); \
     static TYPE* instance(); \
@@ -62,40 +62,40 @@
     private:
 
 #define SINGLETON_IMPL(TYPE) \
-    TYPE* TYPE::instance_ = nullptr; \
+    TYPE* TYPE::s_inst_ = nullptr; \
     TYPE* TYPE::create_instance() { \
-      if (nullptr != instance_) { \
+      if (nullptr != s_inst_) { \
         LOG_WARNING << "This method 'create_instance()' is called twice."; \
       } else { \
-        instance_ = new TYPE(); \
+        s_inst_ = new TYPE(); \
       } \
-      return instance_; \
+      return s_inst_; \
     } \
     TYPE* TYPE::instance() { \
-      if (nullptr == instance_) \
+      if (nullptr == s_inst_) \
         LOG_WARNING << "This method instance() should be called after " \
             << "create_instance()"; \
-      return instance_; \
+      return s_inst_; \
     } \
     void TYPE::destroy_instance() { \
-      if (nullptr != instance_) { \
-        delete instance_; \
-        instance_ = nullptr; \
+      if (nullptr != s_inst_) { \
+        delete s_inst_; \
+        s_inst_ = nullptr; \
       } \
     }
 
 #define SINGLETON_IMPL_NO_CREATE(TYPE) \
-    TYPE* TYPE::instance_ = nullptr; \
+    TYPE* TYPE::s_inst_ = nullptr; \
     TYPE* TYPE::instance() { \
-      if (nullptr == instance_) \
+      if (nullptr == s_inst_) \
         LOG_WARNING << "This method instance() should be called after " \
             << "create_instance()"; \
-      return instance_; \
+      return s_inst_; \
     } \
     void TYPE::destroy_instance() { \
-      if (nullptr != instance_) { \
-        delete instance_; \
-        instance_ = nullptr; \
+      if (nullptr != s_inst_) { \
+        delete s_inst_; \
+        s_inst_ = nullptr; \
       } \
     }
 

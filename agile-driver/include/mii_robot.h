@@ -12,16 +12,12 @@
 #include <vector>
 #include <chrono>
 
+#include "foundation/app.h"
 #include "foundation/utf.h"
 
 namespace agile_robot {
 
-class MiiRobot {
-public:
-  virtual bool init();
-
-  virtual bool start();
-
+class MiiRobot : virtual public MiiApp {
 public:
   /**
    * @brief Instead of the upper methods, you also use the JointManager directly.
@@ -33,27 +29,35 @@ protected:
   /**
    * @brief Constructed function.
    * @param _tag         Every necessary parameters will be found in this __tag
-   * @param _mii_control Is use the Mii Control
    */
   MiiRobot(const std::string& __tag);
-  virtual ~MiiRobot();
-
-protected:
+  virtual bool init() override;
   /**
    * @brief The pure virtual function is asked to implemented by subclass.
    *        These task should be completed in the function what include but not
    *        limited to: instantiate JointManger, PropagateManager, HwManager, and
    *        especially MiiCfgReader. Throwing a fatal exception if something is wrong.
    */
-  virtual void create_system_instance();
+  virtual void create_system_instance() override;
 
+  /*!
+   * @brief The running stage, ONLY this method, returned immediately.
+   */
+  virtual bool run() override;
+
+  /*!
+   * @brief The destroying stage
+   */
+  virtual ~MiiRobot();
+
+protected:
   /**
    * @brief Support the Registry2
    */
   virtual void supportRegistry2();
 
 private:
-  void __reg_resource_and_command(const std::string& _prefix);
+  void __reg_resource_and_command();
 
 protected:
   /**

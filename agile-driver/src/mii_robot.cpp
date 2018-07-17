@@ -14,6 +14,7 @@
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instanceor.h"
 #include "foundation/thread/threadpool.h"
+#include "foundation/registry/registry.h"
 #include "foundation/registry/registry2.h"
 
 #include "platform/master.h"
@@ -47,10 +48,12 @@ void __auto_inst(const std::string& __p, const std::string& __type) {
   if (!AutoInstanceor::instance()->make_instance(__p, __type)) {
     LOG_ERROR << "Create instance(" << __type << " " << __p << ") fail!";
   }
+
+  LOG_INFO << "Create instance(" << __type << " " << __p << ")";
 }
 
 MiiRobot::MiiRobot(const std::string& __tag)
-: prefix_tag_(__tag), jnt_manager_(nullptr), imu_sensor_(nullptr),
+: MiiApp(), prefix_tag_(__tag), jnt_manager_(nullptr), imu_sensor_(nullptr),
   tick_interval_(20), is_alive(true), jnt_reg_res_(nullptr) {
   ;
 }
@@ -78,6 +81,7 @@ MiiRobot::~MiiRobot() {
  * This method creates the part of singleton.
  */
 void MiiRobot::create_system_instance() {
+  // Create the other instance.
   if (nullptr == ThreadPool::create_instance())
     LOG_FATAL << "Create the singleton 'ThreadPool' has failed.";
 
@@ -95,13 +99,10 @@ void MiiRobot::create_system_instance() {
 }
 
 bool MiiRobot::init() {
-  create_system_instance();
-
   auto cfg = MiiCfgReader::instance();
-  if (nullptr == cfg) {
+  if (nullptr == cfg)
     LOG_FATAL << "The MiiCfgReader::create_instance(const std::string&) "
         << "method must to be called by subclass before MiiRobot::init()";
-  }
 
   std::string str;
   cfg->get_value(prefix_tag_, "control_mode", str);
@@ -119,7 +120,6 @@ bool MiiRobot::init() {
     ;
 
   LOG_DEBUG << "The mode of control is '" << str << "'.";
-
   // All of the objects mark with "auto_inst" in the configure file
   // will be instanced here.
   LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";
@@ -128,10 +128,10 @@ bool MiiRobot::init() {
   LOG_DEBUG << "Auto instance has finished. The results list as follow:";
   Label::printfEveryInstance();
 
+  // Now initialize the Master
   Master::instance()->init();
 
   jnt_manager_ = JointManager::instance();
-
   std::vector<std::string> vec_str;
   cfg->get_value_fatal(
       Label::make_label(prefix_tag_, "touchdowns"), "labels", vec_str);
@@ -149,28 +149,32 @@ bool MiiRobot::init() {
   cfg->get_value(Label::make_label(prefix_tag_, "imu"), "labels", imu_name);
   imu_sensor_  = Label::getHardwareByName<ImuSensor>(imu_name);
 
-  __reg_resource_and_command(Label::make_label(prefix_tag_, "registry2"));
+  __reg_resource_and_command();
   Registry2::instance()->print();
   double frequency = 1000;
   cfg->get_value(prefix_tag_, "frequency", frequency);
   tick_interval_ = std::chrono::microseconds((int)(1000000/frequency));
+
+  // registry the thread.
   ThreadPool::instance()->add("support-registry2", &MiiRobot::supportRegistry2, this);
   return true;
 }
 
-void MiiRobot::__reg_resource_and_command(const std::string& _prefix) {
-  auto reg = Registry2::instance();
-  auto cfg = MiiCfgReader::instance();
-  int count = 0;
+void MiiRobot::__reg_resource_and_command() {
+  auto reg    = Registry2::instance();
+  auto cfg    = MiiCfgReader::instance();
+  int count   = 0;
   LegType leg = LegType::UNKNOWN_LEG;
-  std::string _leg_tag = Label::make_label(_prefix, "legs");
+
+  std::string _ptag = Label::make_label(prefix_tag_, "registry2");
+  std::string _ltag = Label::make_label(_ptag, "legs");
   std::string str;
-  cfg->get_value_fatal(_leg_tag, "mode", str);
+  cfg->get_value_fatal(_ltag, "mode", str);
 
   jnt_reg_res_ = new __RegJntRes;
 //  jnt_reg_res_->cmd_mode = jnt_manager_->getJointCommandMode();
 //  REG_COMMAND_NO_FLAG(str, (int*)(&jnt_reg_res_->cmd_mode));
-  std::string _legs_tag = Label::make_label(_leg_tag, "leg_" + std::to_string(count));
+  std::string _legs_tag = Label::make_label(_ltag, "leg_" + std::to_string(count));
   while (cfg->get_value(_legs_tag, "leg", leg)) {
     // publish the data of touchdown
     cfg->get_value_fatal(_legs_tag, "tdlo", str);
@@ -196,7 +200,7 @@ void MiiRobot::__reg_resource_and_command(const std::string& _prefix) {
     reg->subscribe(str, jnt_reg_res_->command[leg]);
 
     // advance the @_legs_tag
-    _legs_tag = Label::make_label(_leg_tag, "leg_" + std::to_string(++count));
+    _legs_tag = Label::make_label(_ltag, "leg_" + std::to_string(++count));
   }
 }
 
@@ -227,12 +231,8 @@ void MiiRobot::supportRegistry2() {
   }
 }
 
-bool MiiRobot::start() {
-  bool ret0 = Master::instance()->run();
-  // LOG_DEBUG << "Master: " << ret0;
-  bool ret1 = ThreadPool::instance()->start();
-  // LOG_DEBUG << "ThreadPool: " << ret1;
-  return (ret0 && ret1);
+bool MiiRobot::run() {
+  return (Master::instance()->run() && MiiApp::run());
 }
 
 ///! These methods has been deleted.

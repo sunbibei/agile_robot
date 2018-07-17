@@ -14,34 +14,34 @@
 SINGLETON_IMPL_NO_CREATE(ControlWrapper)
 
 ControlWrapper* ControlWrapper::create_instance(const std::string& __tag) {
-  if (nullptr != instance_) {
+  if (nullptr != s_inst_) {
     LOG_WARNING << "This method 'create_instance()' is called twice.";
   } else {
-    instance_ = new ControlWrapper(Label::make_label(__tag, "wrapper"));
+    s_inst_ = new ControlWrapper(Label::make_label(__tag, "wrapper"));
   }
-  return instance_;
+  return s_inst_;
 }
 
 ControlWrapper::ControlWrapper(const std::string& _prefix)
-  : MiiControl(Label::make_label(_prefix, "control")), nh_("agile_control"),
+  : MiiControl(Label::make_label(_prefix, "wrapper")), nh_("agile_control"),
     root_tag_(_prefix), alive_(true) {
-  ;
+  ; // Nothing to do here.
 }
 
 ControlWrapper::~ControlWrapper() {
-  halt();
+  alive_ = false;
+  // agile_control::MiiControl::instance()->destroy_instance();
+  // AutoInstanceor::destroy_instance();
+  MiiCfgReader::destroy_instance();
 }
 
-bool ControlWrapper::start() {
+bool ControlWrapper::init() {
   bool debug = false;
   ros::param::get("~debug", debug);
-  google::SetStderrLogging(debug ?
-      google::GLOG_INFO : google::GLOG_WARNING);
+  google::SetStderrLogging(debug ? google::GLOG_INFO : google::GLOG_WARNING);
 
   if (!MiiControl::init())
     LOG_FATAL << "Initialization the 'MiiControl' has failed.";
-
-  ThreadPool::instance()->add("mii-control", &ControlWrapper::tick, this);
 
   std::string str;
   if (!nh_.getParam("gait_topic", str)) {
@@ -59,7 +59,7 @@ bool ControlWrapper::start() {
       &ControlWrapper::cbForDebug, this);
   #endif
 
-  return MiiControl::start();
+  return true;
 }
 
 void ControlWrapper::create_system_instance() {
@@ -72,9 +72,9 @@ void ControlWrapper::create_system_instance() {
   }
 
   ros::param::get(prefix, prefix);
-  if (nullptr == MiiCfgReader::create_instance(prefix + "/" + cfgs[0]))
+  if (nullptr == MiiCfgReader::create_instance())
     LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
-  for (int i = 1; i < cfgs.size(); ++i)
+  for (size_t i = 0; i < cfgs.size(); ++i)
     MiiCfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
 
   if (!nh_.getParam("library/prefix", prefix)
@@ -84,25 +84,17 @@ void ControlWrapper::create_system_instance() {
   }
 
   ros::param::get(prefix, prefix);
-  if (nullptr == AutoInstanceor::create_instance(prefix + "/" + cfgs[0]))
+  if (nullptr == AutoInstanceor::create_instance())
     LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
-  for (int i = 1; i < cfgs.size(); ++i)
+  for (size_t i = 0; i < cfgs.size(); ++i)
     AutoInstanceor::instance()->add_library(prefix + "/" + cfgs[i]);
 
   MiiControl::create_system_instance();
 }
 
-void ControlWrapper::halt() {
-  alive_ = false;
-  // agile_control::MiiControl::instance()->destroy_instance();
-  // AutoInstanceor::destroy_instance();
-  MiiCfgReader::destroy_instance();
-}
-
 void ControlWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
-  if (msg->data.compare("p")) {
+  if (msg->data.compare("NULL") || msg->data.compare("null"))
     activate("null");
-  }
 
   activate(msg->data);
 }

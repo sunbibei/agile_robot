@@ -12,12 +12,11 @@
 #include <foundation/cfg_reader.h>
 #include <foundation/auto_instanceor.h>
 
-class TestMiiRobot : agile_robot::MiiRobot {
+class TestMiiRobot : public agile_robot::MiiRobot {
   SINGLETON_DECLARE(TestMiiRobot, const std::string&)
 
   public:
     virtual void create_system_instance() override;
-    virtual bool start() override;
     void halt();
   private:
     std::string       root_tag_;
@@ -26,12 +25,12 @@ class TestMiiRobot : agile_robot::MiiRobot {
 SINGLETON_IMPL_NO_CREATE(TestMiiRobot)
 
 TestMiiRobot* TestMiiRobot::create_instance(const std::string& __tag) {
-  if (nullptr != instance_) {
+  if (nullptr != s_inst_) {
     LOG_WARNING << "This method 'create_instance()' is called twice.";
   } else {
-    instance_ = new TestMiiRobot(__tag);
+    s_inst_ = new TestMiiRobot(__tag);
   }
-  return instance_;
+  return s_inst_;
 }
 
 TestMiiRobot::TestMiiRobot(const std::string& __tag)
@@ -54,26 +53,22 @@ TestMiiRobot::~TestMiiRobot() {
 }
 
 void TestMiiRobot::create_system_instance() {
-
-  std::string str = "/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/config/robot_config.xml";
-  if (nullptr == MiiCfgReader::create_instance(str))
+  if (nullptr == MiiCfgReader::create_instance())
     LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
 
-  str = "/home/bibei/Workspaces/qr_ws/devel/lib/libqr_driver_sys_platform.so";
-  if (nullptr == AutoInstanceor::create_instance(str))
+  if (nullptr == AutoInstanceor::create_instance())
     LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
+
+  MiiCfgReader::instance()->add_path("/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/config");
+
+  std::string str = "robot_config.xml";
+  MiiCfgReader::instance()->add_config(str);
+
+  str = "/home/bibei/Workspaces/qr_ws/devel/lib/libqr_driver_sys_platform.so";
+  AutoInstanceor::instance()->add_library(str);
 
   // LOG_DEBUG << "==========RosWrapper::create_system_instance==========>>";
   MiiRobot::create_system_instance();
-}
-
-bool TestMiiRobot::start() {
-  if (!init()) LOG_FATAL << "Robot initializes fail!";
-
-  LOG_INFO << "MiiRobot initialization has completed.";
-  // ThreadPool::instance()->add(RT_PUB_THREAD, &RosWrapper::publishRTMsg, this);
-
-  return MiiRobot::start();
 }
 
 int main(int argc, char* argv[]) {

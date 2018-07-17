@@ -99,6 +99,10 @@ add_library(${PROJECT_NAME}_sys_platform
   ${SYS_FLATFORM_FILES}
 )
 
+add_library(${PROJECT_NAME}_repository
+  ${SYS_REP_FILES}
+)
+
 add_library(${PROJECT_NAME}_sys_robot
   ${SYS_ROBOT_FILES}
 )
@@ -113,9 +117,16 @@ target_link_libraries(${PROJECT_NAME}_sys_platform
   # pcanbasic
 )
 
+target_link_libraries(${PROJECT_NAME}_repository
+  ${catkin_LIBRARIES}
+  agile_foundation
+)
+
 target_link_libraries(${PROJECT_NAME}_sys_robot
   ${catkin_LIBRARIES}
-  ${PROJECT_NAME}_sys_platform
+  ${PROJECT_NAME}_repository
+  agile_foundation
+  agile_foundation_toolbox
 )
 
 #############

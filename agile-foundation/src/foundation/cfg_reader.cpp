@@ -188,7 +188,42 @@ TiXmlElement* __findLabel(TiXmlElement* __root, std::string __label) {
   return __root;
 }
 
-SINGLETON_IMPL_NO_CREATE(MiiCfgReader)
+SINGLETON_IMPL(MiiCfgReader)
+
+//MiiCfgReader* MiiCfgReader::create_instance(const std::string& file) {
+//  if (nullptr == s_inst_) {
+//    add_path(".");
+//    s_inst_ = new MiiCfgReader(file);
+//  } else {
+//    LOG_WARNING << "This method 'MiiCfgReader::create_instance' is called twice!";
+//  }
+//
+//  return s_inst_;
+//}
+
+MiiCfgReader::MiiCfgReader(/*const std::string& file*/)
+: cfg_docs_(nullptr), /*cfg_root_(nullptr),*/
+  n_config_(0), N_config_(8) {
+
+  cfg_docs_ = new TiXmlDocument*[N_config_];
+  for (size_t i = 0; i < N_config_; ++i) {
+    cfg_docs_[i] = nullptr;
+  }
+
+  MACRO_CREATE
+  // add_config(file);
+}
+
+MiiCfgReader::~MiiCfgReader() {
+  if (nullptr != cfg_docs_) {
+    for (size_t i = 0; i < N_config_; ++i)
+      if (nullptr != cfg_docs_[i]) delete cfg_docs_[i];
+  delete[] cfg_docs_;
+  cfg_docs_ = nullptr;
+  }
+
+  MACRO_DESTROY
+}
 
 std::vector<std::string> MiiCfgReader::s_cfg_paths_;
 
@@ -237,52 +272,18 @@ bool MiiCfgReader::add_config(const std::string& _f) {
   return true;
 }
 
-MiiCfgReader* MiiCfgReader::create_instance(const std::string& file) {
-  if (nullptr == instance_) {
-    add_path(".");
-    instance_ = new MiiCfgReader(file);
-  } else {
-    LOG_WARNING << "This method 'MiiCfgReader::create_instance' is called twice!";
-  }
-
-  return instance_;
-}
-
-MiiCfgReader::MiiCfgReader(const std::string& file)
-: cfg_docs_(nullptr), /*cfg_root_(nullptr),*/
-  n_config_(0), N_config_(8) {
-
-  cfg_docs_ = new TiXmlDocument*[N_config_];
-  for (size_t i = 0; i < N_config_; ++i) {
-    cfg_docs_[i] = nullptr;
-  }
-
-  MACRO_CREATE
-  add_config(file);
-}
-
-MiiCfgReader::~MiiCfgReader() {
-  if (nullptr != cfg_docs_) {
-    for (size_t i = 0; i < N_config_; ++i)
-      if (nullptr != cfg_docs_[i]) delete cfg_docs_[i];
-  delete[] cfg_docs_;
-  cfg_docs_ = nullptr;
-  }
-
-  MACRO_DESTROY
-}
-
 void MiiCfgReader::regAttrCb(const std::string& attr, Callback cb,
     const std::string& __prefix) {
   for (size_t i = 0; i < n_config_; ++i) {
     auto cfg_root = cfg_docs_[i]->RootElement();
-    if (!__prefix.empty()) {
+    if (!__prefix.empty())
       cfg_root = __findLabel(cfg_root, __prefix);
-    }
+
     if (nullptr == cfg_root) continue;
 
     if (nullptr != cfg_root->Attribute(attr.c_str()))
       cb(Label::null, cfg_root->Attribute(attr.c_str()));
+
     __findAttr(cfg_root, cfg_root->Value(), attr, cb);
   }
 }

@@ -19,21 +19,25 @@ int main(int argc, char* argv[]) {
 
   ros::init(argc, argv, "agile_control");
 
-  if (nullptr == ControlWrapper::create_instance("ctrl"))
-    LOG_FATAL << "Can't get the instance of RosWrapper!";
-  ControlWrapper::instance()->start();
+  MiiApp* application = ControlWrapper::create_instance("ctrl");
 
-  ros::AsyncSpinner spinner(3);
-  spinner.start();
+  if (nullptr == application)
+    LOG_FATAL << "Can't get the instance of ControlWrapper!";
+
+  application->start();
 
   // Waiting for shutdown by user
+  ros::AsyncSpinner spinner(3);
+  spinner.start();
   ros::waitForShutdown();
 
   ControlWrapper::destroy_instance();
+
 #ifdef  CHECK_INST_
   Label::printfEveryInstance();
 #endif
-  LOG_INFO << "The shutdown of agile-apps has finished... ...";
+
+  LOG_INFO << "The shutdown of agile-control has finished... ...";
   google::ShutdownGoogleLogging();
   return 0;
 }

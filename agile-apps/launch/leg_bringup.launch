@@ -1,28 +1,17 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="debug"               default="True"  />
-  <arg name="sim"                 default="False" />
-  <arg name="use_control"         default="False" />
-  <arg name="rt_frequency"        default="100.0" />
-  <arg name="ctrl_loop_frequency" default="100.0" />
-
   <!-- Load the URDF/Xacro model of our robot -->
   <!-- include file="$(find agile_gazebo)/launch/upload_robot.urdf.launch" / -->
 
-  <!-- Load hardware interface -->
-  <node name="leg_bringup" pkg="agile_apps" type="agile_apps_old" output="screen">
-    <param name="prefix"    value="leg" />
-    <param if="$(arg sim)"     name="configure" value="$(find agile_apps)/config/leg_robot_sim.cfg" />
-    <param unless="$(arg sim)" name="configure" value="$(find agile_apps)/config/leg_robot.cfg" />
-    
-    <param name="library"   value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_driver_sys_platform.so"/>
-    <param name="gait_cfg"  value="$(find agile_apps)/config/leg_gait.cfg" />
-    <param name="gait_lib"  value="$(env HOME)/Workspaces/agile_ws/devel/lib/libagile_control_repository.so" />
+  <!-- FOR setup the env -->
+  <param name="pkg_name"       value="agile_apps" />
+  <rosparam command="load" file="$(find agile_apps)/config/yaml/leg_agile_robot.yaml" />
+  <rosparam command="load" file="$(find agile_apps)/config/yaml/leg_agile_control.yaml" />
 
-    <param name="use_control"         type="bool"   value="$(arg use_control)"     />
-    <param name="debug"               type="bool"   value="$(arg debug)"               />
-    <param name="rt_frequency"        type="double" value="$(arg rt_frequency)"        />
-    <param name="ctrl_loop_frequency" type="double" value="$(arg ctrl_loop_frequency)" />
+  <!-- Load hardware interface -->
+  <node name="leg_apps" pkg="agile_apps" type="mii_apps" output="screen">
+    <param name="robot_ns"    value="agile_robot"   />
+    <param name="control_ns"  value="agile_control" />
   </node>
 
   <!-- Convert joint states to /tf tranforms -->

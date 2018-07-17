@@ -9,35 +9,32 @@
 #include "foundation/label.h"
 // Cancel the namespace middleware
 // namespace middleware {
-
-// std::map<std::string, Label::LabelPtr> AutoInstanceor::s_inst_table_;
-SINGLETON_IMPL_NO_CREATE(AutoInstanceor)
-
 void __updateTypeMap(class_loader::ClassLoader* _new_loader, int idx, std::map<std::string, int>& _type_map) {
   auto new_class_list = _new_loader->getAvailableClasses<Label>();
   for (const auto& c : new_class_list)
     _type_map[c] = idx;
 }
 
-AutoInstanceor* AutoInstanceor::create_instance(const std::string& lib) {
-  if (nullptr != instance_) {
-    LOG_WARNING << "Create the AutoInstanceor instance twice!";
-    // std::cout << "Create the AutoInstanceor instance twice!" << std::endl;
-  } else
-    instance_ = new AutoInstanceor(lib);
-  return instance_;
-}
+// std::map<std::string, Label::LabelPtr> AutoInstanceor::s_inst_table_;
+// SINGLETON_IMPL_NO_CREATE(AutoInstanceor)
+SINGLETON_IMPL(AutoInstanceor)
 
-AutoInstanceor::AutoInstanceor(const std::string& lib_path)
+//AutoInstanceor* AutoInstanceor::create_instance(const std::string& lib) {
+//  if (nullptr != s_inst_) {
+//    LOG_WARNING << "Create the AutoInstanceor instance twice!";
+//  } else
+//    s_inst_ = new AutoInstanceor(lib);
+//  return s_inst_;
+//}
+
+AutoInstanceor::AutoInstanceor(/*const std::string& lib_path*/)
   : class_loader_(nullptr), n_library_(0), N_loader_(4) {
   // class_loader_ = new class_loader::MultiLibraryClassLoader(true);
   // class_loader_->loadLibrary(lib_path);
   class_loader_             = new class_loader::ClassLoader*[N_loader_];
   for (size_t i = 0; i < N_loader_; ++i) class_loader_[i] = nullptr;
 
-  class_loader_[n_library_] = new class_loader::ClassLoader(lib_path);
-  __updateTypeMap(class_loader_[n_library_], n_library_, type_map_);
-  ++n_library_;
+  // add_library(lib_path);
   // printAvailableClass();
 }
 
