@@ -10,7 +10,8 @@
 
 #include <map>
 #include <boost/shared_ptr.hpp>
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
+// #include <class_loader/class_loader.h>
 
 #include "utf.h"
 

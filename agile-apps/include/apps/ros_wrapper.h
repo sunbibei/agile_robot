@@ -34,13 +34,9 @@ SINGLETON_DECLARE(RosWrapper, const std::string&, const std::string&)
 
 protected:
   virtual bool init() override;
-  virtual void create_system_instance() override;
+  virtual void create_system_singleton() override;
 
 private:
-  ///! The helper methods.
-  void sys_inst_robot(const std::string&);
-  void sys_inst_control(const std::string&);
-
   ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
   void publishRTMsg();
   /*!

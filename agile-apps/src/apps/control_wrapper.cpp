@@ -62,7 +62,7 @@ bool ControlWrapper::init() {
   return true;
 }
 
-void ControlWrapper::create_system_instance() {
+void ControlWrapper::create_system_singleton() {
   std::string prefix;
   std::vector<std::string> cfgs;
   if (!nh_.getParam("configure/prefix", prefix)
@@ -89,7 +89,7 @@ void ControlWrapper::create_system_instance() {
   for (size_t i = 0; i < cfgs.size(); ++i)
     AutoInstor::instance()->add_library(prefix + "/" + cfgs[i]);
 
-  MiiControl::create_system_instance();
+  MiiControl::create_system_singleton();
 }
 
 void ControlWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {

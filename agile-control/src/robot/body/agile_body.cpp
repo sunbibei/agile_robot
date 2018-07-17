@@ -63,5 +63,6 @@ Eigen::Vector3d AgileBody::leg_base(LegType leg) {
 
 } /* namespace qr_control */
 
-#include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
+// #include <class_loader/class_loader_register_macro.h>
 CLASS_LOADER_REGISTER_CLASS(agile_control::AgileBody, Label)

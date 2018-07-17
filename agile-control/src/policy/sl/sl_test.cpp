@@ -5,7 +5,7 @@
  *      Author: bibei
  */
 
-#include "gait/sl/sl_test.h"
+#include "policy/sl/sl_test.h"
 #include "robot/agile_robot.h"
 
 #include "adt/segmented.h"
@@ -109,7 +109,7 @@ SlTest::~SlTest() {
 }
 
 bool SlTest::auto_init() {
-  if (!GaitBase::auto_init()) return false;
+  if (!Policy::auto_init()) return false;
   auto cfg = CfgReader::instance();
 
   auto ifaces = LegRobot::instance();

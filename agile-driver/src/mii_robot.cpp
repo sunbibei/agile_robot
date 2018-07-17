@@ -71,8 +71,6 @@ MiiRobot::~MiiRobot() {
   SharedMem::destroy_instance();
   // destroy the auto_instancor.
   AutoInstor::destroy_instance();
-
-  ThreadPool::destroy_instance();
   // LOG_DEBUG << "The deconstructor of MiiRobot almost finished.";
   // Label::printfEveryInstance();
 }
@@ -80,10 +78,8 @@ MiiRobot::~MiiRobot() {
 /**
  * This method creates the part of singleton.
  */
-void MiiRobot::create_system_instance() {
-  // Create the other instance.
-  if (nullptr == ThreadPool::create_instance())
-    LOG_FATAL << "Create the singleton 'ThreadPool' has failed.";
+void MiiRobot::create_system_singleton() {
+  MiiApp::create_system_singleton();
 
   if (nullptr == Master::create_instance())
     LOG_FATAL << "Create the singleton 'Master' has failed.";
@@ -100,33 +96,12 @@ void MiiRobot::create_system_instance() {
 
 bool MiiRobot::init() {
   auto cfg = CfgReader::instance();
-  if (nullptr == cfg)
-    LOG_FATAL << "The CfgReader::create_instance(const std::string&) "
-        << "method must to be called by subclass before MiiRobot::init()";
 
-  std::string str;
-  cfg->get_value(prefix_tag_, "control_mode", str);
-  if (str.empty() || (0 == str.compare("position")))
-    JointManager::instance()->setJointCommandMode(JntCmdType::CMD_POS);
-  else if (0 == str.compare("velocity"))
-    JointManager::instance()->setJointCommandMode(JntCmdType::CMD_VEL);
-  else if (0 == str.compare("torque"))
-    JointManager::instance()->setJointCommandMode(JntCmdType::CMD_TOR);
-  else if (0 == str.compare("pos-vel"))
-    JointManager::instance()->setJointCommandMode(JntCmdType::CMD_POS_VEL);
-  else if (0 == str.compare("motor-velocity"))
-    JointManager::instance()->setJointCommandMode(JntCmdType::CMD_MOTOR_VEL);
-  else
-    ;
-
-  LOG_DEBUG << "The mode of control is '" << str << "'.";
-  // All of the objects mark with "auto_inst" in the configure file
-  // will be instanced here.
-  LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";
-  cfg->regAttrCb("auto_inst", __auto_inst);
-  // Just for debug
-  LOG_DEBUG << "Auto instance has finished. The results list as follow:";
-  Label::printfEveryInstance();
+  ///! The default mode is the joint position.
+  JntCmdType mode = JntCmdType::CMD_POS;
+  cfg->get_value(prefix_tag_, "control_mode", mode);
+  JointManager::instance()->setJointCommandMode(mode);
+  LOG_DEBUG << "The mode of control is '" << JNTCMDTYPE2STR(mode) << "'.";
 
   // Now initialize the Master
   Master::instance()->init();
@@ -157,6 +132,9 @@ bool MiiRobot::init() {
 
   // registry the thread.
   ThreadPool::instance()->add("support-registry2", &MiiRobot::supportRegistry2, this);
+
+  // Just for debug
+  Label::printfEveryInstance();
   return true;
 }
 
@@ -206,7 +184,8 @@ void MiiRobot::__reg_resource_and_command() {
 
 void MiiRobot::supportRegistry2() {
   TICKER_INIT(std::chrono::microseconds);
-  const JntCmdType& mode = jnt_manager_->getJointCommandMode();
+  // TODO
+  // const JntCmdType& mode = jnt_manager_->getJointCommandMode();
   while (is_alive) {
     /// read joint states
     FOREACH_LEG(l) {

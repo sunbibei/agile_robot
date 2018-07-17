@@ -14,6 +14,7 @@
 
 #include "foundation/app.h"
 #include "foundation/utf.h"
+#include "foundation/cfg_reader.h"
 
 namespace agile_robot {
 
@@ -31,14 +32,28 @@ protected:
    * @param _tag         Every necessary parameters will be found in this __tag
    */
   MiiRobot(const std::string& __tag);
-  virtual bool init() override;
-  /**
-   * @brief The pure virtual function is asked to implemented by subclass.
-   *        These task should be completed in the function what include but not
-   *        limited to: instantiate JointManger, PropagateManager, HwManager, and
-   *        especially CfgReader. Throwing a fatal exception if something is wrong.
+  /*!
+   * @brief STEP 2:
+   *        Create the all of singleton in our system, this method will be
+   *        called before the @init() after the @prev_init(),
+   *        If something was wrong, return NOTHING, SHUTDOWN the process directly.
    */
-  virtual void create_system_instance() override;
+  virtual void create_system_singleton() override;
+  /*!
+   * @brief STEP 3:
+   *        Create the all of instance in the configure file using the given
+   *        Callback method or the default Callback @auto_inst_cb(), If you
+   *        want to move the default callback to a self-define callback, calling
+   *        the @mv_auto_inst_cb()
+   */
+  // virtual void auto_inst() override;
+  /*!
+   * @brief STEP 4:
+   *        This function will be called lastly after the @init(), it must
+   *        be completed the process of AutoInst and register the all of
+   *        thread what our system need.
+   */
+  virtual bool init() override;
 
   /*!
    * @brief The running stage, ONLY this method, returned immediately.
@@ -76,9 +91,8 @@ protected:
   
   std::chrono::microseconds tick_interval_;
 
-
 private:
-  bool is_alive;
+  bool                 is_alive;
   class __RegJntRes*   jnt_reg_res_;
 };
 

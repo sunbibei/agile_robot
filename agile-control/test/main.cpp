@@ -4,7 +4,7 @@
  *  Created on: Nov 20, 2017
  *      Author: bibei
  */
-#include "gait/gait_manager.h"
+#include <policy/policy_manager.h>
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instor.h"
 #include "mii_control.h"
@@ -13,11 +13,14 @@
 #include <ros/ros.h>
 #include <Eigen/Dense>
 
-void __auto_inst(const std::string& __p, const std::string& __type) {
+bool __auto_inst(const std::string& __p, const std::string& __type) {
   LOG_INFO << "Create instance(" << __type << " " << __p;
   if (!AutoInstor::instance()->make_instance(__p, __type)) {
     LOG_WARNING << "Create instance(" << __type << " " << __p << ") fail!";
+    return false;
   }
+
+  return true;
 }
 
 void create_system_instance() {

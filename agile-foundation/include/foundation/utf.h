@@ -122,7 +122,7 @@ enum JntCmdType {
   N_JNT_CMD_TYPES,
 };
 #define JNTCMDTYPE2STR(l) \
-    ( ( (const char*[]){"UNKNOWN_CMD_TYPE", "CMD_POS", "CMD_VEL", "CMD_TOR", "CMD_POS_VEL", "CMD_MOTOR_VEL", "N_JNT_CMD_TYPES"} )[(l) + 1] )
+    ( ( (const char*[]){"UNKNOWN_CMD_TYPE", "POS", "VEL", "TOR", "POS-VEL", "MOTOR-VEL", "N_JNT_CMD_TYPES"} )[(l) + 1] )
 
 enum JntDataType {
   UNKNOWN_TYPE = -1,

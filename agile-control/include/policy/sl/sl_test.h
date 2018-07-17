@@ -8,10 +8,10 @@
 #ifndef INCLUDE_GAIT_SL_TEST_H_
 #define INCLUDE_GAIT_SL_TEST_H_
 
-#include <Eigen/Dense>
-
-#include "gait/gait_base.h"
+#include "policy/policy.h"
 #include "adt/trajectory.h"
+
+#include <Eigen/Dense>
 
 ///! Forward declaration
 class TimeControl;
@@ -28,7 +28,7 @@ enum LTestState {
   N_LT_STATE,
 };
 
-class SlTest: public GaitBase {
+class SlTest: public Policy {
 public:
   SlTest();
   virtual bool auto_init() override;

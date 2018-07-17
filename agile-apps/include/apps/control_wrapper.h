@@ -23,7 +23,7 @@ class ControlWrapper: public MiiControl {
 
 protected:
   virtual bool init() override;
-  virtual void create_system_instance() override;
+  virtual void create_system_singleton() override;
 
   /*!
    * @brief The callback for gait_topic.

@@ -16,7 +16,7 @@ class TestMiiRobot : public agile_robot::MiiRobot {
   SINGLETON_DECLARE(TestMiiRobot, const std::string&)
 
   public:
-    virtual void create_system_instance() override;
+    virtual void create_system_singleton() override;
     void halt();
   private:
     std::string       root_tag_;
@@ -52,7 +52,7 @@ TestMiiRobot::~TestMiiRobot() {
   // google::ShutdownGoogleLogging();
 }
 
-void TestMiiRobot::create_system_instance() {
+void TestMiiRobot::create_system_singleton() {
   if (nullptr == CfgReader::create_instance())
     LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
 
@@ -68,7 +68,7 @@ void TestMiiRobot::create_system_instance() {
   AutoInstor::instance()->add_library(str);
 
   // LOG_DEBUG << "==========RosWrapper::create_system_instance==========>>";
-  MiiRobot::create_system_instance();
+  MiiRobot::create_system_singleton();
 }
 
 int main(int argc, char* argv[]) {

@@ -30,11 +30,12 @@ Master::Master()
 
 Master::~Master() {
   thread_alive_ = false;
-  propagate_manager_ = nullptr;
-  sw_node_manager_   = nullptr;
 
   PropagateManager::destroy_instance();
   SWNodeManager::destroy_instance();
+
+  propagate_manager_ = nullptr;
+  sw_node_manager_   = nullptr;
 }
 
 bool Master::init() {
@@ -44,12 +45,6 @@ bool Master::init() {
 }
 
 bool Master::run() {
-  if (ThreadPool::instance()->is_running(MASTER_W_THREAD)
-      || ThreadPool::instance()->is_running(MASTER_R_THREAD)) {
-    LOG_WARNING << "Call HwManager::run() twice!";
-    return false;
-  }
-
   // LOG_DEBUG << "<<==========Master::run==========";
   if (!propagate_manager_->run()) {
     LOG_WARNING << "PropagateManager::run fail!";

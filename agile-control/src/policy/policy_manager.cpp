@@ -5,30 +5,30 @@
  *      Author: bibei
  */
 
-#include "gait/gait_manager.h"
-#include <foundation/cfg_reader.h>
+#include "foundation/cfg_reader.h"
+#include "policy/policy_manager.h"
 
 namespace agile_control {
 
-SINGLETON_IMPL(GaitManager)
+SINGLETON_IMPL(PolicyManager)
 
-GaitManager::GaitManager()
-  : internal::ResourceManager<GaitBase>(),
+PolicyManager::PolicyManager()
+  : internal::ResourceManager<Policy>(),
     running_gait_(nullptr), actived_gait_(nullptr) {
 
 }
 
-GaitManager::~GaitManager() {
+PolicyManager::~PolicyManager() {
   // Nothing to do here.
 }
 
-/*void GaitManager::add(GaitBase* gait) {
+/*void PolicyManager::add(Policy* gait) {
   middleware::internal::ResourceManager<GaitBase>::add(gait);
 
   gait_list_by_name_.insert(std::make_pair(gait->gaitName(), gait));
 }*/
 
-bool GaitManager::init() {
+bool PolicyManager::init() {
   for (const auto& g : res_list_) {
     gait_list_by_name_.insert(std::make_pair(g->name(), g));
   }
@@ -36,7 +36,7 @@ bool GaitManager::init() {
   return true;
 }
 
-void GaitManager::tick() {
+void PolicyManager::tick() {
   if ((!running_gait_) && (!actived_gait_)) {
     ///! No gait be running, and no active gait.
     return;
@@ -97,7 +97,7 @@ void GaitManager::tick() {
   running_gait_->post_tick();
 }
 
-void GaitManager::activate(const std::string& gait_name) {
+void PolicyManager::activate(const std::string& gait_name) {
   if ((0 == gait_name.compare("null")) || (0 == gait_name.compare("NULL"))) {
     actived_gait_ = nullptr;
     return;
@@ -113,7 +113,7 @@ void GaitManager::activate(const std::string& gait_name) {
   actived_gait_ = new_gait->second;
 }
 
-bool GaitManager::query(const std::string& gait_name) {
+bool PolicyManager::query(const std::string& gait_name) {
   for (auto hw : res_list_) {
     if (0 == gait_name.compare(hw->gait_name_))
       return true;
@@ -122,7 +122,7 @@ bool GaitManager::query(const std::string& gait_name) {
   return false;
 }
 
-void GaitManager::print() {
+void PolicyManager::print() {
   if (_DEBUG_INFO_FLAG) {
     LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
     LOG_WARNING << "NAME\t\tLABEL\t\tADDR";

@@ -325,5 +325,6 @@ void AgileLeg::jacobian(Eigen::Matrix3Xd& _jacob) {
 
 } /* namespace qr_control */
 
-#include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
+// #include <class_loader/class_loader_register_macro.h>
 CLASS_LOADER_REGISTER_CLASS(agile_control::AgileLeg, Label)

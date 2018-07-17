@@ -44,7 +44,7 @@ RobotWrapper::~RobotWrapper() {
   CfgReader::destroy_instance();
 }
 
-void RobotWrapper::create_system_instance() {
+void RobotWrapper::create_system_singleton() {
   std::string prefix;
   std::vector<std::string> cfgs;
   if (!nh_.getParam("configure/prefix", prefix)
@@ -71,7 +71,7 @@ void RobotWrapper::create_system_instance() {
   for (size_t i = 0; i < cfgs.size(); ++i)
     AutoInstor::instance()->add_library(prefix + "/" + cfgs[i]);
 
-  MiiRobot::create_system_instance();
+  MiiRobot::create_system_singleton();
 }
 
 bool RobotWrapper::init() {

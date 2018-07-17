@@ -11,61 +11,62 @@
 #include "foundation/registry/registry2.h"
 
 #include "robot/agile_robot.h"
-#include "gait/gait_manager.h"
-
+#include "policy/policy_manager.h"
 #include "mii_control.h"
 
 namespace agile_control {
 
-void __auto_inst(const std::string& _p, const std::string& _type) {
-  if (!AutoInstor::instance()->make_instance(_p, _type))
-    LOG_ERROR << "Create instance(" << _type << " " << _p << ") fail!";
-}
-
 MiiControl::MiiControl(const std::string& _prefix)
-  : prefix_tag_(_prefix), gait_manager_(nullptr),
+  : prefix_tag_(_prefix), policy_manager_(nullptr),
     alive_(true), tick_interval_(1) {
   ; // Nothing to do here.
 }
 
 MiiControl::~MiiControl() {
   alive_ = false; // exit the thread
-  GaitManager::destroy_instance();
+  PolicyManager::destroy_instance();
   AgileRobot::destroy_instance();
   Registry2::destroy_instance();
   SharedMem::destroy_instance();
-  ThreadPool::destroy_instance();
+}
+
+void MiiControl::create_system_singleton() {
+  MiiApp::create_system_singleton();
+
+  if (nullptr == SharedMem::create_instance())
+    LOG_FATAL << "Create the singleton 'SharedMem' has failed.";
+
+  if (nullptr == Registry2::create_instance())
+    LOG_FATAL << "Create the singleton 'Registry' has failed.";
+
+  if (nullptr == PolicyManager::create_instance())
+    LOG_FATAL << "Create the singleton 'PolicyManager' has failed.";
+
+  if (nullptr == AgileRobot::create_instance())
+    LOG_FATAL << "Create the singleton 'QrRobot' has failed.";
 }
 
 bool MiiControl::init() {
   auto cfg = CfgReader::instance();
-  if (nullptr == cfg)
-    LOG_FATAL << "The CfgReader::create_instance(const std::string&) "
-        << "method must to be called by subclass before MiiRobot::init()";
 
   double hz = 1000;
   cfg->get_value(prefix_tag_, "frequency", hz);
   tick_interval_ = std::chrono::milliseconds(int(1000/hz));
-  LOG_WARNING << "MII-CONTROL: " << hz;
+  LOG_WARNING << "MII-CONTROL: " << hz << "Hz";
 
-  // All of the objects mark with "auto_inst" in the configure file
-  // will be instanced here.
-  LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";
-  cfg->regAttrCb("auto_inst", __auto_inst);
-  // Just for debug
-  LOG_DEBUG << "Auto instance has finished. The results list as follow:";
-  Label::printfEveryInstance();
+  policy_manager_ = PolicyManager::instance();
+  policy_manager_->init();
 
-  GaitManager::instance()->init();
-
-  std::string act_gait;
-  if (cfg->get_value(Label::make_label(prefix_tag_, "gait"), "activate", act_gait))
-    activate(act_gait);
-
-  GaitManager::instance()->print();
+  std::string policy;
+  if (cfg->get_value(Label::make_label(prefix_tag_, "gait"), "activate", policy))
+    activate(policy);
 
   // registry the thread
   ThreadPool::instance()->add("mii-control", &MiiControl::tick, this);
+
+  // Just for debug
+  policy_manager_->print();
+  Label::printfEveryInstance();
   return true;
 }
 
@@ -74,34 +75,17 @@ bool MiiControl::init() {
 //}
 
 void MiiControl::activate(const std::string& _n) {
-  if (GaitManager::instance()->query(_n) || 0 == _n.compare("null"))
-    GaitManager::instance()->activate(_n);
+  if (policy_manager_->query(_n) || 0 == _n.compare("null"))
+    policy_manager_->activate(_n);
   else
     LOG_ERROR << "No such named gait in the gait manager";
-}
-
-void MiiControl::create_system_instance() {
-  if (nullptr == ThreadPool::create_instance())
-    LOG_FATAL << "Create the singleton 'ThreadPool' has failed.";
-
-  if (nullptr == SharedMem::create_instance())
-    LOG_FATAL << "Create the singleton 'SharedMem' has failed.";
-
-  if (nullptr == Registry2::create_instance())
-    LOG_FATAL << "Create the singleton 'Registry' has failed.";
-
-  if (nullptr == GaitManager::create_instance())
-    LOG_FATAL << "Create the singleton 'GaitManager' has failed.";
-
-  if (nullptr == AgileRobot::create_instance())
-    LOG_FATAL << "Create the singleton 'QrRobot' has failed.";
 }
 
 void MiiControl::tick() {
   TICKER_INIT(std::chrono::milliseconds);
 
   while (alive_) {
-    GaitManager::instance()->tick();
+    policy_manager_->tick();
 
     TICKER_CONTROL(tick_interval_, std::chrono::milliseconds);
   }

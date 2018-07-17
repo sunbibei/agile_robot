@@ -5,8 +5,8 @@
  *      Author: bibei
  */
 
-#ifndef INCLUDE_GAIT_GAIT_BASE_H_
-#define INCLUDE_GAIT_GAIT_BASE_H_
+#ifndef INCLUDE_POLICY_POLICY_H_
+#define INCLUDE_POLICY_POLICY_H_
 
 #include <foundation/label.h>
 
@@ -51,14 +51,14 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////
 ////////////              The define of GaitBase class           //////////////
 ///////////////////////////////////////////////////////////////////////////////
-class GaitBase: public Label {
-  friend class GaitManager;
+class Policy: public Label {
+  friend class PolicyManager;
 public:
-  GaitBase(const std::string& _l = "gait-base");
+  Policy();
   ///! For auto-instance
   virtual bool auto_init() override;
 
-  virtual ~GaitBase();
+  virtual ~Policy();
 
 public:
   /*!
@@ -177,4 +177,4 @@ void StateMachine<_State>::operator()() {
 
 } /* namespace qr_control */
 
-#endif /* INCLUDE_GAIT_GAIT_BASE_H_ */
+#endif /* INCLUDE_POLICY_POLICY_H_ */

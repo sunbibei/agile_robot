@@ -42,6 +42,9 @@ int main(int argc, char* argv[]) {
 #ifdef  CHECK_INST_
   Label::printfEveryInstance();
 #endif
+
+  // clear the shared memory
+  system("rosrun agile_apps ipc_clear");
   LOG_INFO << "The shutdown of agile-apps has finished... ...";
   google::ShutdownGoogleLogging();
   return 0;

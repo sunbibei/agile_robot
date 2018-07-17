@@ -26,7 +26,7 @@ include_directories(
 )
 
 set(SRC_ROOT          src)
-set(SRC_GAITS_ROOT    ${SRC_ROOT}/gait)
+set(SRC_POLICY_ROOT   ${SRC_ROOT}/policy)
 
 set(SRC_ROBOT_ROOT    ${SRC_ROOT}/robot)
 set(SRC_RO_LEG_ROOT   ${SRC_ROBOT_ROOT}/leg)
@@ -34,12 +34,9 @@ set(SRC_RO_BOFY_ROOT  ${SRC_ROBOT_ROOT}/body)
 
 set(SRC_ADT_ROOT      ${SRC_ROOT}/adt)
 
-set(GAIT_FILES        ${SRC_GAITS_ROOT}/gait_manager.cpp
-                      ${SRC_GAITS_ROOT}/gait_base.cpp
-                      ${SRC_GAITS_ROOT}/creep/creep.cpp
-                      ${SRC_GAITS_ROOT}/walk/walk.cpp
-                      ${SRC_GAITS_ROOT}/sl/hopping.cpp
-                      ${SRC_GAITS_ROOT}/sl/sl_test.cpp
+set(POLICY_FILES      ${SRC_POLICY_ROOT}/policy_manager.cpp
+                      ${SRC_POLICY_ROOT}/policy.cpp
+                      ${SRC_POLICY_ROOT}/sl/sl_test.cpp
 )
 
 set(ROBOT_FILES       ${SRC_RO_LEG_ROOT}/data_leg.cpp
@@ -64,7 +61,7 @@ set(TEST_FILES        ${SRC_ROOT}/main.cpp
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}_repository
-  ${GAIT_FILES}
+  ${POLICY_FILES}
   ${ROBOT_FILES}
 )
 
@@ -73,9 +70,9 @@ add_library(${PROJECT_NAME}_framwork
 )
 
 ## Declare a C++ executable
-#[[add_executable(${PROJECT_NAME}_test
-  ${BIN_FILES}
-)]]
+# add_executable(${PROJECT_NAME}_test
+#   ${BIN_FILES}
+# )
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_repository

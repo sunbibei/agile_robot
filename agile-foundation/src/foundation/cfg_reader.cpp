@@ -151,6 +151,18 @@ void __findAttr(TiXmlElement* __curr, const std::string& __p,
   }
 }
 
+void __findAttr(TiXmlElement* __curr, const std::string& __p,
+    const std::string& attr, CfgReader::Callback1 cb) {
+  for (auto __next = __curr->FirstChildElement();
+      nullptr != __next; __next = __next->NextSiblingElement()) {
+    std::string __next_p = Label::make_label(__p, __next->Value());
+    if (nullptr != __next->Attribute(attr.c_str()))
+      cb(__next_p, __next->Attribute(attr.c_str()));
+
+    __findAttr(__next, __next_p, attr, cb);
+  }
+}
+
 /*void __findTag(TiXmlElement* __curr, const std::string& __p,
     const std::string& _tag, CfgReader::Callback1 cb) {
   for (auto __next = __curr->FirstChildElement();
@@ -273,17 +285,35 @@ bool CfgReader::add_config(const std::string& _f) {
 }
 
 void CfgReader::regAttrCb(const std::string& attr, Callback cb,
-    const std::string& __prefix) {
+    const std::string& prefix) {
   for (size_t i = 0; i < n_config_; ++i) {
     auto cfg_root = cfg_docs_[i]->RootElement();
-    if (!__prefix.empty())
-      cfg_root = __findLabel(cfg_root, __prefix);
+    if (!prefix.empty())
+      cfg_root = __findLabel(cfg_root, prefix);
 
     if (nullptr == cfg_root) continue;
 
     if (nullptr != cfg_root->Attribute(attr.c_str()))
       cb(Label::null, cfg_root->Attribute(attr.c_str()));
 
+    LOG_ERROR << cfg_root->Value();
+    __findAttr(cfg_root, cfg_root->Value(), attr, cb);
+  }
+}
+
+void CfgReader::regAttrCb(const std::string& attr, Callback1 cb,
+      const std::string& prefix) {
+  for (size_t i = 0; i < n_config_; ++i) {
+    auto cfg_root = cfg_docs_[i]->RootElement();
+    if (!prefix.empty())
+      cfg_root = __findLabel(cfg_root, prefix);
+
+    if (nullptr == cfg_root) continue;
+
+    if (nullptr != cfg_root->Attribute(attr.c_str()))
+      cb(Label::null, cfg_root->Attribute(attr.c_str()));
+
+    LOG_ERROR << cfg_root->Value();
     __findAttr(cfg_root, cfg_root->Value(), attr, cb);
   }
 }
@@ -394,17 +424,41 @@ bool CfgReader::get_value(const std::string& p, const std::string& attr, std::ve
     // boost::to_lower(str);
     boost::to_upper(str);
     LegType type = LegType::UNKNOWN_LEG;
-    if (0 == str.compare(LEGTYPE2STR(LegType::FL))) {
-      type = LegType::FL;
-    } else if (0 == str.compare(LEGTYPE2STR(LegType::FR))) {
-      type = LegType::FR;
-    } else if (0 == str.compare(LEGTYPE2STR(LegType::HL))) {
-      type = LegType::HL;
-    } else if (0 == str.compare(LEGTYPE2STR(LegType::HR))) {
-      type = LegType::HR;
-    } else {
+    FOREACH_LEG(l) {
+      if (0 == str.compare(LEGTYPE2STR(l))) {
+        type = l;
+        break;
+      }
+    }
+    if (LegType::UNKNOWN_LEG == type) {
       LOG_WARNING << "Error the 'leg' TAG(" << str << ") in the 'joint' TAG, "
           << "require 'hl', 'fr', 'hl' or 'hr'";
+    }
+
+    vals.push_back(type);
+  }
+
+  return true;
+}
+
+bool CfgReader::get_value(const std::string& p, const std::string& attr, std::vector<JntCmdType>& vals) {
+  std::vector<std::string> vals_str;
+  if (!get_value(p, attr, vals_str)) return false;
+
+  for (auto str : vals_str) {
+    // boost::to_lower(str);
+    boost::to_upper(str);
+    JntCmdType type = JntCmdType::UNKNOWN_CMD_TYPE;
+    for (const auto& jct : {JntCmdType::CMD_POS, JntCmdType::CMD_TOR, JntCmdType::CMD_VEL,
+            JntCmdType::CMD_MOTOR_VEL, JntCmdType::CMD_POS_VEL}) {
+      if (0 == str.compare(JNTCMDTYPE2STR(jct))) {
+        type = jct;
+        break;
+      }
+    }
+    if (JntCmdType::UNKNOWN_CMD_TYPE == type) {
+      LOG_WARNING << "Error the 'mode' TAG(" << str << ") in the TAG, "
+          << "require 'POS', 'VEL', 'TOR', 'POS-VEL' or 'MOTOR-VEL'";
     }
 
     vals.push_back(type);

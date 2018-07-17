@@ -5,19 +5,18 @@
  *      Author: bibei
  */
 
-#ifndef INCLUDE_GAIT_GAIT_MANAGER_H_
-#define INCLUDE_GAIT_GAIT_MANAGER_H_
+#ifndef INCLUDE_POLICY_POLICY_MANAGER_H_
+#define INCLUDE_POLICY_POLICY_MANAGER_H_
 
-#include <foundation/internal/resource_manager.h>
-#include "gait_base.h"
-
+#include "foundation/internal/resource_manager.h"
+#include "policy.h"
 #include <mutex>
 
 namespace agile_control {
 
-class GaitManager
-    : public internal::ResourceManager<GaitBase> {
-  SINGLETON_DECLARE(GaitManager)
+class PolicyManager
+    : public internal::ResourceManager<Policy> {
+  SINGLETON_DECLARE(PolicyManager)
 
 public:
   /*!
@@ -46,13 +45,13 @@ public:
   void print();
 
 protected:
-  GaitBase*                     running_gait_;
-  GaitBase*                     actived_gait_;
-  std::map<std::string, GaitBase*>  gait_list_by_name_;
+  Policy*                     running_gait_;
+  Policy*                     actived_gait_;
+  std::map<std::string, Policy*>  gait_list_by_name_;
 
   std::string                     prefix_tag_;
 };
 
 } /* namespace qr_control */
 
-#endif /* INCLUDE_GAIT_GAIT_MANAGER_H_ */
+#endif /* INCLUDE_POLICY_POLICY_MANAGER_H_ */

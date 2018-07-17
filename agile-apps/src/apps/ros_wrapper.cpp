@@ -56,6 +56,7 @@ void __setup_env() {
   libs_root  = libs_root.substr(0, libs_root.rfind('/'));
   libs_root += "/devel/lib";
 
+  ///! Setting the alias of paths
   ros::param::set("apps_root", apps_root);
   ros::param::set("pkgs_root", pkgs_root);
   ros::param::set("libs_root", libs_root);
@@ -102,86 +103,58 @@ RosWrapper::~RosWrapper() {
   CfgReader::destroy_instance();
 }
 
-void RosWrapper::create_system_instance() {
-  std::string prefix_robot = "agile_robot";
-  std::string prefix_ctrl  = "agile_control";
-  if ( !ros::param::get("~robot_ns",   prefix_robot)
-    || !ros::param::get("~control_ns", prefix_ctrl)) {
-    LOG_FATAL << "RosWapper can't find the 'prefix1' or 'prefix2' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-
-  std::string prefix;
-  if (!ros::param::get(prefix_robot + "/configure/prefix", prefix)) {
-    LOG_FATAL << "RosWapper can't find the 'configure' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-  ros::param::get(prefix, prefix);
+void RosWrapper::create_system_singleton() {
   if (nullptr == CfgReader::create_instance())
     LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
-  CfgReader::add_path(prefix);
-
-  if (!ros::param::get(prefix_robot + "/library/prefix", prefix)) {
-    LOG_FATAL << "RosWapper can't find the 'library' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-  ros::param::get(prefix, prefix);
   if (nullptr == AutoInstor::create_instance())
     LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
-  AutoInstor::add_path(prefix);
 
-  LOG_ERROR << "create system instance!!!!!!!!!!!!";
-  sys_inst_robot(prefix_robot);
-  sys_inst_control(prefix_ctrl);
+  ///! For each namespace (agile_robot or agile_control) given in the bringup.launch
+  for (const auto& pns : {"~robot_ns", "~control_ns"}) {
+    std::string ns, path, alias;
+    std::vector<std::string> files;
+    if (!ros::param::get(pns, ns)) {
+      LOG_FATAL << "RosWapper can't find the '" << pns << "' parameter "
+          << "in the parameter server. Did you forget define this parameter.";
+    }
+
+    ///! Get the alias of the configure of path.
+    if ( !ros::param::get(ns + "/configure/prefix", alias)
+      || !ros::param::get(ns + "/configure/file",   files)
+      || !ros::param::get(alias, path)) {
+      LOG_FATAL << "RosWapper can't find the '" << ns << "/configure/prefix "
+          << "(or file)' or '" << alias << "' parameter in the parameter "
+          << "server. Did you forget define this parameter.";
+    }
+
+    CfgReader::add_path(path);
+    for (const auto& cfg : files)
+      CfgReader::instance()->add_config(cfg);
+
+    if ( !ros::param::get(ns + "/library/prefix", alias)
+      || !ros::param::get(ns + "/library/file",   files)
+      || !ros::param::get(alias, path)) {
+      LOG_FATAL << "RosWapper can't find the '" << ns << "/library/prefix "
+          << "(or file)' or '" << alias << "' parameter in the parameter "
+          << "server. Did you forget define this parameter.";
+    }
+
+    ///! Got from ENV
+    AutoInstor::add_path(path);
+    for (const auto& lib : files)
+      AutoInstor::instance()->add_library(lib);
+  }
+
+  MiiRobot::create_system_singleton();
+  MiiControl::create_system_singleton();
 }
 
-void RosWrapper::sys_inst_robot(const std::string& param_root) {
-  std::vector<std::string> cfgs;
-  if (!ros::param::get(param_root + "/configure/file", cfgs)) {
-    LOG_FATAL << "RosWapper can't find the 'configure' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-
-  LOG_ERROR << "ROBOT: " << cfgs[0];
-  for (const auto& cfg : cfgs)
-    CfgReader::instance()->add_config(cfg);
-
-  if (!ros::param::get(param_root + "/library/file", cfgs)) {
-    LOG_FATAL << "RosWapper can't find the 'library' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-
-  LOG_ERROR << "AUTO_INST: " << cfgs[0];
-  for (const auto& cfg : cfgs)
-    AutoInstor::instance()->add_library(cfg);
-
-  MiiRobot::create_system_instance();
-}
-
-void RosWrapper::sys_inst_control(const std::string& param_root) {
-  std::vector<std::string> cfgs;
-  if (!ros::param::get(param_root + "/configure/file", cfgs)) {
-    LOG_FATAL << "RosWapper can't find the 'configure' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-  LOG_ERROR << "CONTROL: " << cfgs[0];
-  for (const auto& cfg : cfgs)
-    CfgReader::instance()->add_config(cfg);
-
-  if (!ros::param::get(param_root + "/library/file", cfgs)) {
-    LOG_FATAL << "RosWapper can't find the 'library' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-
-  LOG_ERROR << "AUTO_INST: " << cfgs[0];
-  for (const auto& cfg : cfgs)
-    AutoInstor::instance()->add_library(cfg);
-
-  MiiControl::create_system_instance();
-}
+//void RosWrapper::auto_inst() {
+//  MiiApp::auto_inst();
+//}
 
 bool RosWrapper::init() {
-  bool debug = false;
+  bool debug = true;
   ros::param::get("~debug", debug);
   google::SetStderrLogging(debug ? google::GLOG_INFO : google::GLOG_WARNING);
 

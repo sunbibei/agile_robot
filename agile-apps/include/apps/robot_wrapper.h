@@ -28,9 +28,35 @@ class RobotWrapper : public MiiRobot {
 SINGLETON_DECLARE(RobotWrapper, const std::string&)
 
 protected:
+  /**
+   * @brief Constructed function.
+   * @param _tag        Every necessary parameters will be found in this __tag
+   */
+  RobotWrapper(const std::string&, const std::string&);
+  /*!
+   * @brief STEP 2:
+   *        Create the all of singleton in our system, this method will be
+   *        called before the @init() after the @prev_init(),
+   *        If something was wrong, return NOTHING, SHUTDOWN the process directly.
+   */
+  virtual void create_system_singleton() override;
+  /*!
+   * @brief STEP 3:
+   *        Create the all of instance in the configure file using the given
+   *        Callback method or the default Callback @auto_inst_cb(), If you
+   *        want to move the default callback to a self-define callback, calling
+   *        the @mv_auto_inst_cb()
+   */
+  // virtual void auto_inst() override;
+  /*!
+   * @brief STEP 4:
+   *        This function will be called lastly after the @init(), it must
+   *        be completed the process of AutoInst and register the all of
+   *        thread what our system need.
+   */
   virtual bool init() override;
-  virtual void create_system_instance() override;
 
+private:
   ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
   void publishRTMsg();
 

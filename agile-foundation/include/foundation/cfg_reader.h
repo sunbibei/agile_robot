@@ -25,13 +25,15 @@ class CfgReader final {
 
 public:
 
-  typedef void (*Callback)(const std::string& __p, const std::string& __attr_val);
+  typedef bool (*Callback)   (const std::string&, const std::string&);
+  typedef std::function<bool (const std::string&, const std::string&)>  Callback1;
   /**
    * @brief The Callback function for specific @__attr
    * @param __p        The parent of tag which contains the specific attribute.
    * @param __attr_val The value of __attr under the __p tag.
    */
-  void regAttrCb(const std::string& __attr, Callback, const std::string& __prefix = "");
+  void regAttrCb(const std::string& __attr, Callback,  const std::string& __prefix = "");
+  void regAttrCb(const std::string& __attr, Callback1, const std::string& __prefix = "");
   /**
    * @brief The Callback function for specific @__tag
    * @param __p        The parent of tag which contains the specific attribute.
@@ -72,6 +74,7 @@ public:
   bool get_value(const std::string& p, const std::string& attr, std::vector<unsigned char>&);
   bool get_value(const std::string& p, const std::string& attr, std::vector<JntType>&);
   bool get_value(const std::string& p, const std::string& attr, std::vector<LegType>&);
+  bool get_value(const std::string& p, const std::string& attr, std::vector<JntCmdType>&);
 
   /**
    *  @brief  Find the value of @p.@attr in the configure file.
