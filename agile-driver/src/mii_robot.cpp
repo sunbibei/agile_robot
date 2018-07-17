@@ -12,7 +12,7 @@
 
 #include "foundation/label.h"
 #include "foundation/cfg_reader.h"
-#include "foundation/auto_instanceor.h"
+#include "foundation/auto_instor.h"
 #include "foundation/thread/threadpool.h"
 #include "foundation/registry/registry.h"
 #include "foundation/registry/registry2.h"
@@ -45,7 +45,7 @@ struct __RegJntRes {
 };
 
 void __auto_inst(const std::string& __p, const std::string& __type) {
-  if (!AutoInstanceor::instance()->make_instance(__p, __type)) {
+  if (!AutoInstor::instance()->make_instance(__p, __type)) {
     LOG_ERROR << "Create instance(" << __type << " " << __p << ") fail!";
   }
 
@@ -70,7 +70,7 @@ MiiRobot::~MiiRobot() {
   Registry2::destroy_instance();
   SharedMem::destroy_instance();
   // destroy the auto_instancor.
-  AutoInstanceor::destroy_instance();
+  AutoInstor::destroy_instance();
 
   ThreadPool::destroy_instance();
   // LOG_DEBUG << "The deconstructor of MiiRobot almost finished.";
@@ -99,9 +99,9 @@ void MiiRobot::create_system_instance() {
 }
 
 bool MiiRobot::init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   if (nullptr == cfg)
-    LOG_FATAL << "The MiiCfgReader::create_instance(const std::string&) "
+    LOG_FATAL << "The CfgReader::create_instance(const std::string&) "
         << "method must to be called by subclass before MiiRobot::init()";
 
   std::string str;
@@ -162,7 +162,7 @@ bool MiiRobot::init() {
 
 void MiiRobot::__reg_resource_and_command() {
   auto reg    = Registry2::instance();
-  auto cfg    = MiiCfgReader::instance();
+  auto cfg    = CfgReader::instance();
   int count   = 0;
   LegType leg = LegType::UNKNOWN_LEG;
 

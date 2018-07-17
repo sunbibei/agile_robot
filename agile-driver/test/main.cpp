@@ -10,7 +10,7 @@
 
 #include <foundation/utf.h>
 #include <foundation/cfg_reader.h>
-#include <foundation/auto_instanceor.h>
+#include <foundation/auto_instor.h>
 
 class TestMiiRobot : public agile_robot::MiiRobot {
   SINGLETON_DECLARE(TestMiiRobot, const std::string&)
@@ -46,26 +46,26 @@ TestMiiRobot::TestMiiRobot(const std::string& __tag)
 }
 
 TestMiiRobot::~TestMiiRobot() {
-  // AutoInstanceor::destroy_instance();
-  MiiCfgReader::destroy_instance();
+  // AutoInstor::destroy_instance();
+  CfgReader::destroy_instance();
   // LOG_DEBUG << "Leave the roswrapper deconstruction";
   // google::ShutdownGoogleLogging();
 }
 
 void TestMiiRobot::create_system_instance() {
-  if (nullptr == MiiCfgReader::create_instance())
-    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
+  if (nullptr == CfgReader::create_instance())
+    LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
 
-  if (nullptr == AutoInstanceor::create_instance())
-    LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
+  if (nullptr == AutoInstor::create_instance())
+    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
 
-  MiiCfgReader::instance()->add_path("/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/config");
+  CfgReader::instance()->add_path("/home/bibei/Workspaces/qr_ws/src/qr-driver-0.2.9/config");
 
   std::string str = "robot_config.xml";
-  MiiCfgReader::instance()->add_config(str);
+  CfgReader::instance()->add_config(str);
 
   str = "/home/bibei/Workspaces/qr_ws/devel/lib/libqr_driver_sys_platform.so";
-  AutoInstanceor::instance()->add_library(str);
+  AutoInstor::instance()->add_library(str);
 
   // LOG_DEBUG << "==========RosWrapper::create_system_instance==========>>";
   MiiRobot::create_system_instance();

@@ -82,7 +82,7 @@ bool MotorCan::auto_init() {
   s_enable_can_.Data[0] = 0x01;
   s_enable_can_.Data[1] = 0x00;
 
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value(getLabel(), "proxy",      enable_proxy_);
   cfg->get_value(getLabel(), "motor_list", proxy_list_);
 

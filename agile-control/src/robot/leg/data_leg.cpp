@@ -22,7 +22,7 @@ DataLeg::DataLeg()
 }
 
 bool DataLeg::auto_init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   auto reg = Registry2::instance();
   cfg->get_value_fatal(getLabel(), "leg", leg_type_);
 

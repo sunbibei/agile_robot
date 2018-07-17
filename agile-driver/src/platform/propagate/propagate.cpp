@@ -24,7 +24,7 @@ Propagate::Propagate(const std::string& l)
 bool Propagate::auto_init() {
   std::string __p;
   Label::split_label(label_, __p, propa_name_);
-  MiiCfgReader::instance()->get_value_fatal(getLabel(), "bus_id", bus_id_);
+  CfgReader::instance()->get_value_fatal(getLabel(), "bus_id", bus_id_);
   return true;
 }
 

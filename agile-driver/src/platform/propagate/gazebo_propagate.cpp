@@ -31,7 +31,7 @@ GzPropagateP::GzPropagateP()
 bool GzPropagateP::auto_init() {
   if (!Propagate::auto_init()) return false;
 
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   // TODO
   cfg->get_value(getLabel(), "leg_node_ipc_name", leg_node_ipc_name_);
   cfg->get_value(getLabel(), "cmd_ipc_name",      cmd_ipc_name_);

@@ -24,7 +24,7 @@ struct __SLHPParams {
 
   __SLHPParams(const std::string& _tag)
     : STC_POS(0, 0, 46), SPR_CST(1.0), DMP_COF(0.5) {
-    auto cfg = MiiCfgReader::instance();
+    auto cfg = CfgReader::instance();
     // TODO
     // cfg->get_value(_tag, "stc_len",             STC_POS);
     cfg->get_value(_tag, "spring_constant",     SPR_CST);
@@ -50,7 +50,7 @@ bool SLHopping::auto_init() {
   }
 
   ///! TODO
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   LegType leg = LegType::FL;
   if (!cfg->get_value(getLabel(), "leg_type", leg))
     LOG_WARNING << "No point leg type, using the default type of leg -- FL";

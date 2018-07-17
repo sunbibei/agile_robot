@@ -44,7 +44,7 @@ Motor::Motor()
 }
 
 bool Motor::auto_init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   std::string _x, jnt_tag;
   Label::split_label(getLabel(), jnt_tag, _x);
   joint_handle_ = Label::getHardwareByName<Joint>(jnt_tag);

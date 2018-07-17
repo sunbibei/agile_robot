@@ -38,7 +38,7 @@ Power::Power(const std::string& _l)
 }
 
 bool Power::auto_init() {
-  // auto cfg = MiiCfgReader::instance();
+  // auto cfg = CfgReader::instance();
 
   /*LegType leg = LegType::UNKNOWN_LEG;
   int count = 0;

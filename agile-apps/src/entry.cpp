@@ -34,11 +34,11 @@ void setup_env() {
     printf("\033[0;31mNo parameter with named configure or prefix!\033[0m\n");
     exit(-1);
   }
-  if (nullptr == MiiCfgReader::create_instance()) {
+  if (nullptr == CfgReader::create_instance()) {
     printf("\033[0;31mCreate the CfgReader fail!\033[0m\n");
     exit(-1);
   }
-  MiiCfgReader::instance()->add_config(cfg);
+  CfgReader::instance()->add_config(cfg);
 
   std::string pkg_name;
   if (!ros::param::get("pkg_name", pkg_name)) {
@@ -80,7 +80,7 @@ void setup_env() {
 }
 
 void launcher() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   std::string prefix = "";
   ros::param::get("~prefix", prefix);
   std::string root = Label::make_label(prefix, "launcher");
@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
   sleep(2);
 
   // destroy the CfgReader.
-  MiiCfgReader::destroy_instance();
+  CfgReader::destroy_instance();
   printf("\033[1;31;43mThe apps exited!\033[0m\n");
   return 0;
 }

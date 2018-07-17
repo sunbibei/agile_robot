@@ -48,7 +48,7 @@ MotorNode::~MotorNode() {
 
 bool MotorNode::auto_init() {
   if (!SWNode::auto_init()) return false;
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value_fatal(getLabel(), "leg", leg_);
   cfg->get_value_fatal(getLabel(), "jnt", jnt_);
 

@@ -63,7 +63,7 @@ LegNode::~LegNode() {
 
 bool LegNode::auto_init() {
   if (!SWNode::auto_init())     return false;
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value_fatal(getLabel(), "leg", leg_);
 
   // motors_by_type_.resize(JntType::N_JNTS);

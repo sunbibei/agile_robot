@@ -35,7 +35,7 @@ ForceSensor::~ForceSensor() {
 }
 
 bool ForceSensor::auto_init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
 
   cfg->get_value(getLabel(), "scale",     scale_);
   cfg->get_value(getLabel(), "offset",    offset_);

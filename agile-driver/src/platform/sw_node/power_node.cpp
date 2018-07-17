@@ -18,7 +18,7 @@ PowerNode::PowerNode(const std::string& __l)
 
 bool PowerNode::auto_init() {
   if (!SWNode::auto_init()) return false;
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
 
   std::string power_label;
   cfg->get_value_fatal(getLabel(), "label", power_label);

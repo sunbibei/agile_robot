@@ -47,7 +47,7 @@ set(SRC_TEST            ${SRC_TEST_ROOT}/test_registry2.cpp
 # Files define.
 set(SYS_FOUDATION_FILES ${SRC_FOUNDATION}/app.cpp
                         ${SRC_FOUNDATION}/label.cpp
-                        ${SRC_FOUNDATION}/auto_instanceor.cpp
+                        ${SRC_FOUNDATION}/auto_instor.cpp
 
                         ${SRC_FOUNDATION}/cfg_reader.cpp
                         ${SRC_FOUNDATION}/internal/mii_config.cpp

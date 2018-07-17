@@ -36,7 +36,7 @@ protected:
    * @brief The pure virtual function is asked to implemented by subclass.
    *        These task should be completed in the function what include but not
    *        limited to: instantiate JointManger, PropagateManager, HwManager, and
-   *        especially MiiCfgReader. Throwing a fatal exception if something is wrong.
+   *        especially CfgReader. Throwing a fatal exception if something is wrong.
    */
   virtual void create_system_instance() override;
 

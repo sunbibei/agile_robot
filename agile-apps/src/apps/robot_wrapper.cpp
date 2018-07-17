@@ -11,7 +11,7 @@
 #include "repository/joint_manager.h"
 
 #include "foundation/cfg_reader.h"
-#include "foundation/auto_instanceor.h"
+#include "foundation/auto_instor.h"
 #include "foundation/thread/threadpool.h"
 
 #include <sensor_msgs/Imu.h>
@@ -40,8 +40,8 @@ RobotWrapper::RobotWrapper(const std::string& __tag)
 RobotWrapper::~RobotWrapper() {
   alive_ = false;
   // agile_control::MiiControl::instance()->destroy_instance();
-  // AutoInstanceor::destroy_instance();
-  MiiCfgReader::destroy_instance();
+  // AutoInstor::destroy_instance();
+  CfgReader::destroy_instance();
 }
 
 void RobotWrapper::create_system_instance() {
@@ -54,10 +54,10 @@ void RobotWrapper::create_system_instance() {
   }
 
   ros::param::get(prefix, prefix);
-  if (nullptr == MiiCfgReader::create_instance())
-    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
+  if (nullptr == CfgReader::create_instance())
+    LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
   for (size_t i = 0; i < cfgs.size(); ++i)
-    MiiCfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
+    CfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
 
   if (!nh_.getParam("library/prefix", prefix)
       || !nh_.getParam("library/file", cfgs)) {
@@ -66,10 +66,10 @@ void RobotWrapper::create_system_instance() {
   }
 
   ros::param::get(prefix, prefix);
-  if (nullptr == AutoInstanceor::create_instance())
-    LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
+  if (nullptr == AutoInstor::create_instance())
+    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
   for (size_t i = 0; i < cfgs.size(); ++i)
-    AutoInstanceor::instance()->add_library(prefix + "/" + cfgs[i]);
+    AutoInstor::instance()->add_library(prefix + "/" + cfgs[i]);
 
   MiiRobot::create_system_instance();
 }
@@ -215,7 +215,7 @@ void RobotWrapper::publishRTMsg() {
 
 //  Eigen::VectorXd* _sub_cmd[LegType::N_LEGS];
 //  if (!use_ros_control_) {
-//    auto cfg = MiiCfgReader::instance();
+//    auto cfg = CfgReader::instance();
 //    MiiVector<MiiString> cmds;
 //    cfg->get_value(Label::make_label(root_tag_, "roswrapper"), "cmds", cmds);
 //    FOR_EACH_LEG(l) {

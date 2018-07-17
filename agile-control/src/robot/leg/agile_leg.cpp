@@ -7,7 +7,7 @@
  */
 
 #include <foundation/cfg_reader.h>
-#include <foundation/auto_instanceor.h>
+#include <foundation/auto_instor.h>
 #include <robot/leg/agile_leg.h>
 
 #include <chrono>
@@ -20,7 +20,7 @@ class QrLegTopology
 {
 public:
   QrLegTopology(const std::string& _prefix) {
-    auto cfg = MiiCfgReader::instance();
+    auto cfg = CfgReader::instance();
     cfg->get_value_fatal(_prefix, "base",  BASE_LEN);
     cfg->get_value_fatal(_prefix, "thigh", THIGH_LEN);
     cfg->get_value_fatal(_prefix, "shank", SHANK_LEN);
@@ -48,7 +48,7 @@ AgileLeg::AgileLeg()
 bool AgileLeg::auto_init() {
   if (!RobotLeg::auto_init()) return false;
 
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value(getLabel(), "td_threshold", td_thres_);
 
   topology_ = new QrLegTopology(Label::make_label(getLabel(), "topology"));

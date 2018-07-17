@@ -10,6 +10,7 @@ agile_robot:
     prefix: libs_root
     file:
       - libagile_driver_sys_platform.so
+      - libagile_driver_repository.so
 
   debug:        true
   rt_frequency: 200

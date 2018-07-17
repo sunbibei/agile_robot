@@ -71,7 +71,7 @@ Joint::~Joint() {
 }
 
 bool Joint::auto_init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value_fatal(getLabel(), "jnt",  jnt_type_);
   cfg->get_value_fatal(getLabel(), "leg",  leg_type_);
   cfg->get_value_fatal(getLabel(), "name", jnt_name_);

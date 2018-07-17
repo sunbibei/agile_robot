@@ -5,8 +5,10 @@
  *      Author: bibei
  */
 
-#include "foundation/auto_instanceor.h"
+#include "foundation/auto_instor.h"
 #include "foundation/label.h"
+
+#include <fstream>
 // Cancel the namespace middleware
 // namespace middleware {
 void __updateTypeMap(class_loader::ClassLoader* _new_loader, int idx, std::map<std::string, int>& _type_map) {
@@ -15,19 +17,42 @@ void __updateTypeMap(class_loader::ClassLoader* _new_loader, int idx, std::map<s
     _type_map[c] = idx;
 }
 
-// std::map<std::string, Label::LabelPtr> AutoInstanceor::s_inst_table_;
-// SINGLETON_IMPL_NO_CREATE(AutoInstanceor)
-SINGLETON_IMPL(AutoInstanceor)
+bool __full_fn(const std::vector<std::string>& _ps, const std::string& _f, std::string& _fn) {
+  std::ifstream _ifd;
+  _fn = _f;
+  _ifd.open(_fn);
+  if (_ifd.is_open()) {
+    _ifd.close();
+    return true;
+  }
 
-//AutoInstanceor* AutoInstanceor::create_instance(const std::string& lib) {
+  for (const auto& _p : _ps) {
+    _fn = _p + "/" + _f;
+    _ifd.open(_fn);
+    if (_ifd.is_open()) {
+      _ifd.close();
+      return true;
+    }
+    _ifd.close();
+  }
+  _fn = "";
+  return false;
+}
+
+// std::map<std::string, Label::LabelPtr> AutoInstor::s_inst_table_;
+// SINGLETON_IMPL_NO_CREATE(AutoInstor)
+SINGLETON_IMPL(AutoInstor)
+
+std::vector<std::string> AutoInstor::s_cfg_paths_;
+//AutoInstor* AutoInstor::create_instance(const std::string& lib) {
 //  if (nullptr != s_inst_) {
-//    LOG_WARNING << "Create the AutoInstanceor instance twice!";
+//    LOG_WARNING << "Create the AutoInstor instance twice!";
 //  } else
-//    s_inst_ = new AutoInstanceor(lib);
+//    s_inst_ = new AutoInstor(lib);
 //  return s_inst_;
 //}
 
-AutoInstanceor::AutoInstanceor(/*const std::string& lib_path*/)
+AutoInstor::AutoInstor(/*const std::string& lib_path*/)
   : class_loader_(nullptr), n_library_(0), N_loader_(4) {
   // class_loader_ = new class_loader::MultiLibraryClassLoader(true);
   // class_loader_->loadLibrary(lib_path);
@@ -38,7 +63,14 @@ AutoInstanceor::AutoInstanceor(/*const std::string& lib_path*/)
   // printAvailableClass();
 }
 
-bool AutoInstanceor::add_library(const std::string& _l) {
+void AutoInstor::add_path(const std::string& _p) {
+  for (const auto& p : s_cfg_paths_)
+    if (0 == p.compare(_p)) return;
+
+  s_cfg_paths_.push_back(_p);
+}
+
+bool AutoInstor::add_library(const std::string& _l) {
   if (n_library_ == N_loader_) {
     N_loader_ *= 2;
     auto tmp = new class_loader::ClassLoader*[N_loader_];
@@ -49,14 +81,21 @@ bool AutoInstanceor::add_library(const std::string& _l) {
     class_loader_ = tmp;
   }
 
-  class_loader_[n_library_] = new class_loader::ClassLoader(_l);
+  std::string _fn;
+  if (!__full_fn(s_cfg_paths_, _l, _fn)) {
+    LOG_ERROR << "Could not found the " << _l
+        << ", did you forget define the file?";
+    return false;
+  }
+
+  class_loader_[n_library_] = new class_loader::ClassLoader(_fn);
   __updateTypeMap(class_loader_[n_library_], n_library_, type_map_);
   ++n_library_;
   return true;
 }
 
 // Just for debug
-void AutoInstanceor::printAvailableClass() {
+void AutoInstor::printAvailableClass() {
   if (_DEBUG_INFO_FLAG) {
     LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-";
     for (size_t i = 0; i < n_library_; ++i) {
@@ -71,7 +110,7 @@ void AutoInstanceor::printAvailableClass() {
   }
 }
 
-AutoInstanceor::~AutoInstanceor() {
+AutoInstor::~AutoInstor() {
   // s_inst_table_.clear();
   for (auto& inst : Label::s_label_table_) {
     inst.second.reset();
@@ -88,7 +127,7 @@ AutoInstanceor::~AutoInstanceor() {
   }
 }
 
-bool AutoInstanceor::make_instance(const std::string& __p, const std::string& __type) {
+bool AutoInstor::make_instance(const std::string& __p, const std::string& __type) {
   if (type_map_.end() == type_map_.find(__type)) return false;
 
   int idx = type_map_[__type];

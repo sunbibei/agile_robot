@@ -5,8 +5,8 @@
  *      Author: silence
  */
 
-#ifndef INCLUDE_SYSTEM_UTILS_CFG_READER_H_
-#define INCLUDE_SYSTEM_UTILS_CFG_READER_H_
+#ifndef INCLUDE_FOUNDATION_CFG_READER_H_
+#define INCLUDE_FOUNDATION_CFG_READER_H_
 
 // #include <foundation/label.h>
 // #include <foundation/utf.h>
@@ -20,8 +20,8 @@
 // Cancel the namespace middleware
 // namespace middleware {
 
-class MiiCfgReader final {
-  SINGLETON_DECLARE(MiiCfgReader)
+class CfgReader final {
+  SINGLETON_DECLARE(CfgReader)
 
 public:
 
@@ -93,8 +93,8 @@ private:
   size_t               n_config_;
   size_t               N_config_;
 
-  std::vector<std::string> opened_cfg_file_;
-  static std::vector<std::string>         s_cfg_paths_;
+  std::vector<std::string>          opened_cfg_file_;
+  static std::vector<std::string>   s_cfg_paths_;
 };
 
 
@@ -110,7 +110,7 @@ bool __get_value_helper(TiXmlElement* __root, const std::string& p,
     const std::string& __attr, bool fatal, std::string& __pAttr);
 
 template<class _Type>
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, _Type& val, const _Type& def) {
+bool CfgReader::get_value(const std::string& p, const std::string& attr, _Type& val, const _Type& def) {
   if (!get_value(p, attr, val))
     val = def;
 
@@ -118,7 +118,7 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, _Typ
 }
 
 template<class _Type>
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, _Type& val) {
+bool CfgReader::get_value(const std::string& p, const std::string& attr, _Type& val) {
   std::vector<_Type> __vals;
   if ((!get_value(p, attr, __vals)) || (__vals.empty())) return false;
 
@@ -127,7 +127,7 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, _Typ
 }
 
 template<class _Type>
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::vector<_Type>& vals) {
+bool CfgReader::get_value(const std::string& p, const std::string& attr, std::vector<_Type>& vals) {
   std::string __pAttr = "";
   for (size_t i = 0; i < n_config_; ++i) {
     auto _cfg_root = cfg_docs_[i]->RootElement();
@@ -144,7 +144,7 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std:
 }
 
 template<class _Type>
-void MiiCfgReader::get_value_fatal(const std::string& p, const std::string& attr, _Type& val) {
+void CfgReader::get_value_fatal(const std::string& p, const std::string& attr, _Type& val) {
   std::vector<_Type> __vals;
   if ((!get_value(p, attr, __vals)) || (__vals.empty()))
     LOG_FATAL << "CfgReader can't found the configure '" << Label::make_label(p, attr) << "' in the configure file.";
@@ -153,11 +153,11 @@ void MiiCfgReader::get_value_fatal(const std::string& p, const std::string& attr
 }
 
 template<class _Type>
-void MiiCfgReader::get_value_fatal(const std::string& p, const std::string& attr, std::vector<_Type>& vals) {
+void CfgReader::get_value_fatal(const std::string& p, const std::string& attr, std::vector<_Type>& vals) {
   if (!get_value(p, attr, vals))
     LOG_FATAL << "CfgReader can't found the confgiure '" << Label::make_label(p, attr) << "' in the configure file.";
 }
 
 //} /* namespace middleware */
 
-#endif /* INCLUDE_SYSTEM_UTILS_CFG_READER_H_ */
+#endif /* INCLUDE_FOUNDATION_CFG_READER_H_ */

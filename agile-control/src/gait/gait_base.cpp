@@ -22,7 +22,7 @@ GaitBase::GaitBase(const std::string& _l)
 }
 
 bool GaitBase::auto_init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value(getLabel(), "name", gait_name_);
   return true;
 }

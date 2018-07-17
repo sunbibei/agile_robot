@@ -6,7 +6,7 @@
  */
 
 #include "foundation/cfg_reader.h"
-#include "foundation/auto_instanceor.h"
+#include "foundation/auto_instor.h"
 #include "foundation/thread/threadpool.h"
 #include "foundation/registry/registry2.h"
 
@@ -18,7 +18,7 @@
 namespace agile_control {
 
 void __auto_inst(const std::string& _p, const std::string& _type) {
-  if (!AutoInstanceor::instance()->make_instance(_p, _type))
+  if (!AutoInstor::instance()->make_instance(_p, _type))
     LOG_ERROR << "Create instance(" << _type << " " << _p << ") fail!";
 }
 
@@ -38,9 +38,9 @@ MiiControl::~MiiControl() {
 }
 
 bool MiiControl::init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   if (nullptr == cfg)
-    LOG_FATAL << "The MiiCfgReader::create_instance(const std::string&) "
+    LOG_FATAL << "The CfgReader::create_instance(const std::string&) "
         << "method must to be called by subclass before MiiRobot::init()";
 
   double hz = 1000;

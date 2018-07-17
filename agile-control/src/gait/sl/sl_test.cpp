@@ -27,7 +27,7 @@ struct WSParam {
   std::vector<double>   ceilings;
 
   WSParam(const std::string& _tag) {
-    auto cfg = MiiCfgReader::instance();
+    auto cfg = CfgReader::instance();
     cfg->get_value(_tag, "floors",   floors);
     cfg->get_value(_tag, "ceilings", ceilings);
   }
@@ -48,7 +48,7 @@ struct LTParam {
     LTParam(const std::string& _tag)
     : FOOT_STEP(10),   INIT_HEIGHT(46),
       SWING_HEIGHT(5), SWING_TIME(1000) {
-      auto cfg = MiiCfgReader::instance();
+      auto cfg = CfgReader::instance();
       cfg->get_value(_tag, "step",         FOOT_STEP);
       cfg->get_value(_tag, "swing_height", SWING_HEIGHT);
       cfg->get_value(_tag, "init_height",  INIT_HEIGHT);
@@ -80,7 +80,7 @@ struct LTParam {
 //    SWING_APPROACH(1.0), SWING_DROP(0.5),
 //    SWING_TIME(1000) {
 //
-//    auto cfg = MiiCfgReader::instance();
+//    auto cfg = CfgReader::instance();
 //    cfg->get_value(_tag, "step",         FOOT_STEP);
 //    cfg->get_value(_tag, "swing_height", SWING_HEIGHT);
 //    cfg->get_value(_tag, "stance_height",STANCE_HEIGHT);
@@ -110,7 +110,7 @@ SlTest::~SlTest() {
 
 bool SlTest::auto_init() {
   if (!GaitBase::auto_init()) return false;
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
 
   auto ifaces = LegRobot::instance();
   if (!ifaces) {

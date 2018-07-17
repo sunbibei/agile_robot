@@ -71,7 +71,7 @@ struct WalkParam {
       FORWARD_ALPHA(0),  STOP_HEIGHT_SCALE(0.3),
       COG_TIME(2000),    SWING_TIME(2000),
       MARGIN_THRES(6) {
-    auto cfg = MiiCfgReader::instance();
+    auto cfg = CfgReader::instance();
     cfg->get_value(_tag, "cog_threshold",THRES_COG);
     cfg->get_value(_tag, "step",         FOOT_STEP);
     cfg->get_value(_tag, "stance_height",STANCE_HEIGHT);
@@ -105,7 +105,7 @@ struct TdParam {
   TdParam(const std::string& _tag)
   : STANCE_DELTA(0.1), STANCE_FLOOR(45), STANCE_CEILING(49),
     TD_KP(0.01) {
-    auto cfg = MiiCfgReader::instance();
+    auto cfg = CfgReader::instance();
 
     cfg->get_value(_tag, "stance_delta",     STANCE_DELTA);
     cfg->get_value(_tag, "stance_floor",     STANCE_FLOOR);
@@ -194,7 +194,7 @@ bool Walk::auto_init() {
     LOG_INFO << "get interface(LegType::HR): " << leg_ifaces_[LegType::HR];
   }
 
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   // cfg->get_value(getLabel(), "hang",     is_hang_walk_);
   cfg->get_value(getLabel(), "hang",     _s_is_hang);
   cfg->get_value(getLabel(), "interval", post_tick_interval_);

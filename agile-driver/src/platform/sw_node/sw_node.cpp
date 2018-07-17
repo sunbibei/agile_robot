@@ -19,7 +19,7 @@ SWNode::SWNode(const std::string& l)
 }
 
 bool SWNode::auto_init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value_fatal(getLabel(), "bus_id",  bus_id_);
   cfg->get_value_fatal(getLabel(), "node_id", node_id_);
 

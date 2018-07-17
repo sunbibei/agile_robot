@@ -8,7 +8,7 @@
 #include "apps/control_wrapper.h"
 
 #include "foundation/cfg_reader.h"
-#include "foundation/auto_instanceor.h"
+#include "foundation/auto_instor.h"
 #include "foundation/thread/threadpool.h"
 
 SINGLETON_IMPL_NO_CREATE(ControlWrapper)
@@ -31,8 +31,8 @@ ControlWrapper::ControlWrapper(const std::string& _prefix)
 ControlWrapper::~ControlWrapper() {
   alive_ = false;
   // agile_control::MiiControl::instance()->destroy_instance();
-  // AutoInstanceor::destroy_instance();
-  MiiCfgReader::destroy_instance();
+  // AutoInstor::destroy_instance();
+  CfgReader::destroy_instance();
 }
 
 bool ControlWrapper::init() {
@@ -72,10 +72,10 @@ void ControlWrapper::create_system_instance() {
   }
 
   ros::param::get(prefix, prefix);
-  if (nullptr == MiiCfgReader::create_instance())
-    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
+  if (nullptr == CfgReader::create_instance())
+    LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
   for (size_t i = 0; i < cfgs.size(); ++i)
-    MiiCfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
+    CfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
 
   if (!nh_.getParam("library/prefix", prefix)
       || !nh_.getParam("library/file", cfgs)) {
@@ -84,10 +84,10 @@ void ControlWrapper::create_system_instance() {
   }
 
   ros::param::get(prefix, prefix);
-  if (nullptr == AutoInstanceor::create_instance())
-    LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
+  if (nullptr == AutoInstor::create_instance())
+    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
   for (size_t i = 0; i < cfgs.size(); ++i)
-    AutoInstanceor::instance()->add_library(prefix + "/" + cfgs[i]);
+    AutoInstor::instance()->add_library(prefix + "/" + cfgs[i]);
 
   MiiControl::create_system_instance();
 }

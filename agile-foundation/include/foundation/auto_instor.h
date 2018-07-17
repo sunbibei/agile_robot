@@ -1,12 +1,12 @@
 /*
- * auto_instanceor.h
+ * auto_instor.h
  *
  *  Created on: Aug 31, 2017
  *      Author: bibei
  */
 
-#ifndef INCLUDE_SYSTEM_UTILS_AUTO_INSTANCEOR_H_
-#define INCLUDE_SYSTEM_UTILS_AUTO_INSTANCEOR_H_
+#ifndef INCLUDE_FOUNDATION_AUTO_INSTOR_H_
+#define INCLUDE_FOUNDATION_AUTO_INSTOR_H_
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -17,13 +17,15 @@
 // Cancel the namespace middleware
 // namespace middleware {
 
-class AutoInstanceor {
-  // SINGLETON_DECLARE(AutoInstanceor, const std::string&)
-  SINGLETON_DECLARE(AutoInstanceor)
+class AutoInstor final {
+  // SINGLETON_DECLARE(AutoInstor, const std::string&)
+  SINGLETON_DECLARE(AutoInstor)
 
 public:
-  /*template<class _Base>
-  bool make_instance(MiiStringConstRef, _Base);*/
+  /*!
+   * @brief Add a new path into ENV $path, not a file name but a path.
+   */
+  static void add_path(const std::string&);
 
   /**
    * @brief Create an object about specific __type
@@ -32,7 +34,7 @@ public:
    */
   bool make_instance(const std::string& __p, const std::string& __type);
   /*!
-   * @brief Add a library into the AutoInstanceor.
+   * @brief Add a library into the AutoInstor.
    */
   bool add_library(const std::string& _l);
 
@@ -44,9 +46,11 @@ protected:
   class_loader::ClassLoader** class_loader_;
   size_t                      n_library_;
   size_t                      N_loader_;
-  std::map<std::string, int>    type_map_;
+  std::map<std::string, int>  type_map_;
+
+  static std::vector<std::string>   s_cfg_paths_;
 };
 
 //} /* namespace middleware */
 
-#endif /* INCLUDE_SYSTEM_UTILS_AUTO_INSTANCEOR_H_ */
+#endif /* INCLUDE_FOUNDATION_AUTO_INSTOR_H_ */

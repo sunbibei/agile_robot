@@ -12,20 +12,17 @@
 #include "repository/joint_manager.h"
 
 #include "foundation/cfg_reader.h"
-#include "foundation/auto_instanceor.h"
+#include "foundation/auto_instor.h"
 #include "foundation/registry/registry.h"
 #include "foundation/thread/threadpool.h"
-
-///! qr-next-control
-#include "mii_control.h"
 
 #include <rospack/rospack.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32MultiArray.h>
 
-#define MII_CTRL_THREAD ("mii_control")
-#define RT_PUB_THREAD   ("rt_publisher")
+// #define MII_CTRL_THREAD ("mii_control")
+// #define RT_PUB_THREAD   ("rt_publisher")
 
 /*!
  * @brief Setup the env for the agile-system.
@@ -101,8 +98,8 @@ RosWrapper::RosWrapper(const std::string& _robot_tag, const std::string& _ctrl_t
 RosWrapper::~RosWrapper() {
   alive_ = false;
   // agile_control::MiiControl::instance()->destroy_instance();
-  // AutoInstanceor::destroy_instance();
-  MiiCfgReader::destroy_instance();
+  // AutoInstor::destroy_instance();
+  CfgReader::destroy_instance();
 }
 
 void RosWrapper::create_system_instance() {
@@ -114,67 +111,71 @@ void RosWrapper::create_system_instance() {
         << "in the parameter server. Did you forget define this parameter.";
   }
 
+  std::string prefix;
+  if (!ros::param::get(prefix_robot + "/configure/prefix", prefix)) {
+    LOG_FATAL << "RosWapper can't find the 'configure' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
+  }
+  ros::param::get(prefix, prefix);
+  if (nullptr == CfgReader::create_instance())
+    LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
+  CfgReader::add_path(prefix);
+
+  if (!ros::param::get(prefix_robot + "/library/prefix", prefix)) {
+    LOG_FATAL << "RosWapper can't find the 'library' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
+  }
+  ros::param::get(prefix, prefix);
+  if (nullptr == AutoInstor::create_instance())
+    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
+  AutoInstor::add_path(prefix);
+
   LOG_ERROR << "create system instance!!!!!!!!!!!!";
   sys_inst_robot(prefix_robot);
   sys_inst_control(prefix_ctrl);
 }
 
 void RosWrapper::sys_inst_robot(const std::string& param_root) {
-  std::string prefix;
   std::vector<std::string> cfgs;
-  if (!ros::param::get(param_root + "/configure/prefix", prefix)
-      || !ros::param::get(param_root + "/configure/file", cfgs)) {
+  if (!ros::param::get(param_root + "/configure/file", cfgs)) {
     LOG_FATAL << "RosWapper can't find the 'configure' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
 
-  ros::param::get(prefix, prefix);
-  if (nullptr == MiiCfgReader::create_instance())
-    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
-  for (size_t i = 0; i < cfgs.size(); ++i)
-    MiiCfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
+  LOG_ERROR << "ROBOT: " << cfgs[0];
+  for (const auto& cfg : cfgs)
+    CfgReader::instance()->add_config(cfg);
 
-  if (!ros::param::get(param_root + "/library/prefix", prefix)
-      || !ros::param::get(param_root + "/library/file", cfgs)) {
+  if (!ros::param::get(param_root + "/library/file", cfgs)) {
     LOG_FATAL << "RosWapper can't find the 'library' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
 
-  ros::param::get(prefix, prefix);
-  if (nullptr == AutoInstanceor::create_instance())
-    LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
-  for (size_t i = 0; i < cfgs.size(); ++i)
-    AutoInstanceor::instance()->add_library(prefix + "/" + cfgs[i]);
+  LOG_ERROR << "AUTO_INST: " << cfgs[0];
+  for (const auto& cfg : cfgs)
+    AutoInstor::instance()->add_library(cfg);
 
   MiiRobot::create_system_instance();
 }
 
 void RosWrapper::sys_inst_control(const std::string& param_root) {
-  std::string prefix;
   std::vector<std::string> cfgs;
-  if (!ros::param::get(param_root + "/configure/prefix",  prefix)
-      || !ros::param::get(param_root + "/configure/file", cfgs)) {
+  if (!ros::param::get(param_root + "/configure/file", cfgs)) {
     LOG_FATAL << "RosWapper can't find the 'configure' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
+  LOG_ERROR << "CONTROL: " << cfgs[0];
+  for (const auto& cfg : cfgs)
+    CfgReader::instance()->add_config(cfg);
 
-  ros::param::get(prefix, prefix);
-  if (nullptr == MiiCfgReader::create_instance())
-    LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
-  for (size_t i = 0; i < cfgs.size(); ++i)
-    MiiCfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
-
-  if (!ros::param::get(param_root + "/library/prefix",  prefix)
-      || !ros::param::get(param_root + "/library/file", cfgs)) {
+  if (!ros::param::get(param_root + "/library/file", cfgs)) {
     LOG_FATAL << "RosWapper can't find the 'library' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
 
-  ros::param::get(prefix, prefix);
-  if (nullptr == AutoInstanceor::create_instance())
-    LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
-  for (size_t i = 0; i < cfgs.size(); ++i)
-    AutoInstanceor::instance()->add_library(prefix + "/" + cfgs[i]);
+  LOG_ERROR << "AUTO_INST: " << cfgs[0];
+  for (const auto& cfg : cfgs)
+    AutoInstor::instance()->add_library(cfg);
 
   MiiControl::create_system_instance();
 }
@@ -208,7 +209,7 @@ bool RosWrapper::init() {
   gait_ctrl_sub_ = nh_.subscribe<std_msgs::String>(str, 1,
       &RosWrapper::gaitControlCb, this);
 
-  ThreadPool::instance()->add(RT_PUB_THREAD, &RosWrapper::publishRTMsg, this);
+  ThreadPool::instance()->add("rt_puber", &RosWrapper::publishRTMsg, this);
 
 // For debug
 #ifdef DEBUG_TOPIC
@@ -333,7 +334,7 @@ void RosWrapper::publishRTMsg() {
 
 //  Eigen::VectorXd* _sub_cmd[LegType::N_LEGS];
 //  if (!use_ros_control_) {
-//    auto cfg = MiiCfgReader::instance();
+//    auto cfg = CfgReader::instance();
 //    MiiVector<MiiString> cmds;
 //    cfg->get_value(Label::make_label(root_tag_, "roswrapper"), "cmds", cmds);
 //    FOR_EACH_LEG(l) {

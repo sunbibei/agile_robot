@@ -6,7 +6,7 @@
  */
 #include "gait/gait_manager.h"
 #include "foundation/cfg_reader.h"
-#include "foundation/auto_instanceor.h"
+#include "foundation/auto_instor.h"
 #include "mii_control.h"
 
 #include <iostream>
@@ -15,20 +15,20 @@
 
 void __auto_inst(const std::string& __p, const std::string& __type) {
   LOG_INFO << "Create instance(" << __type << " " << __p;
-  if (!AutoInstanceor::instance()->make_instance(__p, __type)) {
+  if (!AutoInstor::instance()->make_instance(__p, __type)) {
     LOG_WARNING << "Create instance(" << __type << " " << __p << ") fail!";
   }
 }
 
 void create_system_instance() {
   // Just for test
-  auto auto_inst = AutoInstanceor::create_instance();
+  auto auto_inst = AutoInstor::create_instance();
   if (nullptr == auto_inst) {
-    LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
+    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
   }
-  auto cfg = MiiCfgReader::create_instance();
+  auto cfg = CfgReader::create_instance();
   if (!cfg) {
-    LOG_FATAL << "The MiiCfgReader::create_instance(MiiStringConstRef) "
+    LOG_FATAL << "The CfgReader::create_instance(MiiStringConstRef) "
         << "method must to be called by subclass before GaitManager::init()";
   }
 

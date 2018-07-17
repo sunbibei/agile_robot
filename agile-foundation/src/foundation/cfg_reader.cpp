@@ -140,7 +140,7 @@ bool __parse_root_file(const std::string& _f, const std::vector<std::string>& _p
 
 
 void __findAttr(TiXmlElement* __curr, const std::string& __p,
-    const std::string& attr, MiiCfgReader::Callback cb) {
+    const std::string& attr, CfgReader::Callback cb) {
   for (auto __next = __curr->FirstChildElement();
       nullptr != __next; __next = __next->NextSiblingElement()) {
     std::string __next_p = Label::make_label(__p, __next->Value());
@@ -152,7 +152,7 @@ void __findAttr(TiXmlElement* __curr, const std::string& __p,
 }
 
 /*void __findTag(TiXmlElement* __curr, const std::string& __p,
-    const std::string& _tag, MiiCfgReader::Callback1 cb) {
+    const std::string& _tag, CfgReader::Callback1 cb) {
   for (auto __next = __curr->FirstChildElement();
       nullptr != __next; __next = __next->NextSiblingElement()) {
     std::string __next_p = Label::make_label(__p, __next->Value());
@@ -188,20 +188,20 @@ TiXmlElement* __findLabel(TiXmlElement* __root, std::string __label) {
   return __root;
 }
 
-SINGLETON_IMPL(MiiCfgReader)
+SINGLETON_IMPL(CfgReader)
 
-//MiiCfgReader* MiiCfgReader::create_instance(const std::string& file) {
+//CfgReader* CfgReader::create_instance(const std::string& file) {
 //  if (nullptr == s_inst_) {
 //    add_path(".");
-//    s_inst_ = new MiiCfgReader(file);
+//    s_inst_ = new CfgReader(file);
 //  } else {
-//    LOG_WARNING << "This method 'MiiCfgReader::create_instance' is called twice!";
+//    LOG_WARNING << "This method 'CfgReader::create_instance' is called twice!";
 //  }
 //
 //  return s_inst_;
 //}
 
-MiiCfgReader::MiiCfgReader(/*const std::string& file*/)
+CfgReader::CfgReader(/*const std::string& file*/)
 : cfg_docs_(nullptr), /*cfg_root_(nullptr),*/
   n_config_(0), N_config_(8) {
 
@@ -214,7 +214,7 @@ MiiCfgReader::MiiCfgReader(/*const std::string& file*/)
   // add_config(file);
 }
 
-MiiCfgReader::~MiiCfgReader() {
+CfgReader::~CfgReader() {
   if (nullptr != cfg_docs_) {
     for (size_t i = 0; i < N_config_; ++i)
       if (nullptr != cfg_docs_[i]) delete cfg_docs_[i];
@@ -225,16 +225,16 @@ MiiCfgReader::~MiiCfgReader() {
   MACRO_DESTROY
 }
 
-std::vector<std::string> MiiCfgReader::s_cfg_paths_;
+std::vector<std::string> CfgReader::s_cfg_paths_;
 
-void MiiCfgReader::add_path(const std::string& _p) {
+void CfgReader::add_path(const std::string& _p) {
   for (const auto& p : s_cfg_paths_)
     if (0 == p.compare(_p)) return;
 
   s_cfg_paths_.push_back(_p);
 }
 
-bool MiiCfgReader::add_config(const std::string& _f) {
+bool CfgReader::add_config(const std::string& _f) {
   std::string _fn;
   if (!__get_full_fn(s_cfg_paths_, _f, _fn)) {
     LOG_ERROR << "Could not found the " << _f
@@ -272,7 +272,7 @@ bool MiiCfgReader::add_config(const std::string& _f) {
   return true;
 }
 
-void MiiCfgReader::regAttrCb(const std::string& attr, Callback cb,
+void CfgReader::regAttrCb(const std::string& attr, Callback cb,
     const std::string& __prefix) {
   for (size_t i = 0; i < n_config_; ++i) {
     auto cfg_root = cfg_docs_[i]->RootElement();
@@ -288,7 +288,7 @@ void MiiCfgReader::regAttrCb(const std::string& attr, Callback cb,
   }
 }
 
-/*void MiiCfgReader::regTagCb(const std::string& _tag, Callback1 cb, const std::string& _prefix) {
+/*void CfgReader::regTagCb(const std::string& _tag, Callback1 cb, const std::string& _prefix) {
   for (size_t i = 0; i < n_config_; ++i) {
     auto cfg_root = cfg_docs_[i]->RootElement();
     if (!_prefix.empty()) {
@@ -301,7 +301,7 @@ void MiiCfgReader::regAttrCb(const std::string& attr, Callback cb,
   }
 }*/
 
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::string& val) {
+bool CfgReader::get_value(const std::string& p, const std::string& attr, std::string& val) {
   size_t i = 0;
   for (; i < n_config_; ++i) {
     auto _cfg_root = cfg_docs_[i]->RootElement();
@@ -310,7 +310,7 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std:
   return (i != n_config_);
 }
 
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr,
+bool CfgReader::get_value(const std::string& p, const std::string& attr,
     std::vector<bool>& vals) {
 
   std::vector<std::string> vec_str;
@@ -329,7 +329,7 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr,
   return !vals.empty();
 }
 
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr,
+bool CfgReader::get_value(const std::string& p, const std::string& attr,
     std::vector<char>& vals) {
 
   std::vector<std::string> vals_str;
@@ -351,7 +351,7 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr,
   return true;
 }
 
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::vector<unsigned char>& vals) {
+bool CfgReader::get_value(const std::string& p, const std::string& attr, std::vector<unsigned char>& vals) {
   std::vector<char> vals_char;
   if (!get_value(p, attr, vals_char) || vals_char.empty()) return false;
 
@@ -361,7 +361,7 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std:
   return true;
 }
 
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::vector<JntType>& vals) {
+bool CfgReader::get_value(const std::string& p, const std::string& attr, std::vector<JntType>& vals) {
   std::vector<std::string> vals_str;
   if (!get_value(p, attr, vals_str)) return false;
 
@@ -386,7 +386,7 @@ bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std:
   return true;
 }
 
-bool MiiCfgReader::get_value(const std::string& p, const std::string& attr, std::vector<LegType>& vals) {
+bool CfgReader::get_value(const std::string& p, const std::string& attr, std::vector<LegType>& vals) {
   std::vector<std::string> vals_str;
   if (!get_value(p, attr, vals_str)) return false;
 

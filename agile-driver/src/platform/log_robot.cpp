@@ -39,7 +39,7 @@ LogRobot::LogRobot()
 }
 
 bool LogRobot::auto_init() {
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
 
   ///! No enable.
   if (!cfg->get_value(getLabel(), "enable", enable_) || !enable_)

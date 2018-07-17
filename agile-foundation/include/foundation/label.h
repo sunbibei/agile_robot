@@ -19,7 +19,7 @@
 // namespace middleware {
 
 class Label {
-  friend class AutoInstanceor;
+  friend class AutoInstor;
 public:
   typedef boost::shared_ptr<Label> LabelPtr;
   const static std::string null;

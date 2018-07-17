@@ -51,7 +51,7 @@ struct CreepParams {
       STANCE_HEIGHT(46), SWING_HEIGHT(5),
       COG_TIME(2000),    SWING_TIME(2000),
       MARGIN_THRES(6),   ALLOW_DIFF(5) {
-    auto cfg = MiiCfgReader::instance();
+    auto cfg = CfgReader::instance();
     cfg->get_value(_tag, "step",         FOOT_STEP);
     cfg->get_value(_tag, "step_y",       FOOT_STEP_Y);
     cfg->get_value(_tag, "stance_height",STANCE_HEIGHT);
@@ -105,7 +105,7 @@ bool Creep::auto_init() {
     LOG_INFO << "get interface(LegType::HR): " << leg_ifaces_[LegType::HR];
   }
 
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value(getLabel(), "hang",     is_hang_);
   cfg->get_value(getLabel(), "interval", post_tick_interval_);
 

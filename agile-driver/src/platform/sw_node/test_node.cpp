@@ -25,7 +25,7 @@ TestNode::TestNode()
 bool TestNode::auto_init() {
   if (!SWNode::auto_init()) return false;
 
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   cfg->get_value(getLabel(), "size",      N_total_msgs_);
   cfg->get_value(getLabel(), "path",      out_path_);
   cfg->get_value(getLabel(), "filename",  out_filename_);

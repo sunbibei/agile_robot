@@ -32,7 +32,7 @@ CanUsb::CanUsb()
 bool CanUsb::auto_init() {
   if (!Propagate::auto_init()) return false;
 
-  auto cfg = MiiCfgReader::instance();
+  auto cfg = CfgReader::instance();
   // cfg->get_value(getLabel(), "device_type", g_device_type);
   // cfg->get_value(getLabel(), "device_idx",  g_device_idx);
 

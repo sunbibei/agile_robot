@@ -9,7 +9,7 @@
 
 #include "foundation/utf.h"
 #include "foundation/cfg_reader.h"
-#include "foundation/auto_instanceor.h"
+#include "foundation/auto_instor.h"
 
 // #define TEST_MAIN
 #ifdef TEST_MAIN
@@ -17,7 +17,7 @@
 void print(const std::string& p, const std::string& l) {
   std::cout << "In Callback, " << Label::make_label(p, l) << std::endl;// ": ";
   // std::string val;
-  // MiiCfgReader::instance()->get_value(Label::make_label(p, l), "auto_inst", val);
+  // CfgReader::instance()->get_value(Label::make_label(p, l), "auto_inst", val);
   // std::cout << val << std::endl;
 
 }
@@ -26,20 +26,20 @@ void print(const std::string& p, const std::string& l) {
 
 void __auto_inst(const std::string& __p, const std::string& __type) {
   LOG_INFO << "Create instance(" << __type << " " << __p;
-/*  if (!AutoInstanceor::instance()->make_instance(__p, __type)) {
+/*  if (!AutoInstor::instance()->make_instance(__p, __type)) {
     LOG_WARNING << "Create instance(" << __type << " " << __p << ") fail!";
   }*/
 }
 
 int main() {
   // Just for test
-  // auto auto_inst = AutoInstanceor::create_instance("/home/bibei/Workspaces/qr_ws/devel/lib/libqr_control_repository.so");
+  // auto auto_inst = AutoInstor::create_instance("/home/bibei/Workspaces/qr_ws/devel/lib/libqr_control_repository.so");
 /*  if (nullptr == auto_inst) {
-    LOG_FATAL << "Create the singleton 'AutoInstanceor' has failed.";
+    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
   }*/
-  auto cfg = MiiCfgReader::create_instance("/home/bibei/Workspaces/qr_ws/src/qr-control/config/control_config.xml");
+  auto cfg = CfgReader::create_instance("/home/bibei/Workspaces/qr_ws/src/qr-control/config/control_config.xml");
   if (!cfg) {
-    LOG_FATAL << "The MiiCfgReader::create_instance(MiiStringConstRef) "
+    LOG_FATAL << "The CfgReader::create_instance(MiiStringConstRef) "
         << "method must to be called by subclass before GaitManager::init()";
   }
   // All of the objects mark with "auto_inst" in the configure file
@@ -148,7 +148,7 @@ int main() {
   std::cout << std::endl;
 
 
-  MiiCfgReader::destroy_instance();
+  CfgReader::destroy_instance();
   return 0;*/
 
 }
