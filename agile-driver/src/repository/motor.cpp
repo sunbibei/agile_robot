@@ -50,9 +50,9 @@ bool Motor::auto_init() {
   joint_handle_ = Label::getHardwareByName<Joint>(jnt_tag);
   if (nullptr == joint_handle_) {
     LOG_ERROR << "Can't get the handle of joint in the " << getLabel();
-    return false;
+  } else {
+    joint_handle_->joint_motor_ = this;
   }
-  joint_handle_->joint_motor_ = this;
 
   motor_state_ = new MotorState;
   motor_cmd_   = new MotorCommand(JointManager::instance()->getJointCommandMode());
@@ -66,7 +66,6 @@ bool Motor::auto_init() {
     motor_cmd_->MIN_VEL = lims[0];
     motor_cmd_->MAX_VEL = lims[1];
   }
-
 
   cfg->get_value(getLabel(), "name", motor_name_);
   return true;
@@ -97,19 +96,19 @@ void Motor::updateMotorCommand(double v) {
 }
 
 const std::string&  Motor::motor_name() const {
-  return joint_handle_->joint_name();
+  return motor_name_;
 }
 
 const std::string&  Motor::joint_name() const {
-  return joint_handle_->joint_name();
+  return (nullptr == joint_handle_) ? Label::null : joint_handle_->joint_name();
 }
 
 const JntType&    Motor::joint_type() const {
-  return joint_handle_->joint_type();
+  return (nullptr == joint_handle_) ? JntType::UNKNOWN_JNT : joint_handle_->joint_type();
 }
 
 const LegType&    Motor::leg_type()   const {
-  return joint_handle_->leg_type();
+  return (nullptr == joint_handle_) ? LegType::UNKNOWN_LEG : joint_handle_->leg_type();
 }
 
 const JntCmdType& Motor::cmd_mode()   const {

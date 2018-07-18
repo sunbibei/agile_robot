@@ -23,8 +23,8 @@ public:
   /**
    * @brief Instead of the upper methods, you also use the JointManager directly.
    */
-  class JointManager* joint_manager()           { return jnt_manager_; }
-  const class JointManager& joint_manager_ref() { return *jnt_manager_; }
+//  class JointManager*       joint_manager()     { return jnt_manager_;  }
+//  const class JointManager& joint_manager_ref() { return *jnt_manager_; }
 
 protected:
   /**
@@ -67,33 +67,17 @@ protected:
 
 protected:
   /**
-   * @brief Support the Registry2
-   */
-  virtual void supportRegistry2();
-
-private:
-  void __reg_resource_and_command();
-
-protected:
-  /**
    * Given by subclass in the parameters list of the constructed function.
    * Tell MiiRobot what necessary parameters are found in @prefix_tag_.
    */
-  std::string                     prefix_tag_;
-  // class Master*                 master_;
-  class JointManager*             jnt_manager_;
+  std::string                     root_tag_;
+// class Master*                   master_;
+  ///! The resource
+//  class JointManager*             jnt_manager_;
+//  std::vector<class ForceSensor*> td_list_by_type_;
+//  class ImuSensor*                imu_sensor_;
 
-  std::vector<class ForceSensor*>            td_list_;
-  std::vector<class ForceSensor*>            td_list_by_type_; // type: leg
-  std::map<std::string, class ForceSensor*>  td_list_by_name_;
-
-  class ImuSensor*   imu_sensor_;
-  
-  std::chrono::microseconds tick_interval_;
-
-private:
-  bool                 is_alive;
-  class __RegJntRes*   jnt_reg_res_;
+//  std::chrono::microseconds       tick_interval_;
 };
 
 } /* namespace middleware */

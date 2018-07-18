@@ -185,16 +185,21 @@ TiXmlElement* __findTag(TiXmlElement* __prefix, const std::string& tag) {
 }
 
 TiXmlElement* __findLabel(TiXmlElement* __root, std::string __label) {
-  if (__label.empty()) return nullptr;
+  std::vector<std::string> __ps;
+  std::string __p = __label; // Label::make_label("cfg", p);
+  while (Label::null != __p) {
+    std::string __l;
+    Label::split_label(__p, __p, __l);
+    if (Label::null != __l) __ps.push_back(__l);
+  }
+  if ((__ps.empty()) || (0 != __ps.back().compare(__root->Value())))
+    return nullptr;
 
-  std::string __l;
-  Label::split_label(__label, __label, __l);
-  if (0 != __l.compare(__root->Value())) return nullptr;
+  __ps.pop_back(); // pop the root tag.
+  while (nullptr != __root && !__ps.empty()) {
+    __root = __root->FirstChildElement(__ps.back());
 
-  while (Label::null != __label) {
-    Label::split_label(__label, __label, __l);
-    __root = __root->FirstChildElement(__l);
-    if (!__root) return nullptr;
+    __ps.pop_back();
   }
 
   return __root;
@@ -314,6 +319,32 @@ void CfgReader::regAttrCb(const std::string& attr, Callback1 cb,
       cb(Label::null, cfg_root->Attribute(attr.c_str()));
 
     __findAttr(cfg_root, cfg_root->Value(), attr, cb);
+  }
+}
+
+void CfgReader::foreachAttr(const std::string& _p,
+      std::function<void(const std::string&, const std::string&)> _cb) {
+  for (size_t i = 0; i < n_config_; ++i) {
+    auto cfg_root = cfg_docs_[i]->RootElement();
+    cfg_root      = __findLabel(cfg_root, _p);
+    if (nullptr  == cfg_root) continue;
+
+    for (auto attr = cfg_root->FirstAttribute(); nullptr != attr; attr = attr->Next())
+      _cb(attr->NameTStr(), attr->ValueStr());
+  }
+}
+
+void CfgReader::foreachTag(const std::string& _p,
+    std::function<void(const std::string&)> _cb) {
+  for (size_t i = 0; i < n_config_; ++i) {
+    auto cfg_root = cfg_docs_[i]->RootElement();
+    cfg_root      = __findLabel(cfg_root, _p);
+    if (nullptr  == cfg_root) continue;
+
+    for (auto tag = cfg_root->FirstChildElement();
+        nullptr != tag; tag = tag->NextSiblingElement()) {
+      _cb(Label::make_label(_p, tag->ValueStr()));
+    }
   }
 }
 

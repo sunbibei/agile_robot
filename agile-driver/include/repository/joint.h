@@ -14,6 +14,7 @@
 namespace agile_robot {
 
 class Joint : public Label {
+  friend class PdNode;
   friend class LegNode;
   friend class MotorNode;
   friend class MotorNode0;

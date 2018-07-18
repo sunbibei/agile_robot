@@ -36,7 +36,7 @@ public:
 
   static std::string make_label  (const std::string& _p, const std::string& _l);
   static std::string parent_label(const std::string&);
-  static void      split_label (std::string, std::string&, std::string&);
+  static void        split_label (std::string, std::string&, std::string&);
 
   template<class _Hardware>
   static _Hardware* getHardwareByName(const std::string&);

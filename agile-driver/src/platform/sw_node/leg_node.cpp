@@ -32,7 +32,7 @@ const size_t JNT_PV1_CMD_DSIZE = 4;
 // angle = \frac{360 \pi \alpha}{180*4096} C - \frac{\pi}{18000}\alpha*\beta
 // so, the ABS(scale) = \frac{360 \pi \alpha}{180*4096} = \frac{360\pi}{180*4096}
 // offset = - \frac{\pi}{18000}\alpha*\beta = -0.000174528*\beta
-struct __PrivateLinearParams {
+struct __LinearParams {
   double scale;
   double offset;
 };
@@ -87,7 +87,7 @@ bool LegNode::auto_init() {
     //    if (jnt->joint_motor_)
     //      motors_by_type_[jnt->joint_type()] = jnt->joint_motor_;
 
-    auto param  = new __PrivateLinearParams;
+    auto param  = new __LinearParams;
     double scale = 0, offset = 0;
     cfg->get_value_fatal(_tag, "scale",  scale);
     cfg->get_value_fatal(_tag, "offset", offset);

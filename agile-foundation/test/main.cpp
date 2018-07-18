@@ -11,7 +11,7 @@
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instor.h"
 
-// #define TEST_MAIN
+#define TEST_MAIN
 #ifdef TEST_MAIN
 
 void print(const std::string& p, const std::string& l) {
@@ -37,18 +37,30 @@ int main() {
 /*  if (nullptr == auto_inst) {
     LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
   }*/
-  auto cfg = CfgReader::create_instance("/home/bibei/Workspaces/qr_ws/src/qr-control/config/control_config.xml");
+  CfgReader::add_path("/home/bibei/Workspaces/agile_ws/src/agile_robot/agile-apps/config");
+  auto cfg = CfgReader::create_instance();
   if (!cfg) {
     LOG_FATAL << "The CfgReader::create_instance(MiiStringConstRef) "
         << "method must to be called by subclass before GaitManager::init()";
   }
+
+  cfg->add_config("pd_robot.cfg");
+
+  auto f = [](const std::string& attr, const std::string& val) {
+    printf("key: %s -> value: %s\n", attr.c_str(), val.c_str());
+  };
+  cfg->foreachAttr("pd.res.jnts.lft", f);
+
+  cfg->foreachTag("pd.core.nodes.leg_node", [](const std::string& _p){
+    printf("TAG: %s\n", _p.c_str());
+  });
   // All of the objects mark with "auto_inst" in the configure file
   // will be instanced here.
-  LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";
-  cfg->regAttrCb("auto_inst", __auto_inst);
-  // Just for debug
-  LOG_DEBUG << "Auto instance has finished. The results list as follow:";
-  Label::printfEveryInstance();
+//  LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";
+//  cfg->regAttrCb("auto_inst", __auto_inst);
+//  // Just for debug
+//  LOG_DEBUG << "Auto instance has finished. The results list as follow:";
+//  Label::printfEveryInstance();
 
   return 0;
 /*

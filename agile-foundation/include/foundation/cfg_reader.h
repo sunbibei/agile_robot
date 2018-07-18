@@ -42,6 +42,26 @@ public:
   // typedef void (*Callback1)(const std::string& __p, TiXmlElement*);
   // void regTagCb(const std::string& _tag, Callback1, const std::string& _prefix = "");
 
+  /*!
+   * @brief The iterator for the all attributes under a given tag @_p, FOR EXAMPLE:
+   *        auto f = [](const std::string& attr, const std::string& val) {
+   *            printf("key: %s -> value: %s\n", attr.c_str(), val.c_str());
+   *            };
+   *        CfgReader::instance()->foreachAttr("leg.res.fl", f);
+   *        NOTE: The prototype of callback: void (*cb)(attr, value);
+   */
+  void foreachAttr(const std::string& _p,
+      std::function<void(const std::string&, const std::string&)> _cb);
+
+  /*!
+   * @brief The iterator for the all sub-tag under a given tag @_p, FOR EXAMPLE:
+   *        auto f = [](const std::string& tag) {
+   *            printf("tag: %s\n", tag.c_str());
+   *            };
+   *        CfgReader::instance()->foreachTag("leg.res.fl", f);
+   *        NOTE: The prototype of callback: void (*cb)(tag);
+   */
+  void foreachTag(const std::string&, std::function<void(const std::string&)>);
 public:
   /*!
    * @brief Add a new path into ENV $path, not a file name but a path.

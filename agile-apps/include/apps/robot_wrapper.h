@@ -5,8 +5,8 @@
  *      Author: silence
  */
 
-#ifndef INCLUDE_QR_ROS_WRAPPER_H_
-#define INCLUDE_QR_ROS_WRAPPER_H_
+#ifndef INCLUDE_QR_ROBOT_WRAPPER_H_
+#define INCLUDE_QR_ROBOT_WRAPPER_H_
 
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>

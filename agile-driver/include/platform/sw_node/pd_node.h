@@ -5,38 +5,30 @@
  *      Author: silence
  */
 
-#ifndef INCLUDE_APPS_HW_UNIT_LEG_NODE_H_
-#define INCLUDE_APPS_HW_UNIT_LEG_NODE_H_
+#ifndef INCLUDE_APPS_HW_UNIT_LEG_NODE_PD_H_
+#define INCLUDE_APPS_HW_UNIT_LEG_NODE_PD_H_
 
 #include "platform/sw_node/sw_node.h"
 #include "foundation/utf.h"
 
 namespace agile_robot {
 
-class LegNode: public SWNode {
+class PdNode: public SWNode {
 public:
-  LegNode(const std::string& __l = Label::null);
+  PdNode();
   virtual bool auto_init() override;
 
-  virtual ~LegNode();
+  virtual ~PdNode();
 
+public:
   virtual void handleMsg(const Packet&)          override;
-  ///! return false, this node is not need to send command.
-  virtual bool requireCmdDeliver()               override
-  { return false; }
   ///! In the agile robot, this interface has Deprecated.
-  // virtual bool generateCmd(std::vector<Packet>&) override;
+  virtual bool generateCmd(std::vector<Packet>&) override;
 
 protected:
-  // there are three joint in each leg
-  LegType                                leg_;
-  std::vector<class Joint*>              jnts_by_type_;
-  // No exist information of motor.
-  // std::vector<class Motor*>              motors_by_type_;
-  class ForceSensor*                     td_;
-
+  std::vector<std::vector<class Joint*>>          jnts_by_type_;
   // The order match the @joints_by_type_
-  std::vector<class __LinearParams*> jnt_params_;
+  std::vector<std::vector<class __LinearParams*>> jnt_params_;
   // The constant pointer of the joint command
 //  const double*             jnt_cmds_[JntType::N_JNTS];
 //  const short*              motor_cmds_[JntType::N_JNTS];
@@ -45,7 +37,6 @@ protected:
 ///! Helper methods
 private:
   void __parse_heart_beat_1(const unsigned char*);
-  void __parse_heart_beat_2(const unsigned char*);
 //  void __parse_motor_cmd_1(const unsigned char*);
 //  void __parse_motor_cmd_2(const unsigned char*);
 
@@ -58,4 +49,4 @@ private:
 
 } /* namespace middleware */
 
-#endif /* INCLUDE_APPS_HW_UNIT_LEG_NODE_H_ */
+#endif /* INCLUDE_APPS_HW_UNIT_LEG_NODE_PD_H_ */

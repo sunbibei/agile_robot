@@ -18,7 +18,7 @@
 #define PUB
 //#define SUB
 
-int main(int argc, char* argv[]) {
+int main1(int argc, char* argv[]) {
   google::InitGoogleLogging("test-registry2");
   google::FlushLogFiles(google::GLOG_INFO);
   FLAGS_colorlogtostderr = true;

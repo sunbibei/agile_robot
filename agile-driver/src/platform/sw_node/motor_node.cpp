@@ -26,7 +26,7 @@ namespace agile_robot {
 // angle = \frac{360 \pi \alpha}{180*4096} C - \frac{\pi}{18000}\alpha*\beta
 // so, the ABS(scale) = \frac{360 \pi \alpha}{180*4096} = \frac{360\pi}{180*4096}
 // offset = - \frac{\pi}{18000}\alpha*\beta = -0.000174528*\beta
-struct __PrivateLinearParams {
+struct __LinearParams {
   double scale;
   double offset;
 };

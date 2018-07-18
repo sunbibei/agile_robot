@@ -81,7 +81,7 @@ bool Joint::auto_init() {
 
   double pos_min, pos_max;
   std::vector<double> limits;
-  cfg->get_value_fatal(getLabel(), "limits", limits);
+  cfg->get_value(getLabel(), "limits", limits);
   if (limits.size() < 2) {
     LOG_WARNING << "The attribute of " << getLabel() << " is wrong!"
         << "The attribute of limits should be equal to two(min, max).";
