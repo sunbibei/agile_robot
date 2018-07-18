@@ -45,6 +45,10 @@ bool Master::init() {
 }
 
 bool Master::run() {
+  if (_DEBUG_INFO_FLAG) {
+    propagate_manager_->print();
+    sw_node_manager_->print();
+  }
   // LOG_DEBUG << "<<==========Master::run==========";
   if (!propagate_manager_->run()) {
     LOG_WARNING << "PropagateManager::run fail!";

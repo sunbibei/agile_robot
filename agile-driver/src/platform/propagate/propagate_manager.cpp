@@ -41,31 +41,9 @@ PropagateManager::~PropagateManager() {
 }
 
 bool PropagateManager::init() {
-  return true; // Nothing to do here.
-}
-
-bool PropagateManager::run() {
-  if (ThreadPool::instance()->is_running(THREAD_R_NAME)
-      || ThreadPool::instance()->is_running(THREAD_W_NAME)) {
-    LOG_WARNING << "Call PropagateManager::run() twice!";
-    return false;
-  }
-  // LOG_DEBUG << "<<==========PropagateManager::run==========";
-
   for (auto& c : res_list_) {
     propa_list_by_bus_[c->bus_id_] = c;
   }
-
-  if (_DEBUG_INFO_FLAG) {
-    LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
-    LOG_INFO << "The list of Propagate, size = " << res_list_.size();
-    LOG_WARNING << "-----------------------------------------------------";
-    for (size_t i = 0; i < res_list_.size(); ++i)
-      LOG_INFO << i + 1 << ": " << res_list_[i]->propa_name_ << "\t"
-          << res_list_[i]->getLabel() << "\t" << res_list_[i];
-    LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
-  }
-
 
   bool all_fail = true;
   for (auto c : res_list_) {
@@ -77,8 +55,41 @@ bool PropagateManager::run() {
       all_fail = false;
     LOG_DEBUG << "The propagate '" << c->propa_name_ << "' has started.";
   }
-  if (all_fail && !_DEBUG_INFO_FLAG) return false;
 
+  return !all_fail;
+}
+
+void PropagateManager::print() {
+  size_t N_max_label = 0;
+  for (const auto& res : res_list_) {
+    if (N_max_label < res->propa_name_.size())
+      N_max_label = res->propa_name_.size();
+  }
+
+  char format[128] = {0};
+//printf("No. NAME       BUS-ID  ADDR   LABEL\n");
+//printf("1   fake_propa  0x01 0xdbe4f0 leg.propa.fake_propa\n");
+//printf("%3d %Xs  0x%02X %p %s\n");
+  printf("\n");
+  LOG_WARNING << "\nPropagate's table, size = " << res_list_.size()
+      << "\n-------------------------------------------------------------";
+  sprintf(format, "No. %%-%lds BUS-ID   ADDR   LABEL\n", N_max_label);
+  printf(format, "NAME");
+
+  memset(format, 0x00, 128);
+  sprintf(format, "%%-3d %%-%lds  0x%%02X %%p %%s\n", N_max_label);
+
+  int count = 0;
+  for (const auto& res : res_list_) {
+    printf(format, count++, res->propa_name_.c_str(), (int)res->bus_id_,
+        res, res->label_.c_str());
+  }
+  LOG_WARNING;
+  printf("\n");
+}
+
+bool PropagateManager::run() {
+  // LOG_DEBUG << "<<==========PropagateManager::run==========";
   ThreadPool::instance()->add(THREAD_R_NAME, &PropagateManager::updateRead,  this);
   ThreadPool::instance()->add(THREAD_W_NAME, &PropagateManager::updateWrite, this);
   return true;

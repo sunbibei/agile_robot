@@ -267,52 +267,52 @@ std::string __getTypeName(const ResType& t) {
 
 ///! print the all of registry.
 void Registry2::print() {
-  if (_DEBUG_INFO_FLAG) {
-    syncRegInfo();
+  syncRegInfo();
 
-    LOG_WARNING;
-    if (!pub_origin_.empty()) {
-      printf("The list of PUBLISH in this process\n");
-      printf("-------------------------------------------\n");
-      printf("COUNT   TYPE      ADDR   NAME\n");
-   // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
-      int count = 0;
-      for (const auto& l : pub_origin_) {
-        ++count;
-        printf("%5d %8s %8p %-31s\n", count,
-            __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
-      }
-      printf("___________________________________________\n");
+  printf("\n");
+  LOG_WARNING;
+  if (!pub_origin_.empty()) {
+    printf("The list of PUBLISH in this process\n");
+    printf("-------------------------------------------\n");
+    printf("COUNT   TYPE      ADDR   NAME\n");
+ // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
+    int count = 0;
+    for (const auto& l : pub_origin_) {
+      ++count;
+      printf("%5d %8s %8p %-31s\n", count,
+          __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
     }
-
-    if (!sub_origin_.empty()) {
-      printf("The list of SUBSCRIBE in this process\n");
-      printf("-------------------------------------------\n");
-      printf("COUNT   TYPE      ADDR   NAME\n");
-   // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
-      int count = 0;
-      for (const auto& l : sub_origin_) {
-        ++count;
-        printf("%5d %8s %8p %-31s\n", count,
-            __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
-      }
-      printf("___________________________________________\n");
-    }
-
-    if (!reg_infos_.empty()) {
-      printf("The list of REGISTRY INFO in this process\n");
-      printf("-------------------------------------------\n");
-      printf("COUNT TYPE SIZE       ADDR     NAME\n");
-    //printf("    1 0000 0000 0x7fc53c2af028 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\n");
-      int count = 0;
-      for (const auto& i : reg_infos_) {
-        ++count;
-        printf("%5d %4d %4ld %p %-31s\n", count, i->data_type, i->n_res, i->addr, i->data_name);
-      }
-      printf("___________________________________________\n");
-    }
-    LOG_WARNING;
+    printf("___________________________________________\n");
   }
+
+  if (!sub_origin_.empty()) {
+    printf("The list of SUBSCRIBE in this process\n");
+    printf("-------------------------------------------\n");
+    printf("COUNT   TYPE      ADDR   NAME\n");
+ // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
+    int count = 0;
+    for (const auto& l : sub_origin_) {
+      ++count;
+      printf("%5d %8s %8p %-31s\n", count,
+          __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
+    }
+    printf("___________________________________________\n");
+  }
+
+  if (!reg_infos_.empty()) {
+    printf("The list of REGISTRY INFO in this process\n");
+    printf("-------------------------------------------\n");
+    printf("COUNT TYPE SIZE       ADDR     NAME\n");
+  //printf("    1 0000 0000 0x7fc53c2af028 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    int count = 0;
+    for (const auto& i : reg_infos_) {
+      ++count;
+      printf("%5d %4d %4ld %p %-31s\n", count, i->data_type, i->n_res, i->addr, i->data_name);
+    }
+    printf("___________________________________________\n");
+  }
+  LOG_WARNING;
+  printf("\n");
 }
 
 // } /* namespace middleware */

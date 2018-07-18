@@ -313,7 +313,6 @@ void CfgReader::regAttrCb(const std::string& attr, Callback1 cb,
     if (nullptr != cfg_root->Attribute(attr.c_str()))
       cb(Label::null, cfg_root->Attribute(attr.c_str()));
 
-    LOG_ERROR << cfg_root->Value();
     __findAttr(cfg_root, cfg_root->Value(), attr, cb);
   }
 }

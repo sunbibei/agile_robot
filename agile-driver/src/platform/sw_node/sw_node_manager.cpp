@@ -58,21 +58,27 @@ bool SWNodeManager::init() {
     }
   }
 
-  if (_DEBUG_INFO_FLAG) {
-    LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
-    LOG_WARNING << "\tNAME\tBUS_ID\tNODE_ID\tCMD\tADDR";
-    for (auto hw : res_list_) {
-      LOG_INFO << hw->getLabel() << "\t0x"
-          << std::setw(2) << std::setfill('0') << std::hex << (int)hw->bus_id_
-          << "\t" << std::setw(2) << std::setfill('0') << std::hex << (int)hw->node_id_
-          << "\t" << (hw->requireCmdDeliver()?"YES":"NO") << "\t" << hw;
-    }
-    LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
-  }
-
 //  timer = new TimeControl(true);
 //  freqs.reserve(1024*16);
   return true;
+}
+
+void SWNodeManager::print() {
+  printf("\n");
+  LOG_WARNING << "\nSWNode's table, size = " << res_list_.size()
+      << "\n-------------------------------------------------------------";
+  printf("No. BUS-ID NODE-ID CMD    ADDR    NAME\n");
+//printf("1    0x00   0x02    N  0x1a6bc90  leg.nodes.leg_node\n");
+//printf("%3d  0x%02X   0x%02X    %c  %p  %s\n");
+
+  int count = 0;
+  for (const auto& res : res_list_) {
+    printf("%3d  0x%02X   0x%02X    %c  %p  %s\n",
+        count++, (int)res->bus_id_, (int)res->node_id_,
+        (res->requireCmdDeliver() ? 'Y' : 'N'), res, res->label_.c_str());
+  }
+  LOG_WARNING;
+  printf("\n");
 }
 
 void SWNodeManager::handleMsg(const std::vector<Packet>& pkts) {

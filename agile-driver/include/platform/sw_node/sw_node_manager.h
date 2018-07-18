@@ -23,6 +23,9 @@ public:
   void handleMsg(const std::vector<Packet>&);
   void generateCmd(std::vector<Packet>&);
 
+  // FOR DEBUG
+  void print();
+
 protected:
   // store all of the hw_unit which order by id
   std::vector<std::vector<SWNode*>> hw_list_by_id_;

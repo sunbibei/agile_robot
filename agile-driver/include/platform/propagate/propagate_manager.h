@@ -39,6 +39,9 @@ public:
   bool readPackets (std::vector<Packet>&);
   bool writePackets(const std::vector<Packet>&);
 
+  // FOR DEBUG
+  void print();
+
 protected:
   /**
    * @brief This method is the read function for propagate thread.

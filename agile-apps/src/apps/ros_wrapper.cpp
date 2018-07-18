@@ -67,6 +67,7 @@ void __setup_env() {
   printf("    pkgs_root:  %s\n", pkgs_root.c_str());
   printf("    apps_root:  %s\n", apps_root.c_str());
   printf("\033[0m\n");
+
 }
 
 SINGLETON_IMPL_NO_CREATE(RosWrapper)
@@ -154,9 +155,9 @@ void RosWrapper::create_system_singleton() {
 //}
 
 bool RosWrapper::init() {
-  bool debug = true;
-  ros::param::get("~debug", debug);
-  google::SetStderrLogging(debug ? google::GLOG_INFO : google::GLOG_WARNING);
+  bool verbose = false;
+  ros::param::get("~verbose", verbose);
+  google::SetStderrLogging(verbose ? google::GLOG_INFO : google::GLOG_WARNING);
 
   if (!MiiRobot::init())
     LOG_FATAL << "Robot initializes fail!";
@@ -166,14 +167,16 @@ bool RosWrapper::init() {
     LOG_FATAL << "Launched the mii-control has completed.";
   LOG_INFO << "MiiControl initialization has completed.";
 
-  // Label::printfEveryInstance();
+  std::string ns;
+  ros::param::get("~robot_ns", ns);
   double frequency = 50.0;
-  ros::param::get("~rt_frequency", frequency);
+  ros::param::get(ns + "/rt_frequency", frequency);
   if (frequency > 0)
     rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 
+  ros::param::get("~control_ns", ns);
   std::string str;
-  if (!nh_.getParam("gait_topic", str)) {
+  if (!ros::param::get(ns + "/gait_topic", str)) {
   // if (!ros::param::get("~gait_topic", str)) {
     LOG_INFO << "No 'gait_topic' parameter, using the default name of topic"
         << " -- gait_control";

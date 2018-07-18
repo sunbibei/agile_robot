@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="debug" value="true" />
+  <arg name="verbose" value="true" />
   <!-- Load the URDF/Xacro model of our robot -->
   <!-- include file="$(find agile_gazebo)/launch/upload_robot.urdf.launch" / -->
 
@@ -11,7 +11,7 @@
 
   <!-- Load hardware interface -->
   <node name="leg_apps" pkg="agile_apps" type="mii_apps" output="screen">
-    <param name="debug"       value="$(arg debug)"  />
+    <param name="verbose"     value="$(arg verbose)"  />
     <param name="robot_ns"    value="agile_robot"   />
     <param name="control_ns"  value="agile_control" />
   </node>

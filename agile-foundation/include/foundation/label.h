@@ -43,19 +43,30 @@ public:
 
   // For Debug
   static void printfEveryInstance() {
-    if (_DEBUG_INFO_FLAG) {
-      LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
-      LOG_WARNING << "Label's table, address " << &s_label_table_
-          << ", size " << s_label_table_.size();
-      LOG_WARNING << "-------------------------------------------------------------";
-      LOG_WARNING << "COUNT\t\tLABEL\t\t\tREF\t\tADDR";
-      int count = 0;
-      for (auto l : s_label_table_) {
-        LOG_INFO << count++ << "\t" << l.second->getLabel()
-            << "\t\t" << l.second.use_count() << "\t" << l.second;
-      }
-      LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
+    size_t N_max_label = 0;
+    for (const auto& l : s_label_table_) {
+      if (N_max_label < l.first.size())
+        N_max_label = l.first.size();
     }
+
+    char format[128] = {0};
+//    printf("COUNT LABEL REF ADDR\n");
+//    printf("%5d %Xs %3d %p\n");
+    printf("\n");
+    LOG_WARNING << "\nLabel's table, address " << &s_label_table_
+        << ", size " << s_label_table_.size()
+        << "\n-------------------------------------------------------------";
+    sprintf(format, "COUNT %%-%lds  REF   ADDR\n", N_max_label);
+    printf(format, "LABEL");
+
+    memset(format, 0x00, 128);
+    sprintf(format, "%%-5d %%-%lds %%3d  %%p\n", N_max_label);
+    int count = 0;
+    for (const auto& l : s_label_table_) {
+      printf(format, count++, l.first.c_str(), l.second.use_count(), l.second);
+    }
+    LOG_WARNING;
+    printf("\n");
   }
 
 protected:
