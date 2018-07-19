@@ -15,7 +15,7 @@ namespace agile_robot {
 
 class LegNode: public SWNode {
 public:
-  LegNode(const std::string& __l = Label::null);
+  LegNode();
   virtual bool auto_init() override;
 
   virtual ~LegNode();
@@ -30,10 +30,10 @@ public:
 protected:
   // there are three joint in each leg
   LegType                                leg_;
-  std::vector<class Joint*>              jnts_by_type_;
+  std::vector<MiiPtr<class Joint>>       jnts_by_type_;
   // No exist information of motor.
-  // std::vector<class Motor*>              motors_by_type_;
-  class ForceSensor*                     td_;
+  // std::vector<class Motor*>           motors_by_type_;
+  MiiPtr<class ForceSensor>              td_;
 
   // The order match the @joints_by_type_
   std::vector<class __LinearParams*> jnt_params_;

@@ -26,7 +26,7 @@ public:
   virtual bool generateCmd(std::vector<Packet>&) override;
 
 protected:
-  std::vector<std::vector<class Joint*>>          jnts_by_type_;
+  std::vector<std::vector<MiiPtr<class Joint>>>   jnts_by_type_;
   // The order match the @joints_by_type_
   std::vector<std::vector<class __LinearParams*>> jnt_params_;
   // The constant pointer of the joint command

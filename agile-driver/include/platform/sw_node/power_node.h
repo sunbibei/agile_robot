@@ -14,7 +14,7 @@ namespace agile_robot {
 
 class PowerNode: public SWNode {
 public:
-  PowerNode(const std::string& __l = Label::null);
+  PowerNode();
   virtual bool auto_init() override;
 
   virtual ~PowerNode();
@@ -23,7 +23,7 @@ public:
   virtual void handleMsg(const Packet&) override;
 
 protected:
-  class Power* power_info_;
+  MiiPtr<class Power> power_info_;
 };
 
 } /* namespace middleware */

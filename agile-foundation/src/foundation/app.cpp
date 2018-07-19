@@ -19,6 +19,8 @@ MiiApp::MiiApp() {
 
 MiiApp::~MiiApp() {
   ThreadPool::destroy_instance();
+  CfgReader::destroy_instance();
+  AutoInstor::destroy_instance();
 }
 
 void MiiApp::start() {
@@ -38,6 +40,12 @@ void MiiApp::start() {
 void MiiApp::create_system_singleton() {
   if (nullptr == ThreadPool::create_instance())
     LOG_FATAL << "Create the singleton 'ThreadPool' has failed.";
+
+  if (nullptr == CfgReader::create_instance())
+    LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
+
+  if (nullptr == AutoInstor::create_instance())
+    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
 }
 
 void MiiApp::mv_auto_inst_cb(CfgReader::Callback1& cb) {
@@ -50,6 +58,7 @@ bool MiiApp::auto_inst_cb(const std::string& __p, const std::string& __type) {
     return false;
   }
 
+  // LOG_INFO << "INST: " << __type << ": " << __p;
   return true;
 }
 

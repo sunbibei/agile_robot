@@ -8,6 +8,7 @@
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instor.h"
 #include "foundation/thread/threadpool.h"
+#include "foundation/registry/registry.h"
 #include "foundation/registry/registry2.h"
 
 #include "robot/agile_robot.h"
@@ -35,6 +36,9 @@ void MiiControl::create_system_singleton() {
 
   if (nullptr == SharedMem::create_instance())
     LOG_FATAL << "Create the singleton 'SharedMem' has failed.";
+
+  if (nullptr == Registry::create_instance())
+    LOG_FATAL << "Create the singleton 'Registry' has failed.";
 
   if (nullptr == Registry2::create_instance())
     LOG_FATAL << "Create the singleton 'Registry' has failed.";

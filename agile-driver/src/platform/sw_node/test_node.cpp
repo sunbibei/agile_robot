@@ -15,7 +15,7 @@
 namespace agile_robot {
 
 TestNode::TestNode()
-  : SWNode("TestNode"),
+  : SWNode(),
     debug_status_(DebugStatus::DS_INVALID),
     /*n_total_msgs_(0),*/ N_total_msgs_(0), loop_dt(0),
     is_the_one_(false), which_one_(INVALID_BYTE) {

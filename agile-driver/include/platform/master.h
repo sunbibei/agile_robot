@@ -17,7 +17,7 @@
 
 namespace agile_robot {
 
-class Master : public internal::ResourceManager<SWNode> {
+class Master {
   SINGLETON_DECLARE(Master)
 public:
   // After all of the hw_unit instance, call it.

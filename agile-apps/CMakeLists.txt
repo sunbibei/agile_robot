@@ -59,6 +59,11 @@ add_executable(mii_apps
   ${SRC_APP}/ros_wrapper.cpp
 )
 
+add_executable(pd_apps
+  ${SRC_ROOT}/pd.cpp
+  ${SRC_APP}/pd_wrapper.cpp
+)
+
 add_executable(mii_launcher
   ${ENTRY_FILES}
 )
@@ -85,6 +90,12 @@ target_link_libraries(mii_apps
   agile_foundation
   agile_driver_sys_robot
   agile_control_framwork
+)
+
+target_link_libraries(pd_apps
+  ${catkin_LIBRARIES}
+  agile_foundation
+  agile_driver_sys_robot
 )
 
 target_link_libraries(mii_launcher

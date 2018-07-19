@@ -32,10 +32,11 @@ MiiRobot::MiiRobot(const std::string& __tag)
 MiiRobot::~MiiRobot() {
   Master::destroy_instance();
   JointManager::destroy_instance();
+  Registry::destroy_instance();
   Registry2::destroy_instance();
   SharedMem::destroy_instance();
   // destroy the auto_instancor.
-  AutoInstor::destroy_instance();
+  // AutoInstor::destroy_instance();
   // LOG_DEBUG << "The deconstructor of MiiRobot almost finished.";
   // Label::printfEveryInstance();
 }
@@ -63,6 +64,16 @@ void MiiRobot::create_system_singleton() {
 }
 
 bool MiiRobot::init() {
+  JointManager::instance()->init();
+
+  auto cfg = CfgReader::instance();
+  ///! The default mode is the joint position.
+  JntCmdType mode = JntCmdType::CMD_POS;
+  cfg->get_value(root_tag_, "control_mode", mode);
+  JointManager::instance()->setJointCommandMode(mode);
+  LOG_DEBUG << "The mode of control is '" << JNTCMDTYPE2STR(mode) << "'.";
+
+  ///! initialize the Master.
   return Master::instance()->init();
 }
 

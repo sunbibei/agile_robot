@@ -41,7 +41,8 @@ PropagateManager::~PropagateManager() {
 }
 
 bool PropagateManager::init() {
-  for (auto& c : res_list_) {
+  for (auto& cc : res_list_) {
+    auto c = Label::getHardwareByName<Propagate>(cc->getLabel());
     propa_list_by_bus_[c->bus_id_] = c;
   }
 

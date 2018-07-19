@@ -13,8 +13,8 @@
 
 namespace agile_robot {
 
-SWNode::SWNode(const std::string& l)
-: Label(l), bus_id_(INVALID_BYTE), node_id_(INVALID_BYTE) {
+SWNode::SWNode()
+: Label(""), bus_id_(INVALID_BYTE), node_id_(INVALID_BYTE) {
   SWNodeManager::instance()->add(this);
 }
 

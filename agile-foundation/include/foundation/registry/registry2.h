@@ -46,12 +46,9 @@
 //  ( agile_robot::Registry::instance()->command< _type >(_n) )
 */
 
-template <typename _T>
-using MiiPtr = boost::shared_ptr<_T>;
-
 typedef boost::variant<const short*, const int*, const double*,
     const Eigen::VectorXi*, const Eigen::VectorXd*,
-    const Eigen::MatrixXi*, const Eigen::MatrixXd*> ResType;
+    const Eigen::MatrixXi*, const Eigen::MatrixXd*> ResType2;
 
 /*!
  * @brief \class Registry2, support the data exchange under Multi-process.
@@ -67,10 +64,10 @@ public:
    *        The resource must be a reference to the actual value, The registry
    *        thread will be visit the reference.
    */
-  bool publish(const std::string&, ResType);
+  bool publish(const std::string&, ResType2);
 
   ///! The boost static assert fail! so we need split into two methods.
-  bool subscribe(const std::string&, ResType);
+  bool subscribe(const std::string&, ResType2);
 
 public:
   ///! print the all of registry.
@@ -83,10 +80,10 @@ protected:
   void syncRegInfo();
   ///! insert a reg info into the buffer(NO PUBLISHER).
   void insertRegInfo(std::map<std::string, class __ResStu*>&,
-      const std::string&, ResType&);
+      const std::string&, ResType2&);
 
   ///! Add a new publisher
-  class __ResStu* addPuber(const std::string&, ResType&, class __RegInfo*);
+  class __ResStu* addPuber(const std::string&, ResType2&, class __RegInfo*);
 
 protected:
   ///! The buffer for the all of data.

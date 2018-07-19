@@ -32,12 +32,12 @@ public:
    * Change the active gait.
    * The string of 'null' means stop the running gait.
    */
-  void activate(const std::string& gait_name);
+  void activate(const std::string& name);
 
   /*!
    * @brief Query whether is contains the given named gait.
    */
-  bool query(const std::string& gait_name);
+  bool query(const std::string& name);
 
   // virtual void add(GaitBase*) override;
 
@@ -45,9 +45,10 @@ public:
   void print();
 
 protected:
-  Policy*                     running_gait_;
-  Policy*                     actived_gait_;
-  std::map<std::string, Policy*>  gait_list_by_name_;
+  MiiPtr<Policy> running_policy_;
+  MiiPtr<Policy> actived_policy_;
+
+  std::map<std::string, MiiPtr<Policy>> policys_by_name_;
 
   std::string                     prefix_tag_;
 };

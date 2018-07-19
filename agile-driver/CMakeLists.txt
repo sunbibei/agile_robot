@@ -66,9 +66,9 @@ set(SYS_FLATFORM_FILES  ${SRC_SYS_PLATFORM}/log_robot.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/sw_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/leg_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/motor_node.cpp
-                        ${SRC_SYS_PLATFORM}/sw_node/motor_node0.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/power_node.cpp
                         ${SRC_SYS_PLATFORM}/sw_node/test_node.cpp
+                        ${SRC_SYS_PLATFORM}/sw_node/pd_node.cpp
                         
                         ${SRC_SYS_PLATFORM}/propagate/propagate.cpp
                         ${SRC_SYS_PLATFORM}/propagate/can_usb.cpp
@@ -124,6 +124,7 @@ target_link_libraries(${PROJECT_NAME}_repository
 
 target_link_libraries(${PROJECT_NAME}_sys_robot
   ${catkin_LIBRARIES}
+  ${PROJECT_NAME}_sys_platform
   ${PROJECT_NAME}_repository
   agile_foundation
   agile_foundation_toolbox

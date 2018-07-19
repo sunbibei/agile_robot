@@ -9,7 +9,8 @@
 
 #include <iostream>
 
-namespace agile_robot {
+///! cancel the namespaces
+// namespace agile_robot {
 
 SINGLETON_IMPL(Registry)
 
@@ -136,4 +137,4 @@ void Registry::print() {
   }*/
 }
 
-} /* namespace middleware */
+// } /* namespace middleware */

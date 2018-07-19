@@ -51,7 +51,7 @@ bool Motor::auto_init() {
   if (nullptr == joint_handle_) {
     LOG_ERROR << "Can't get the handle of joint in the " << getLabel();
   } else {
-    joint_handle_->joint_motor_ = this;
+    joint_handle_->joint_motor_.reset(this);
   }
 
   motor_state_ = new MotorState;

@@ -11,8 +11,8 @@
 
 namespace agile_robot {
 
-PowerNode::PowerNode(const std::string& __l)
-  : SWNode(__l), power_info_(nullptr) {
+PowerNode::PowerNode()
+  : SWNode(), power_info_(nullptr) {
   ;
 }
 

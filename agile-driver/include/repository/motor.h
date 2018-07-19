@@ -16,7 +16,7 @@ namespace agile_robot {
 class Motor: public Label {
   // friend class LegNode;
   friend class MotorNode;
-  friend class MotorNode0;
+  friend class MotorNode;
 public:
   Motor();
   virtual bool auto_init() override;
@@ -62,7 +62,7 @@ protected:
 
 protected:
   std::string         motor_name_;
-  class Joint*        joint_handle_;
+  MiiPtr<class Joint> joint_handle_;
   class MotorState*   motor_state_;
   class MotorCommand* motor_cmd_;
 

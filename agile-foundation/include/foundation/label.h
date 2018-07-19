@@ -18,6 +18,10 @@
 // Cancel the namespace middleware
 // namespace middleware {
 
+///! The alias for boost::shared_ptr
+template <typename _T>
+using MiiPtr = boost::shared_ptr<_T>;
+
 class Label {
   friend class AutoInstor;
 public:
@@ -38,8 +42,14 @@ public:
   static std::string parent_label(const std::string&);
   static void        split_label (std::string, std::string&, std::string&);
 
+  /*!
+   * @brief Change the return value to boost::shared_ptr, it's safety for the
+   *        operating pointer, we can using the boost::shared_ptr::use_count
+   *        to track the information who using this pointer.
+   *        MODIFY: 2018-07-19, 17:42:00
+   */
   template<class _Hardware>
-  static _Hardware* getHardwareByName(const std::string&);
+  static MiiPtr<_Hardware> getHardwareByName(const std::string&);
 
   // For Debug
   static void printfEveryInstance() {
@@ -102,14 +112,10 @@ private:
 ////////////        The implementation of template methods         ////////////
 ///////////////////////////////////////////////////////////////////////////////
 template<class _Hardware>
-_Hardware* Label::getHardwareByName(const std::string& l) {
-  auto hw = label_table().find(l);
-  if ((label_table().end() == hw)
-      || (nullptr == boost::dynamic_pointer_cast<_Hardware>(hw->second))) {
-    return nullptr;
-  }
+MiiPtr<_Hardware> Label::getHardwareByName(const std::string& l) {
+  if (label_table().end() == label_table().find(l)) return nullptr;
 
-  return static_cast<_Hardware*>(hw->second.get());
+  return boost::dynamic_pointer_cast<_Hardware>(label_table()[l]);
 }
 
 // } /* namespace middleware */

@@ -50,7 +50,9 @@ bool SWNodeManager::init() {
 
   hw_list_by_cmd_.reserve(res_list_.size());
 
-  for (auto hw : res_list_) {
+  for (auto crude_hw : res_list_) {
+    auto hw = Label::getHardwareByName<SWNode>(crude_hw->getLabel());
+
     hw_list_by_id_[hw->bus_id_][hw->node_id_] = hw;
     hw_list_by_name_.insert(std::make_pair(hw->getLabel().c_str(), hw));
     if (hw->requireCmdDeliver()) {

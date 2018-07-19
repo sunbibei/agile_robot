@@ -16,28 +16,26 @@
 #include <atomic>
 #include <map>
 
-namespace agile_robot {
+///! cancel the namespaces
+// namespace agile_robot {
 
 #define REG_RESOURCE(_n, _var)  \
-  ( agile_robot::Registry::instance()->registerResource((_n), (_var)) )
+  ( Registry::instance()->registerResource((_n), (_var)) )
 
 #define REG_COMMAND(_n, _var, _flag)   \
-  ( agile_robot::Registry::instance()->registerCommand ((_n), (_var), (_flag)) )
+  ( Registry::instance()->registerCommand ((_n), (_var), (_flag)) )
 
 #define REG_COMMAND_NO_FLAG(_n, _var)   \
-  ( agile_robot::Registry::instance()->registerCommand ((_n), (_var)) )
+  ( Registry::instance()->registerCommand ((_n), (_var)) )
 
 #define GET_RESOURCE(_n, _type) \
-  ( agile_robot::Registry::instance()->resource< _type >(_n) )
+  ( Registry::instance()->resource< _type >(_n) )
 
 #define GET_COMMAND(_n, _flag, _type) \
-  ( agile_robot::Registry::instance()->command< _type >(_n, _flag) )
+  ( Registry::instance()->command< _type >(_n, _flag) )
 
 #define GET_COMMAND_NO_FLAG(_n, _type) \
-  ( agile_robot::Registry::instance()->command< _type >(_n) )
-
-template <typename _T>
-using MiiPtr = boost::shared_ptr<_T>;
+  ( Registry::instance()->command< _type >(_n) )
 
 typedef boost::variant<const short*, const int*, const double*,
     const Eigen::VectorXi*, const Eigen::MatrixXi*,
@@ -107,6 +105,6 @@ _DataType Registry::command(const std::string& _res_name, std::atomic_bool** fla
   return boost::get<_DataType>(var_cmd.handle);
 }
 
-} /* namespace middleware */
+// } /* namespace middleware */
 
 #endif /* INCLUDE_REPOSITORY_REGISTRY_H_ */

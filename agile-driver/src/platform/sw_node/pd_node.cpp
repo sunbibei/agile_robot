@@ -40,7 +40,7 @@ struct __LinearParams {
 //}
 
 
-PdNode::PdNode() : SWNode("") {
+PdNode::PdNode() : SWNode() {
   ;
 }
 
@@ -71,7 +71,7 @@ bool PdNode::auto_init() {
   cfg->foreachTag(getLabel(), [&](const std::string& p) {
     std::string label;
     cfg->get_value_fatal(p, "label", label);
-    Joint* jnt = Label::getHardwareByName<Joint>(label);
+    MiiPtr<Joint> jnt = Label::getHardwareByName<Joint>(label);
     if (nullptr == jnt) {
       LOG_ERROR << "Can't get the joint '" << label
           << "' pointer from LabelSystem, or the motor within joint.";
@@ -85,6 +85,8 @@ bool PdNode::auto_init() {
     param->scale  = scale;
     param->offset = offset;
 
+    LOG_INFO << jnt->joint_name() << ": " << scale << ", " << offset;
+
     jnts_by_type_[jnt->leg_type()][jnt->joint_type()] = jnt;
     jnt_params_[jnt->leg_type()][jnt->joint_type()]   = param;
   });
@@ -93,8 +95,8 @@ bool PdNode::auto_init() {
 }
 
 void PdNode::handleMsg(const Packet& pkt) {
-  if (pkt.node_id != node_id_) {
-    LOG_ERROR << "Wrong match id between Packet and Joint";
+  if (pkt.node_id != node_id_ || pkt.bus_id != bus_id_) {
+    // LOG_ERROR << "Wrong match id between Packet and Joint";
     return;
   }
 

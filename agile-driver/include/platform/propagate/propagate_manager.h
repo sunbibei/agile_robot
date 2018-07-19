@@ -53,9 +53,9 @@ protected:
   void updateWrite();
 
 protected:
-  std::vector<Propagate*>       propa_list_by_bus_;
-  bool                          thread_alive_;
-  // size_t                     pkts_queue_size;
+  std::vector<MiiPtr<Propagate>> propa_list_by_bus_;
+  bool                           thread_alive_;
+  // size_t                      pkts_queue_size;
 
   ///! Maybe we should use the lock-free queue instead of std::vector.
 //  boost::lockfree::queue<Packet>* pkts_queue_4_send_;

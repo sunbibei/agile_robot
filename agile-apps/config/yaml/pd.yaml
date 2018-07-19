@@ -1,0 +1,17 @@
+pd_robot:
+  prefix:     pd
+  # the path of configure and library: $(rosparam ${prefix})/${file}
+  configure:
+    prefix: apps_root
+    file:
+      - config/pd.cfg
+
+  library:
+    prefix: libs_root
+    file:
+      - libagile_driver_sys_platform.so
+      - libagile_driver_repository.so
+      - libagile_control_repository.so
+
+  verbose:   true
+  

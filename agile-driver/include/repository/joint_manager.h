@@ -22,6 +22,7 @@ class JointManager: public internal::ResourceManager<Joint> {
 
   friend class Joint;
 public:
+  bool init();
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////        The Common Methods         //////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,8 +42,8 @@ public:
   // void   addJointCommand(const std::vector<LegType>&, const std::vector<JntType>&, const std::vector<double>&);
   void   addJointCommand(const std::string&, double);
   // void   addJointCommand(const std::string&, const std::vector<double>&);
-  Joint* getJointHandle(LegType, JntType);
-  Joint* getJointHandle(const std::string&);
+  MiiPtr<Joint> getJointHandle(LegType, JntType);
+  MiiPtr<Joint> getJointHandle(const std::string&);
   ///! get/set the type of joint command.
   void   setJointCommandMode(JntCmdType);
   const JntCmdType& getJointCommandMode();
@@ -87,12 +88,12 @@ public:
 
 protected:
   // Owner Size * Joint Size
-  std::vector<std::vector<Joint*>>   jnt_list_by_type_;
-  std::map<std::string, Joint*>      jnt_list_by_name_;
-  JntCmdType                         jnt_mode_;
+  std::vector<std::vector<MiiPtr<Joint>>> jnt_list_by_type_;
+  std::map<std::string, MiiPtr<Joint>>    jnt_list_by_name_;
+  JntCmdType                              jnt_mode_;
 
 protected:
-  virtual void add(Joint* _res) override;
+  // virtual void add(Joint* _res) override;
 };
 
 } /* namespace middleware */

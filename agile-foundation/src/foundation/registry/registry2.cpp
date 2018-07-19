@@ -39,14 +39,14 @@ struct __RegInfo {
 ///! The information of resource, it is difference in the different process.
 ///! The @addr is the head address of the content of handle.
 struct __ResStu {
-  ResType    handle;
+  ResType2   handle;
   void*      addr;
   __RegInfo* reg_info;
 };
 
 ///! The tool function.
 bool __get_res(std::map<std::string, __ResStu*>& res,
-    const std::string& _n, ResType& vars) {
+    const std::string& _n, ResType2& vars) {
   // LOG_INFO << "RES: " << (res.end() == res.find(_n));
   if (res.end() != res.find(_n)) {
     vars = res[_n]->handle;
@@ -57,7 +57,7 @@ bool __get_res(std::map<std::string, __ResStu*>& res,
 }
 
 ///! The tool function.
-void __parseResType(const ResType& res, DataType& type, size_t& size, void*& addr) {
+void __parseResType(const ResType2& res, DataType& type, size_t& size, void*& addr) {
   if ( typeid(const short*) == res.type() ) {
     type = DataType::DT_SHORT;
     size = sizeof(short);
@@ -139,7 +139,7 @@ void Registry2::syncRegInfo() {
   lock_.unlock();
 }
 
-bool Registry2::publish(const std::string& _n, ResType _handle) {
+bool Registry2::publish(const std::string& _n, ResType2 _handle) {
   if (pub_origin_.end() != pub_origin_.find(_n)) {
     LOG_WARNING << "The named resource '" << _n << "' has registered in the resource table.";
     return true;
@@ -155,7 +155,7 @@ bool Registry2::publish(const std::string& _n, ResType _handle) {
   return true;
 }
 
-bool Registry2::subscribe(const std::string& _n, ResType _handle) {
+bool Registry2::subscribe(const std::string& _n, ResType2 _handle) {
   if ( _n.size() >= N_MAX_NAME ) {
     LOG_ERROR << "The max name of resource or command is " << N_MAX_NAME
         << ", Registry the resource or command with named "
@@ -173,7 +173,7 @@ bool Registry2::subscribe(const std::string& _n, ResType _handle) {
 }
 
 void Registry2::insertRegInfo(std::map<std::string, class __ResStu*>& _o,
-    const std::string& _n, ResType& _h) {
+    const std::string& _n, ResType2& _h) {
   // update the buff_top_;
   syncRegInfo();
 
@@ -194,7 +194,7 @@ void Registry2::insertRegInfo(std::map<std::string, class __ResStu*>& _o,
   _o[_n] = res;
 }
 
-__ResStu* Registry2::addPuber(const std::string& _n, ResType& _h, __RegInfo* _i) {
+__ResStu* Registry2::addPuber(const std::string& _n, ResType2& _h, __RegInfo* _i) {
   DataType type = DataType::DT_UNKONWN;
   size_t   size = 0;
   void*    addr = nullptr;
@@ -249,7 +249,7 @@ void Registry2::support() {
 
 }
 
-std::string __getTypeName(const ResType& t) {
+std::string __getTypeName(const ResType2& t) {
   if (typeid(const short*) == t.type()) {
     return "short   ";
   } else if (typeid(const int*) == t.type()) {

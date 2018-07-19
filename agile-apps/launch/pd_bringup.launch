@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="verbose" value="true" />
+  <!-- Load the URDF/Xacro model of our robot -->
+  <!-- include file="$(find agile_gazebo)/launch/upload_robot.urdf.launch" / -->
+
+  <!-- FOR setup the env -->
+  <param    name="pkg_name"  value="agile_apps" />
+  <rosparam command="load"   file="$(find agile_apps)/config/yaml/pd.yaml" />
+
+  <!-- Load hardware interface -->
+  <node name="pd_apps" pkg="agile_apps" type="pd_apps" output="screen">
+    <param name="verbose"     value="$(arg verbose)"  />
+    <param name="namespaces"  value="pd_robot"        />
+  </node>
+
+  <!-- Convert joint states to /tf tranforms -->
+  <!-- node name="agile_robot_state_puber" pkg="robot_state_publisher" type="robot_state_publisher" /-->
+
+</launch>

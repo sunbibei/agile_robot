@@ -185,7 +185,7 @@ void RobotWrapper::publishRTMsg() {
   ros::Publisher hip_puber
         = nh_.advertise<std_msgs::Float32>("hip_jnt", 1);
 
-  Joint* hip = JointManager::instance()->getJointHandle(LegType::FL, JntType::HFE);
+  MiiPtr<Joint> hip = JointManager::instance()->getJointHandle(LegType::FL, JntType::HFE);
 
 // TODO Redesigned the Command publisher.
 //  ros::Publisher cmd_puber;
@@ -227,29 +227,29 @@ void RobotWrapper::publishRTMsg() {
 
   while (alive_ && ros::ok()) {
     if (jnt_puber.getNumSubscribers()) {
-      __fill_jnt_data(__jnt_msg, jnt_manager_);
+      __fill_jnt_data(__jnt_msg, JointManager::instance());
       jnt_puber.publish(__jnt_msg);
     }
 
     if (motor_puber.getNumSubscribers()) {
-      __fill_motor_data(__motor_msg, jnt_manager_);
+      __fill_motor_data(__motor_msg, JointManager::instance());
       motor_puber.publish(__motor_msg);
     }
 
-    if (imu_puber.getNumSubscribers()) {
-      __fill_imu_data(__imu_msg, imu_sensor_);
-      imu_puber.publish(__imu_msg);
-    }
-
-    if (force_puber.getNumSubscribers()) {
-      __fill_force_data(__f_msg, td_list_by_type_);
-      force_puber.publish(__f_msg);
-    }
-
-    if (hip_puber.getNumSubscribers()) {
-      __hip_msg.data = hip->joint_position();
-      hip_puber.publish(__hip_msg);
-    }
+//    if (imu_puber.getNumSubscribers()) {
+//      __fill_imu_data(__imu_msg, imu_sensor_);
+//      imu_puber.publish(__imu_msg);
+//    }
+//
+//    if (force_puber.getNumSubscribers()) {
+//      __fill_force_data(__f_msg, td_list_by_type_);
+//      force_puber.publish(__f_msg);
+//    }
+//
+//    if (hip_puber.getNumSubscribers()) {
+//      __hip_msg.data = hip->joint_position();
+//      hip_puber.publish(__hip_msg);
+//    }
 
 //    if (!use_ros_control_ && cmd_puber.getNumSubscribers()) {
 //      __fill_cmd_data(__cmd_msg, _sub_cmd);
@@ -264,8 +264,8 @@ void RobotWrapper::publishRTMsg() {
 
 #ifdef DEBUG_TOPIC
 void RobotWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
-  auto hfe = jnt_manager_->getJointHandle(LegType::FL, JntType::HFE);
-  auto kfe = jnt_manager_->getJointHandle(LegType::FL, JntType::KFE);
+  auto hfe = JointManager::instance()->getJointHandle(LegType::FL, JntType::HFE);
+  auto kfe = JointManager::instance()->getJointHandle(LegType::FL, JntType::KFE);
   LOG_INFO << "Jnt: " << hfe->joint_name();
 
   double lim_hfe[] = {0,  1.3};

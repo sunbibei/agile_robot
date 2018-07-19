@@ -32,18 +32,19 @@ JointManager::~JointManager() {
     j->stop();
 }
 
-void JointManager::add(Joint* _res) {
-  ResourceManager<Joint>::add(_res);
+bool JointManager::init() {
+  for (auto& _crude_ptr : res_list_) {
+    auto _res = Label::getHardwareByName<Joint>(_crude_ptr->getLabel());
+    if (nullptr == _res) {
+      LOG_ERROR << "Cannot found the joint labeled " << _crude_ptr->getLabel();
+      continue;
+    }
 
-  jnt_list_by_name_.insert(std::make_pair(_res->joint_name(), _res));
-
-  if ((_res->leg_type() < 0) || (_res->joint_type() < 0)) {
-    LOG_WARNING << "The joint '" << _res->getLabel()
-        << "' must be configured inaccurately. LegType: "
-        << _res->leg_type() << ", JntType: " << _res->joint_type();
-    return;
+    jnt_list_by_name_.insert(std::make_pair(_res->joint_name(), _res));
+    jnt_list_by_type_[_res->leg_type()][_res->joint_type()]   = _res;
   }
-  jnt_list_by_type_[_res->leg_type()][_res->joint_type()] = _res;
+
+  return true;
   // LOG_DEBUG << "JointManager has received a joint -- " << _res->getLabel();
 }
 
@@ -67,11 +68,11 @@ void JointManager::addJointCommand(const std::string& name, double val) {
     jnt_list_by_name_[name]->updateJointCommand(val);
 }
 
-Joint* JointManager::getJointHandle(LegType owner, JntType type) {
+MiiPtr<Joint> JointManager::getJointHandle(LegType owner, JntType type) {
   return jnt_list_by_type_[owner][type];
 }
 
-Joint* JointManager::getJointHandle(const std::string& _jn) {
+MiiPtr<Joint> JointManager::getJointHandle(const std::string& _jn) {
   auto itr = jnt_list_by_name_.find(_jn);
   if (jnt_list_by_name_.end() == itr)
     return nullptr;

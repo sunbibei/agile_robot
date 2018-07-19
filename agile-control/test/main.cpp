@@ -51,8 +51,8 @@ int main(int argc, char* argv[]) {
   ros::init(argc, argv, "agile-control");
   ros::NodeHandle nh;
 
-  agile_control::GaitManager* _manager
-    = agile_control::GaitManager::create_instance();
+  agile_control::PolicyManager* _manager
+    = agile_control::PolicyManager::create_instance();
 
   create_system_instance();
 

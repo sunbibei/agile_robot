@@ -45,8 +45,8 @@ struct __LinearParams {
 //}
 
 
-LegNode::LegNode(const std::string& __l)
-  : SWNode(__l), leg_(LegType::UNKNOWN_LEG), td_(nullptr) {
+LegNode::LegNode()
+  : SWNode(), leg_(LegType::UNKNOWN_LEG), td_(nullptr) {
   ;
 }
 
@@ -76,7 +76,7 @@ bool LegNode::auto_init() {
         boost::to_lower_copy(std::string(JNTTYPE2STR(j))));
 
     cfg->get_value(_tag, "label", tmp_str);
-    Joint* jnt = Label::getHardwareByName<Joint>(tmp_str);
+    MiiPtr<Joint> jnt = Label::getHardwareByName<Joint>(tmp_str);
     if (nullptr == jnt) {
       LOG_ERROR << "Can't get the joint '" << tmp_str
           << "' pointer from LabelSystem, or the motor within joint.";
