@@ -1,5 +1,5 @@
 pd_robot:
-  prefix:     pd
+  prefix:   pd
   # the path of configure and library: $(rosparam ${prefix})/${file}
   configure:
     prefix: apps_root
@@ -12,6 +12,4 @@ pd_robot:
       - libagile_driver_sys_platform.so
       - libagile_driver_repository.so
       - libagile_control_repository.so
-
-  verbose:   true
   

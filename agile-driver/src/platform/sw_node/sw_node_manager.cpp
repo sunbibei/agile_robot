@@ -34,11 +34,18 @@ SWNodeManager::~SWNodeManager() {
 //    if (0 == counter++%20) std::cout << std::endl;
 //  }
 //  std::cout << std::endl;
+
+  for (auto& nodes : hw_list_by_id_)
+    for (auto& node : nodes)
+      node.reset();
+
+  for (auto& node : hw_list_by_cmd_)
+    node.reset();
 }
 
 bool SWNodeManager::init() {
   if (res_list_.empty()) {
-    LOG_WARNING << "There are no any hardware push to the HwManager";
+    LOG_WARNING << "There are no any hardware push to the SwNode";
     return false;
   }
 
@@ -54,7 +61,7 @@ bool SWNodeManager::init() {
     auto hw = Label::getHardwareByName<SWNode>(crude_hw->getLabel());
 
     hw_list_by_id_[hw->bus_id_][hw->node_id_] = hw;
-    hw_list_by_name_.insert(std::make_pair(hw->getLabel().c_str(), hw));
+    // hw_list_by_name_.insert(std::make_pair(hw->getLabel().c_str(), hw));
     if (hw->requireCmdDeliver()) {
       hw_list_by_cmd_.push_back(hw);
     }

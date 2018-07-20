@@ -188,7 +188,7 @@ void Joint::updateJointCommand(double v) {
     joint_command_->command_[POS_CMD_IDX] = boost::algorithm::clamp(v,
                                     joint_command_->MIN_POS_,
                                     joint_command_->MAX_POS_);
-    // LOG_INFO << "Joint[" << jnt_name_ << "]: " << joint_command_->command_[POS_CMD_IDX];
+    LOG_INFO << "Joint[" << jnt_name_ << "]: " << joint_command_->command_[POS_CMD_IDX];
     new_command_ = true;
     break;
   case JntCmdType::CMD_MOTOR_VEL:

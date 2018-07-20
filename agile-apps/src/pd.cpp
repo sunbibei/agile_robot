@@ -13,23 +13,20 @@
 #include "apps/pd_wrapper.h"
 
 int main(int argc, char* argv[]) {
-  google::InitGoogleLogging("mii_apps");
+  google::InitGoogleLogging("pd_apps");
   google::FlushLogFiles(google::GLOG_INFO);
   FLAGS_colorlogtostderr = true;
 
-  ros::init(argc, argv, "mii_apps");
+  ros::init(argc, argv, "pd_apps");
   ros::NodeHandle nh("~");
 
-  std::cout << "NS: " << nh.getNamespace() << std::endl;
-
-  if (nullptr == PdWrapper::create_instance("pd"))
+  if (nullptr == PdWrapper::create_instance())
     LOG_FATAL << "Can't get the instance of RosWrapper!";
   PdWrapper::instance()->start();
 
+  // Waiting for shutdown by user
   ros::AsyncSpinner spinner(3);
   spinner.start();
-
-  // Waiting for shutdown by user
   ros::waitForShutdown();
 
   PdWrapper::destroy_instance();

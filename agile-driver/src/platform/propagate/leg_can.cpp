@@ -12,6 +12,8 @@ namespace agile_robot {
 
 LegCan::LegCan()
   : CanUsb() {
+  memset(&send_can_obj_, 0x00, sizeof(send_can_obj_));
+  memset(&recv_can_obj_, 0x00, sizeof(recv_can_obj_));
   ; // Nothing to do here.
 }
 
@@ -28,6 +30,13 @@ bool LegCan::write(const Packet& pkt) {
   send_can_obj_.ID      = MII_MSG_FILL_2NODE_MSG(pkt.node_id, pkt.msg_id);
   send_can_obj_.DataLen = pkt.size;
   memcpy(send_can_obj_.Data, pkt.data, pkt.size * sizeof(pkt.data[0]));
+
+  printf("[leg_can.cpp: %03d] -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+    __LINE__, (int)send_can_obj_.ID, (int)send_can_obj_.DataLen,
+    (int)send_can_obj_.Data[0], (int)send_can_obj_.Data[1],
+    (int)send_can_obj_.Data[2], (int)send_can_obj_.Data[3],
+    (int)send_can_obj_.Data[4], (int)send_can_obj_.Data[5],
+    (int)send_can_obj_.Data[6], (int)send_can_obj_.Data[7]);
 
   return send_buffer_->push(send_can_obj_);
 }

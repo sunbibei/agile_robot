@@ -26,13 +26,16 @@ public:
   virtual bool generateCmd(std::vector<Packet>&) override;
 
 protected:
-  std::vector<std::vector<MiiPtr<class Joint>>>   jnts_by_type_;
-  // The order match the @joints_by_type_
-  std::vector<std::vector<class __LinearParams*>> jnt_params_;
+  std::map<std::string, MiiPtr<class Joint>>   jnts_by_name_;
+  std::map<std::string, class __LinearParams*> params_by_name_;
+
+//  std::vector<std::vector<MiiPtr<class Joint>>>   jnts_by_type_;
+//  // The order match the @joints_by_type_
+//  std::vector<std::vector<class __LinearParams*>> jnt_params_;
   // The constant pointer of the joint command
 //  const double*             jnt_cmds_[JntType::N_JNTS];
 //  const short*              motor_cmds_[JntType::N_JNTS];
-//  const JntCmdType&         jnt_mode_;
+  const JntCmdType&         jnt_mode_;
 
 ///! Helper methods
 private:
@@ -40,7 +43,7 @@ private:
 //  void __parse_motor_cmd_1(const unsigned char*);
 //  void __parse_motor_cmd_2(const unsigned char*);
 
-//  bool __fill_pos_cmd(std::vector<Packet>& pkts);
+  bool __fill_pos_cmd(std::vector<Packet>& pkts);
 //  bool __fill_vel_cmd(std::vector<Packet>& pkts);
 //  bool __fill_tor_cmd(std::vector<Packet>& pkts);
 //  bool __fill_pos_vel_cmd(std::vector<Packet>& pkts);

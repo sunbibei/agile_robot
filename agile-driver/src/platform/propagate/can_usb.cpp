@@ -39,15 +39,34 @@ bool CanUsb::auto_init() {
   config_.AccCode = 0;
   config_.AccMask = 0xFFFFFFFF;
   config_.Filter  = 1;
-  if (MOTOR_BUS == bus_id_) {
+
+  int baudrate = 500;
+  cfg->get_value(getLabel(), "baudrate", baudrate);
+  switch (baudrate) {
+  case 100:
+    config_.Timing0 = 0x04;
+    config_.Timing1 = 0x1C;
+    break;
+  case 400:
+    config_.Timing0 = 0x80;
+    config_.Timing1 = 0xFA;
+    break;
+  case 500:
     config_.Timing0 = 0x00;
     config_.Timing1 = 0x1C;
-  } else if (ARM_BUS == bus_id_) {
+    break;
+  case 800:
+    config_.Timing0 = 0x00;
+    config_.Timing1 = 0x16;
+    break;
+  case 1000:
     config_.Timing0 = 0x00;
     config_.Timing1 = 0x14;
-  } else {
-    LOG_FATAL << "ERROR BUS ID!";
+    break;
+  default:
+    LOG_ERROR << "NO BAUDRATE GIVEN!";
   }
+
   config_.Mode    = 0;
 
   ///! Setting the size of receive buffer
@@ -67,8 +86,8 @@ bool CanUsb::auto_init() {
   recv_buffer_ = new boost::lockfree::queue<VCI_CAN_OBJ>(N_SWAP_BUF);
   send_buffer_ = new boost::lockfree::queue<VCI_CAN_OBJ>(N_SWAP_BUF);
 
-  cfg->get_value(getLabel(), "tick_r_interval", tick_r_interval_);
-  cfg->get_value(getLabel(), "tick_w_interval", tick_w_interval_);
+  cfg->get_value(getLabel(), "r_interval", tick_r_interval_);
+  cfg->get_value(getLabel(), "w_interval", tick_w_interval_);
 
   // __timer = new TimeControl(true);
   return true;
@@ -222,15 +241,15 @@ void CanUsb::do_exchange_r() {
 //         << " / " << recv_buf_size_ << " ]";
     recv_off  = 0;
     while (recv_off < recv_size) {
-//      if (true && MOTOR_BUS == bus_id_) {
-//        printf("%s [%03d]: ", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
-//        printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-//          (int)recv_msgs_[recv_off].ID, (int)recv_msgs_[recv_off].DataLen,
-//          (int)recv_msgs_[recv_off].Data[0], (int)recv_msgs_[recv_off].Data[1],
-//          (int)recv_msgs_[recv_off].Data[2], (int)recv_msgs_[recv_off].Data[3],
-//          (int)recv_msgs_[recv_off].Data[4], (int)recv_msgs_[recv_off].Data[5],
-//          (int)recv_msgs_[recv_off].Data[6], (int)recv_msgs_[recv_off].Data[7]);
-//      }
+    if (false/* && MOTOR_BUS == bus_id_*/) {
+      printf("%s [%03d]: ", std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1).c_str(), __LINE__);
+      printf(" -> ID:0x%03X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+        (int)recv_msgs_[recv_off].ID, (int)recv_msgs_[recv_off].DataLen,
+        (int)recv_msgs_[recv_off].Data[0], (int)recv_msgs_[recv_off].Data[1],
+        (int)recv_msgs_[recv_off].Data[2], (int)recv_msgs_[recv_off].Data[3],
+        (int)recv_msgs_[recv_off].Data[4], (int)recv_msgs_[recv_off].Data[5],
+        (int)recv_msgs_[recv_off].Data[6], (int)recv_msgs_[recv_off].Data[7]);
+    }
 
       recv_buffer_->push(recv_msgs_[recv_off]);
       ++recv_off;

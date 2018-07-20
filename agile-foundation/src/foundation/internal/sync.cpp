@@ -29,7 +29,7 @@ bool __init_key_map() {
       __LOG("Can't initialize the sync shared memory '" << SYNC_IDENTIFY << "'");
       return false;
     } else {
-      __LOG("Create the sync shared memory '" << SYNC_IDENTIFY << "'");
+      // __LOG("Create the sync shared memory '" << SYNC_IDENTIFY << "'");
       __add_key_map(SYNC_IDENTIFY, KEY_MAP_OF_KEY, _shm_id, IpcType::IPC_SHM);
     }
   } else { // Found
@@ -47,7 +47,7 @@ bool __add_key_map(const std::string& _n, key_t _key, int _id, IpcType _type) {
 
   ///! initialize the structure.
   if (0 == SYNC_IDENTIFY.compare(_n)) {
-    LOG_DEBUG << "Initialize the all of key_map";
+    // LOG_DEBUG << "Initialize the all of key_map";
     size_t off = 0;
     strcpy(_key_map[off].name, _n.c_str());
     _key_map[off].type   = IPC_SHM;
@@ -64,10 +64,10 @@ bool __add_key_map(const std::string& _n, key_t _key, int _id, IpcType _type) {
       _key_map[off].count  = 0;
     }
   } else { ///! Add a new block.
-    LOG_DEBUG << "Add a new key_map";
+    // LOG_DEBUG << "Add a new key_map";
     for (size_t offset = 0; offset < MAX_SHM_SIZE; ++offset) {
       if (IPC_PRIVATE == _key_map[offset].key) {
-        LOG_DEBUG << "OK";
+        // LOG_DEBUG << "OK";
         strcpy(_key_map[offset].name, _n.c_str());
         _key_map[offset].key    = _key;
         _key_map[offset].type   = _type;
@@ -104,7 +104,7 @@ bool __add_count_key_map(const std::string& _n) {
   for (size_t offset = 0; offset < MAX_SHM_SIZE; ++offset) {
     if (0 == _n.compare(_key_map[offset].name)) {
       ++_key_map[offset].count;
-      LOG_DEBUG << "The count of '" << _n << "' is " << _key_map[offset].count;
+      // LOG_DEBUG << "The count of '" << _n << "' is " << _key_map[offset].count;
       return true;
     }
   }

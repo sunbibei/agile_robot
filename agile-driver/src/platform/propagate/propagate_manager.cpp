@@ -13,12 +13,9 @@ namespace agile_robot {
 const size_t  MAX_BUS_NUM = 10;
 
 #define MUTEX_TRY_LOCK(locker)    while (!locker.try_lock()) { };
-#define MUTEX_UNLOCK(locker)  locker.unlock();
+#define MUTEX_UNLOCK(locker)      locker.unlock();
 
-const std::string THREAD_R_NAME = "propagate-r";
-const std::string THREAD_W_NAME = "propagate-w";
 const size_t MAX_QUEUE_SIZE = 1024;
-std::thread update_thread_;
 
 SINGLETON_IMPL(PropagateManager)
 
@@ -26,37 +23,45 @@ PropagateManager::PropagateManager()
   : internal::ResourceManager<Propagate>(),
     /*propa_interval_(1), */thread_alive_(true) {
 
-  propa_list_by_bus_.reserve(MAX_BUS_NUM);
+  propa_list_by_bus_.resize(MAX_BUS_NUM);
   pkts_queue_4_send_.reserve(MAX_QUEUE_SIZE);
   pkts_queue_4_recv_.reserve(MAX_QUEUE_SIZE);
 }
 
 PropagateManager::~PropagateManager() {
   thread_alive_ = false;
-  ThreadPool::instance()->stop(THREAD_R_NAME);
-  ThreadPool::instance()->stop(THREAD_W_NAME);
-  for (auto& c : res_list_) {
+//  ThreadPool::instance()->stop(THREAD_R_NAME);
+//  ThreadPool::instance()->stop(THREAD_W_NAME);
+  for (auto& c : propa_list_by_bus_) {
+    if (nullptr == c) continue;
+
     c->stop();
+    c.reset();
   }
 }
 
 bool PropagateManager::init() {
+  // LOG_WARNING << "SIZE: " << res_list_.size();
   for (auto& cc : res_list_) {
     auto c = Label::getHardwareByName<Propagate>(cc->getLabel());
+    // LOG_WARNING << "GOT: " << cc << " " << cc->getLabel();
     propa_list_by_bus_[c->bus_id_] = c;
   }
 
   bool all_fail = true;
-  for (auto c : res_list_) {
+  for (auto& c : propa_list_by_bus_) {
+    if (nullptr == c) continue;
     // for (auto c = begin(); c != end(); ++c) {
-    LOG_DEBUG << c->getLabel() << " is starting.";
-    if (!c->start())
+    LOG_DEBUG << c->propa_name_ << " is starting.";
+    if (!c->start()) {
       LOG_ERROR << "The propagate '" << c->propa_name_ << "' starting FAIL.";
-    else
+    } else {
       all_fail = false;
-    LOG_DEBUG << "The propagate '" << c->propa_name_ << "' has started.";
+      LOG_DEBUG << "The propagate '" << c->propa_name_ << "' has started.";
+    }
   }
 
+  // LOG_WARNING << "RETURN: " << (!all_fail ? "true" : "false");
   return !all_fail;
 }
 
@@ -91,8 +96,8 @@ void PropagateManager::print() {
 
 bool PropagateManager::run() {
   // LOG_DEBUG << "<<==========PropagateManager::run==========";
-  ThreadPool::instance()->add(THREAD_R_NAME, &PropagateManager::updateRead,  this);
-  ThreadPool::instance()->add(THREAD_W_NAME, &PropagateManager::updateWrite, this);
+  ThreadPool::instance()->add("propa-r", &PropagateManager::updateRead,  this);
+  ThreadPool::instance()->add("propa-w", &PropagateManager::updateWrite, this);
   return true;
 }
 
@@ -104,16 +109,10 @@ void PropagateManager::updateRead() {
     for (auto& c : res_list_) {
       Packet pkt;
       if (c->read(pkt)) {
-//        if (false) {
-//          printf("%s", (std::string(__FILE__).substr(std::string(__FILE__).rfind('/')+1) + ":" + std::to_string(__LINE__)).c_str());
-//          printf(" NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
-//            (int)pkt.node_id,
-//            (int)pkt.msg_id,  (int)pkt.size,
-//            (int)pkt.data[0], (int)pkt.data[1],
-//            (int)pkt.data[2], (int)pkt.data[3],
-//            (int)pkt.data[4], (int)pkt.data[5],
-//            (int)pkt.data[6], (int)pkt.data[7]);
-//        }
+//        printf("[propagate_manager.cpp: %d] NODE_ID:0x%02X MSG_ID:0x%02X LEN:%1x DATA:0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
+//          __LINE__,         (int)pkt.node_id, (int)pkt.msg_id,  (int)pkt.size,
+//          (int)pkt.data[0], (int)pkt.data[1], (int)pkt.data[2], (int)pkt.data[3],
+//          (int)pkt.data[4], (int)pkt.data[5], (int)pkt.data[6], (int)pkt.data[7]);
 
         // pkts_queue_4_recv_->push(pkt);
         pkts_queue_4_recv_.push_back(pkt);

@@ -14,7 +14,6 @@
 #include <std_msgs/Float64MultiArray.h>
 
 #include <chrono>
-#include <boost/scoped_ptr.hpp>
 
 #include "mii_robot.h"
 
@@ -28,13 +27,16 @@ namespace agile_robot {
 using agile_robot::Joint;
 
 class PdWrapper : public agile_robot::MiiRobot {
-SINGLETON_DECLARE(PdWrapper, const std::string&)
+SINGLETON_DECLARE(PdWrapper)
 
 protected:
   virtual bool init() override;
   virtual void create_system_singleton() override;
 
 private:
+  ///! TODO The thread of control.
+  void controlRobot();
+
   ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
   void publishRTMsg();
 
@@ -43,10 +45,13 @@ private:
   void cbForDebug(const std_msgs::Float32ConstPtr&);
   ros::Subscriber cmd_sub_;
 #endif
+  void cbForControl(const std_msgs::StringConstPtr&);
 
 private:
   // The ROS handle
   ros::NodeHandle nh_;
+  // The namespace of configures
+  std::string     param_ns_;
   // The root of configure file
   std::string     root_wrapper_;
 
@@ -62,7 +67,7 @@ private:
   ros::Subscriber ctrl_sub_;
 
   std::chrono::microseconds  tick_interval_;
-  std::chrono::milliseconds  rt_duration_;
+  std::chrono::milliseconds  rt_interval_;
 };
 
 #endif /* INCLUDE_QR_ROS_WRAPPER_H_ */

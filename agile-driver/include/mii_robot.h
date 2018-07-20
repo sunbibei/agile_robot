@@ -31,7 +31,7 @@ protected:
    * @brief Constructed function.
    * @param _tag         Every necessary parameters will be found in this __tag
    */
-  MiiRobot(const std::string& __tag);
+  MiiRobot();
   /*!
    * @brief STEP 2:
    *        Create the all of singleton in our system, this method will be
@@ -70,7 +70,7 @@ protected:
    * Given by subclass in the parameters list of the constructed function.
    * Tell MiiRobot what necessary parameters are found in @prefix_tag_.
    */
-  std::string                     root_tag_;
+  std::string                     root_robot_;
 // class Master*                   master_;
   ///! The resource
 //  class JointManager*             jnt_manager_;

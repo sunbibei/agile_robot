@@ -78,27 +78,23 @@ void __setup_env() {
 }
 
 
-SINGLETON_IMPL_NO_CREATE(PdWrapper)
+SINGLETON_IMPL(PdWrapper)
 
-PdWrapper* PdWrapper::create_instance(const std::string& _cfg_prefix) {
-  if (nullptr != s_inst_) {
-    LOG_WARNING << "This method 'create_instance()' is called twice.";
-  } else {
-    s_inst_ = new PdWrapper(Label::make_label(_cfg_prefix, "wrapper"));
-  }
-  return s_inst_;
-}
+PdWrapper::PdWrapper()
+  : MiiRobot(), root_wrapper_(""), alive_(true),
+    rt_interval_(1000/1000) {
+  ///! Setup the root tag of Wrapper and Robot.
+  if (!ros::param::get("~namespaces", param_ns_))
+    LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
 
-PdWrapper::PdWrapper(const std::string& _root_tag)
-  : MiiRobot(Label::make_label(_root_tag,  "robot")),
-    root_wrapper_(_root_tag), alive_(true),
-    rt_duration_(1000/1000) {
-  jnt_lft_leg_  = nullptr;
-  jnt_rgt_leg_  = nullptr;
-  jnt_lft_wing_ = nullptr;
-  jnt_rgt_wing_ = nullptr;
-  jnt_cog_      = nullptr;
-  jnt_pitch_    = nullptr;
+  std::string cfg_root;
+  if (!ros::param::get(param_ns_ + "/prefix", cfg_root))
+    LOG_FATAL << "RosWrapper can't find the 'prefix' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
+
+  root_wrapper_ = Label::make_label(cfg_root,      "wrapper");
+  root_robot_   = Label::make_label(root_wrapper_, "robot");
   ///! Setup the ENV for our system
   __setup_env();
 }
@@ -188,50 +184,72 @@ bool PdWrapper::init() {
 
   double frequency = 50.0;
   cfg->get_value(root_wrapper_, "rt_freq", frequency);
-  if (frequency > 0)
-      rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
+  rt_interval_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 
-  // For debug
-  #ifdef DEBUG_TOPIC
-    cmd_sub_ = nh_.subscribe<std_msgs::Float32>("debug", 100, &PdWrapper::cbForDebug, this);
-  #endif
+  frequency = 500;
+  cfg->get_value(root_wrapper_, "ctrl_freq", frequency);
+  tick_interval_ = std::chrono::microseconds((int)(1000000.0/frequency));
 
+// For debug
+#ifdef DEBUG_TOPIC
+  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("debug", 100,
+      &PdWrapper::cbForDebug, this);
+#endif
+
+  std::string ctrl_topic = "policy_control";
+  cfg->get_value(root_wrapper_, "policy_topic", ctrl_topic);
+  ctrl_sub_ = nh_.subscribe<std_msgs::String>(ctrl_topic, 1,
+      &PdWrapper::cbForControl, this);
+  // FOR DEBUG
   Label::printfEveryInstance();
 
   // registry the thread.
   ThreadPool::instance()->add("rt_puber", &PdWrapper::publishRTMsg, this);
+  ThreadPool::instance()->add("control",  &PdWrapper::controlRobot, this);
   return true;
 }
 
-inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
-  to.name.clear();
-  to.position.clear();
-  to.velocity.clear();
-  to.effort.clear();
-  to.name.clear();
-  for (const auto& jnt : *from) {
-    to.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
-    to.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
-    to.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
-    to.name.push_back(jnt->joint_name());
+void PdWrapper::cbForControl(const std_msgs::StringConstPtr& msg) {
+  LOG_INFO << msg->data;
+}
+
+void PdWrapper::controlRobot() {
+  TICKER_INIT(std::chrono::microseconds);
+  while (alive_ && ros::ok()) {
+//    JointManager::instance()->foreach([](MiiPtr<Joint>& jnt){
+//      printf("[pd_wrapper.cpp: %03d]%8s: %+7.04f %+7.04f %+7.04f\n",
+//          __LINE__, jnt->joint_name().c_str(), jnt->joint_position(),
+//          jnt->joint_velocity(), jnt->joint_torque());
+//    });
+//    printf("\n");
+
+    JointManager::instance()->foreach([](MiiPtr<Joint>& jnt){
+      jnt->updateJointCommand(1);
+    });
+    TICKER_CONTROL(tick_interval_, std::chrono::microseconds);
   }
-  to.header.stamp = ros::Time::now();
 }
 
 void PdWrapper::publishRTMsg() {
   ros::Publisher jnt_puber
       = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
 
-  sensor_msgs::JointState     __jnt_msg;
-
   TICKER_INIT(std::chrono::milliseconds);
   while (alive_ && ros::ok()) {
     if (jnt_puber.getNumSubscribers()) {
-      __fill_jnt_data(__jnt_msg, JointManager::instance());
-      jnt_puber.publish(__jnt_msg);
+      sensor_msgs::JointState msg;
+      JointManager::instance()->foreach([&msg](MiiPtr<Joint>& jnt){
+        msg.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
+        msg.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
+        msg.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
+        msg.name.push_back    (jnt->joint_name());
+      });
+      msg.header.stamp = ros::Time::now();
+
+      jnt_puber.publish(msg);
     }
 
-    TICKER_CONTROL(rt_duration_, std::chrono::milliseconds);
+    TICKER_CONTROL(rt_interval_, std::chrono::milliseconds);
   }
 
   alive_ = false;

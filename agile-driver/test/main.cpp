@@ -34,7 +34,7 @@ TestMiiRobot* TestMiiRobot::create_instance(const std::string& __tag) {
 }
 
 TestMiiRobot::TestMiiRobot(const std::string& __tag)
-  : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag)/*, alive_(false),
+  : MiiRobot(/*Label::make_label(__tag, "robot")*/), root_tag_(__tag)/*, alive_(false),
     rt_duration_(1000/50), ros_ctrl_duration_(1000/100), use_ros_control_(false)*/ {
   // LOG_DEBUG << "Enter the roswrapper construction";
   // google::InitGoogleLogging("qr_driver");

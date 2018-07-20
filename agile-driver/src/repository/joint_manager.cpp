@@ -155,6 +155,32 @@ void JointManager::joint_torque_const_pointer(std::vector<const double*>& _c_ps)
   }
 }
 
+void JointManager::foreach(std::function<void(MiiPtr<Joint>&)> cb) {
+  for (auto& j : jnt_list_by_name_) cb(j.second);
+}
+
+void JointManager::foreach(LegType leg, std::function<void(MiiPtr<Joint>&)> cb) {
+  for (auto& j : jnt_list_by_type_[leg]) cb(j);
+}
+
+void JointManager::foreach(JntType jnt, std::function<void(MiiPtr<Joint>&)> cb) {
+  for (auto& js : jnt_list_by_type_) cb(js[jnt]);
+}
+
+void JointManager::foreach(const std::vector<LegType>& legs, std::function<void(MiiPtr<Joint>&)> cb) {
+  for (const auto& leg : legs)
+    for (auto& j : jnt_list_by_type_[leg]) cb(j);
+}
+
+void JointManager::foreach(const std::vector<JntType>& js, std::function<void(MiiPtr<Joint>&)> cb) {
+  for (auto& legs : jnt_list_by_type_)
+    for (auto& j : js) cb(legs[j]);
+}
+
+void JointManager::foreach(const std::vector<std::string>& js, std::function<void(MiiPtr<Joint>&)> cb) {
+  for (const auto& j : js) cb(jnt_list_by_name_[j]);
+}
+
 /*JointManager::iterator JointManager::find(const std::string& _n) {
   for (auto itr = res_list_.begin(); itr != res_list_.end(); ++itr) {
     if (itr->joint_name() == _n) return itr;

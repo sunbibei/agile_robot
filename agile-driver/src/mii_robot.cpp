@@ -24,17 +24,19 @@
 
 namespace agile_robot {
 
-MiiRobot::MiiRobot(const std::string& __tag)
-  : MiiApp(), root_tag_(__tag) {
+MiiRobot::MiiRobot()
+  : MiiApp(), root_robot_("") {
+  ///! The @root_robot_ must be initialize in the sub-class.
   ;
 }
 
 MiiRobot::~MiiRobot() {
-  Master::destroy_instance();
-  JointManager::destroy_instance();
   Registry::destroy_instance();
   Registry2::destroy_instance();
   SharedMem::destroy_instance();
+  JointManager::destroy_instance();
+  Master::destroy_instance();
+
   // destroy the auto_instancor.
   // AutoInstor::destroy_instance();
   // LOG_DEBUG << "The deconstructor of MiiRobot almost finished.";
@@ -69,7 +71,7 @@ bool MiiRobot::init() {
   auto cfg = CfgReader::instance();
   ///! The default mode is the joint position.
   JntCmdType mode = JntCmdType::CMD_POS;
-  cfg->get_value(root_tag_, "control_mode", mode);
+  cfg->get_value(root_robot_, "control_mode", mode);
   JointManager::instance()->setJointCommandMode(mode);
   LOG_DEBUG << "The mode of control is '" << JNTCMDTYPE2STR(mode) << "'.";
 

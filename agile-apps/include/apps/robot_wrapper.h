@@ -25,7 +25,7 @@
 using namespace agile_robot;
 
 class RobotWrapper : public MiiRobot {
-SINGLETON_DECLARE(RobotWrapper, const std::string&)
+SINGLETON_DECLARE(RobotWrapper)
 
 protected:
   /**

@@ -40,33 +40,25 @@ struct __LinearParams {
 //}
 
 
-PdNode::PdNode() : SWNode() {
+PdNode::PdNode()
+  : SWNode(),
+    jnt_mode_(JointManager::instance()->getJointCommandMode()) {
   ;
 }
 
 PdNode::~PdNode() {
-  jnts_by_type_.clear();
+  jnts_by_name_.clear();
 
-  for (auto& leg : jnt_params_) {
-    for (auto& p : leg) {
-      delete p;
-      p = nullptr;
-    }
+  for (auto& leg : params_by_name_) {
+    delete leg.second;
+    leg.second = nullptr;
   }
-  jnt_params_.clear();
+  params_by_name_.clear();
 }
 
 bool PdNode::auto_init() {
   if (!SWNode::auto_init())     return false;
   auto cfg = CfgReader::instance();
-
-  jnts_by_type_.resize(LegType::N_LEGS);
-  for (auto& leg : jnts_by_type_)
-    leg.resize(JntType::N_JNTS);
-
-  jnt_params_.resize(LegType::N_LEGS);
-  for (auto& leg : jnt_params_)
-    leg.resize(JntType::N_JNTS);
 
   cfg->foreachTag(getLabel(), [&](const std::string& p) {
     std::string label;
@@ -85,10 +77,9 @@ bool PdNode::auto_init() {
     param->scale  = scale;
     param->offset = offset;
 
-    LOG_INFO << jnt->joint_name() << ": " << scale << ", " << offset;
-
-    jnts_by_type_[jnt->leg_type()][jnt->joint_type()] = jnt;
-    jnt_params_[jnt->leg_type()][jnt->joint_type()]   = param;
+    // LOG_INFO << jnt->joint_name() << ": " << scale << ", " << offset;
+    jnts_by_name_[jnt->joint_name()]   = jnt;
+    params_by_name_[jnt->joint_name()] = param;
   });
 
   return true;
@@ -127,36 +118,86 @@ void PdNode::handleMsg(const Packet& pkt) {
 }
 
 void PdNode::__parse_heart_beat_1(const unsigned char* __p) {
-//  if (true && LegType::FL == leg_)
+//  if (true /*&& LegType::FL == leg_*/)
 //    printf("0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\n",
 //        __p[0], __p[1], __p[2], __p[3], __p[4], __p[5], __p[6], __p[7]);
   int offset  = 0;
   short count = 0;
   double pos  = 0.0;
-  short counts[LegType::N_LEGS][JntType::N_JNTS] = {0};
-  for (const auto& leg : {LegType::FL, LegType::FR}) {
-    for (const auto& jnt : {JntType::HFE, JntType::KFE}) {
-      memcpy(&count, __p + offset, sizeof(count));
-      counts[leg][jnt] = count;
+  for (const auto& _n : {"lft-leg", "rgt-leg", "cog", "pitch"}) {
+    memcpy(&count, __p + offset, sizeof(count));
 
-      pos = jnt_params_[leg][jnt]->scale * (double)count
-               + jnt_params_[leg][jnt]->offset;
+    pos = params_by_name_[_n]->scale * (double)count
+             + params_by_name_[_n]->offset;
 
-      // update
-      jnts_by_type_[leg][jnt]->updateJointPosition(pos);
-      offset += sizeof(count);
-    }
+    // update
+    jnts_by_name_[_n]->updateJointPosition(pos);
+    offset += sizeof(count);
   }
-
-  if (false)
-    printf("%+5d, %+5d, %+5d, %+5d\n",
-        counts[LegType::FL][JntType::HFE], counts[LegType::FL][JntType::KFE],
-        counts[LegType::FR][JntType::HFE], counts[LegType::FR][JntType::KFE]);
 }
 
-// TODO fill some command into the @pkts
 bool PdNode::generateCmd(std::vector<Packet>& pkts) {
-  return false;
+  bool is_any_valid = false;
+  switch (jnt_mode_) {
+  case JntCmdType::CMD_POS:
+    is_any_valid = __fill_pos_cmd(pkts);
+    break;
+//  case JntCmdType::CMD_VEL:
+//    is_any_valid = __fill_vel_cmd(pkts);
+//    break;
+//  case JntCmdType::CMD_TOR:
+//    is_any_valid = __fill_tor_cmd(pkts);
+//    break;
+//  case JntCmdType::CMD_POS_VEL:
+//    is_any_valid = __fill_pos_vel_cmd(pkts);
+//    break;
+//  case JntCmdType::CMD_MOTOR_VEL:
+//    is_any_valid = __fill_motor_vel_cmd(pkts);
+//    break;
+  default:
+    LOG_ERROR << "What a fucking the command mode of joint.";
+  }
+  return is_any_valid;
+}
+
+bool PdNode::__fill_pos_cmd(std::vector<Packet>& pkts) {
+  static std::vector<std::vector<std::string>> _s_jnts
+    = {{"lft-leg",  "rgt-leg",  "cog"},
+       {"lft-wing", "rgt-wing", "pitch"}};
+  static unsigned char _s_msg_ids[] = {MII_MSG_COMMON_1, MII_MSG_COMMON_2};
+
+  int  idx     = 0;
+  bool has_cmd = false;
+  for (const auto& _ns : _s_jnts) {
+    short count        = 0;
+    int   offset       = 0;
+    bool  is_any_valid = false;
+    Packet cmd = {bus_id_, node_id_, _s_msg_ids[idx++], 6, {0}};
+
+    for (const auto& _n : _ns) {
+      auto jnt   = jnts_by_name_[_n];
+      auto param = params_by_name_[_n];
+
+      if (jnt->new_command_) {
+        has_cmd      = true;
+        is_any_valid = true;
+        // if ((LegType::FL == leg_) && (JntType::HIP == type))
+        //   printf("LegNode: [%d] - (%d): %+01.04f\n", leg_, type, jnt_cmds_[type][0]);
+        count = (jnt->joint_command() - param->offset) / param->scale;
+        memcpy(cmd.data + offset, &count, sizeof(count));
+        // printf("LegNode: [%s] - (%s):\t%05d\n", LEGTYPE_TOSTRING(leg_), JNTTYPE_TOSTRING(type), count);
+        jnt->new_command_ = false;
+      } else {
+        cmd.data[offset]     = INVALID_BYTE;
+        cmd.data[offset + 1] = INVALID_BYTE;
+      }
+      offset += sizeof(count); // Each count stand two bytes.
+    }
+
+    if (is_any_valid) pkts.push_back(cmd);
+  }
+
+  return has_cmd;
 }
 
 } /* namespace middleware */

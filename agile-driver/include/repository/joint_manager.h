@@ -86,6 +86,14 @@ public:
   //
   void joint_names(std::vector<std::string>&);
 
+  // Foreach joint with given conditions.
+  void foreach(std::function<void(MiiPtr<Joint>&)>);
+  void foreach(LegType, std::function<void(MiiPtr<Joint>&)>);
+  void foreach(JntType, std::function<void(MiiPtr<Joint>&)>);
+  void foreach(const std::vector<LegType>&, std::function<void(MiiPtr<Joint>&)>);
+  void foreach(const std::vector<JntType>&, std::function<void(MiiPtr<Joint>&)>);
+  void foreach(const std::vector<std::string>&, std::function<void(MiiPtr<Joint>&)>);
+
 protected:
   // Owner Size * Joint Size
   std::vector<std::vector<MiiPtr<Joint>>> jnt_list_by_type_;

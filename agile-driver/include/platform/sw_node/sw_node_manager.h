@@ -27,12 +27,12 @@ public:
   void print();
 
 protected:
-  // store all of the hw_unit which order by id
+  // store all of the hw_unit which order by id --> [bus_id][node_id]
   std::vector<std::vector<MiiPtr<SWNode>>> hw_list_by_id_;
   // store all of the hw_unit which require to send some command
   std::vector<MiiPtr<SWNode>>              hw_list_by_cmd_;
   // store all of the hw_unit which order by name
-  std::map<std::string, MiiPtr<SWNode>>    hw_list_by_name_;
+  // std::map<std::string, MiiPtr<SWNode>>    hw_list_by_name_;
 };
 
 } /* namespace middleware */
