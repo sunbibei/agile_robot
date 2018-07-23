@@ -9,9 +9,16 @@
 #include "foundation/auto_instor.h"
 #include "mii_control.h"
 
+#include <thread>
 #include <iostream>
-#include <ros/ros.h>
+#include <sys/wait.h>
 #include <Eigen/Dense>
+
+static bool g_is_alive = true;
+
+void termial(int signo) {
+  g_is_alive = false;
+}
 
 bool __auto_inst(const std::string& __p, const std::string& __type) {
   LOG_INFO << "Create instance(" << __type << " " << __p;
@@ -48,8 +55,7 @@ void create_system_instance() {
 }
 
 int main(int argc, char* argv[]) {
-  ros::init(argc, argv, "agile-control");
-  ros::NodeHandle nh;
+  signal(SIGINT, termial);
 
   agile_control::PolicyManager* _manager
     = agile_control::PolicyManager::create_instance();
@@ -61,11 +67,11 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  ros::Rate loop_rate(50);
-  _manager->activate("creep");
-  while (ros::ok()) {
+  TICKER_INIT(std::chrono::milliseconds);
+  while (g_is_alive) {
     _manager->tick();
-    loop_rate.sleep();
+
+    TICKER_CONTROL(1000, std::chrono::milliseconds);
   }
   return 0;
 }
