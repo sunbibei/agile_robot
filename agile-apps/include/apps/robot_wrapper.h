@@ -32,7 +32,7 @@ protected:
    * @brief Constructed function.
    * @param _tag        Every necessary parameters will be found in this __tag
    */
-  RobotWrapper(const std::string&, const std::string&);
+  // RobotWrapper();
   /*!
    * @brief STEP 2:
    *        Create the all of singleton in our system, this method will be
@@ -57,9 +57,6 @@ protected:
   virtual bool init() override;
 
 private:
-  ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
-  void publishRTMsg();
-
   // Just for test
 #ifdef DEBUG_TOPIC
   void cbForDebug(const std_msgs::Float32ConstPtr&);
@@ -69,7 +66,8 @@ private:
 private:
   // The ROS handle
   ros::NodeHandle   nh_;
-  std::string       root_tag_;
+  std::string       param_ns_;
+  std::string       root_wrapper_;
 
   bool alive_;
   std::chrono::milliseconds  rt_duration_;

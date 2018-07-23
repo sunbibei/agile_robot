@@ -6,6 +6,9 @@
  */
 
 #include "repository/joint_manager.h"
+#include "repository/motor.h"
+
+#include "foundation/cfg_reader.h"
 
 #ifndef NAN
 #define NAN  (0.0/0.0)
@@ -32,19 +35,16 @@ JointManager::~JointManager() {
     j->stop();
 }
 
-bool JointManager::init() {
-  for (auto& _crude_ptr : res_list_) {
-    auto _res = Label::getHardwareByName<Joint>(_crude_ptr->getLabel());
-    if (nullptr == _res) {
-      LOG_ERROR << "Cannot found the joint labeled " << _crude_ptr->getLabel();
-      continue;
-    }
-
-    jnt_list_by_name_.insert(std::make_pair(_res->joint_name(), _res));
-    jnt_list_by_type_[_res->leg_type()][_res->joint_type()]   = _res;
+void JointManager::add(Joint* cr) {
+  auto _res = Label::getHardwareByName<Joint>(cr->getLabel());
+  if (nullptr == _res) {
+    LOG_ERROR << "Cannot found the joint labeled " << cr->getLabel();
+    return;
   }
 
-  return true;
+  jnt_list_by_name_.insert(std::make_pair(_res->joint_name(), _res));
+  jnt_list_by_type_[_res->leg_type()][_res->joint_type()]   = _res;
+
   // LOG_DEBUG << "JointManager has received a joint -- " << _res->getLabel();
 }
 

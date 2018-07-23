@@ -86,6 +86,7 @@ protected:
 
 private:
   static CfgReader::Callback1 s_auto_inst_cb_;
+  static int s_N_priorities_;
 };
 
 #endif /* INCLUDE_FOUNDATION_APP_H_ */

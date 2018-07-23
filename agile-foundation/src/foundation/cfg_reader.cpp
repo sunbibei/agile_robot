@@ -295,7 +295,6 @@ void CfgReader::regAttrCb(const std::string& attr, Callback cb,
     auto cfg_root = cfg_docs_[i]->RootElement();
     if (!prefix.empty())
       cfg_root = __findLabel(cfg_root, prefix);
-
     if (nullptr == cfg_root) continue;
 
     if (nullptr != cfg_root->Attribute(attr.c_str()))
@@ -312,7 +311,6 @@ void CfgReader::regAttrCb(const std::string& attr, Callback1 cb,
     auto cfg_root = cfg_docs_[i]->RootElement();
     if (!prefix.empty())
       cfg_root = __findLabel(cfg_root, prefix);
-
     if (nullptr == cfg_root) continue;
 
     if (nullptr != cfg_root->Attribute(attr.c_str()))

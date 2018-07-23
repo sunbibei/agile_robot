@@ -9,7 +9,7 @@
   <rosparam command="load"   file="$(find agile_apps)/config/yaml/pd.yaml" />
 
   <!-- Load hardware interface -->
-  <node name="pd_apps" pkg="agile_apps" type="pd_apps" output="screen">
+  <node name="pd_robot" pkg="agile_apps" type="pd_apps" output="screen">
     <param name="verbose"     value="$(arg verbose)"  />
     <param name="namespaces"  value="pd_robot"        />
   </node>

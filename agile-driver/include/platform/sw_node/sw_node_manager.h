@@ -19,7 +19,11 @@ class SWNodeManager: public internal::ResourceManager<SWNode> {
   SINGLETON_DECLARE(SWNodeManager)
 
 public:
+  /*!
+   * @brief This method will initialize something.
+   */
   bool init();
+
   void handleMsg(const std::vector<Packet>&);
   void generateCmd(std::vector<Packet>&);
 

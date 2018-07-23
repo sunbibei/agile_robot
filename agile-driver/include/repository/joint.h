@@ -14,11 +14,10 @@
 namespace agile_robot {
 
 class Joint : public Label {
+///! The list of the position offers.
   friend class PdNode;
   friend class LegNode;
   friend class MotorNode;
-  friend class MotorNode;
-  friend class Motor;
 public:
   Joint();
   virtual bool auto_init() override;
@@ -30,7 +29,9 @@ public:
   const JntType&       joint_type() const;
   const LegType&       leg_type()   const;
 
-  MiiPtr<class Motor>  joint_motor() { return joint_motor_; }
+  MiiPtr<class Motor> motor_handle();
+  void                motor_handle(MiiPtr<class Motor>);
+
   /**
    * Interface for user layer.
    */
@@ -87,11 +88,11 @@ protected:
 protected:
   JntType             jnt_type_;
   LegType             leg_type_;
-  std::string         jnt_name_;
-  MiiPtr<class Motor> joint_motor_;
+  std::string         name_;
+  MiiPtr<class Motor> motor_handle_;
   // The private data structure
-  class JointState*   joint_state_;
-  class JointCommand* joint_command_;
+  class JointState*   state_;
+  class JointCommand* command_;
 };
 
 } /* namespace middleware */

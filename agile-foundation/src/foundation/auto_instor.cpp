@@ -137,10 +137,10 @@ bool AutoInstor::make_instance(const std::string& __p, const std::string& __type
     // 但当前自动实例使用class_loader的方式，仅能如此妥协处理。
     // 庆幸的是，所有问题都还控制在AutoInstance中
     __inst->label_ = __p;
-    __inst->auto_init();
-
     // s_inst_table_.insert(std::make_pair(__inst->getLabel(), __inst));
     Label::registerClass(__inst);
+
+    __inst->auto_init();
     return true;
   } else {
     LOG_WARNING << "What FUNK! The '" << Label::make_label(__p, __type)

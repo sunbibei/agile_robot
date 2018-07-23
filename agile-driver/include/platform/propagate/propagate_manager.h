@@ -23,8 +23,10 @@ public:
 
   /*!
    * @brief This method will initialize something.
+   * @param r_freq   The read  frequency.
+   * @param w_freq   The write frequency.
    */
-  bool init();
+  bool init(int r_freq = 10000, int w_freq = 10000);
   /**
    * @brief This method will starts a propagate thread for reading and writing Packets
    * @return Return true if everything is right, or return false.
@@ -42,7 +44,7 @@ public:
   // FOR DEBUG
   void print();
 
-protected:
+private:
   /**
    * @brief This method is the read function for propagate thread.
    */
@@ -52,10 +54,13 @@ protected:
    */
   void updateWrite();
 
-protected:
+private:
   std::vector<MiiPtr<Propagate>> propa_list_by_bus_;
   bool                           thread_alive_;
   // size_t                      pkts_queue_size;
+
+  std::chrono::microseconds      w_interval_;
+  std::chrono::microseconds      r_interval_;
 
   ///! Maybe we should use the lock-free queue instead of std::vector.
 //  boost::lockfree::queue<Packet>* pkts_queue_4_send_;

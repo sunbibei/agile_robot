@@ -1,4 +1,4 @@
-agile_robot:
+leg_robot:
   prefix:     leg
   # the path of configure and library: $(rosparam ${prefix})/${file}
   configure:

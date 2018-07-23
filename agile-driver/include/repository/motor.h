@@ -14,8 +14,7 @@
 namespace agile_robot {
 
 class Motor: public Label {
-  // friend class LegNode;
-  friend class MotorNode;
+  ///! The list of the information offers.
   friend class MotorNode;
 public:
   Motor();
@@ -28,9 +27,6 @@ public:
 
 public:
   const std::string&  motor_name() const;
-  const std::string&  joint_name() const;
-  const JntType&      joint_type() const;
-  const LegType&      leg_type()   const;
   const JntCmdType&   cmd_mode()   const;
 
 public:
@@ -59,14 +55,12 @@ protected:
   void updateMotorPosition(short);
   void updateMotorVelocity(short);
   void updateMotorTorque  (short);
+  std::atomic_bool    new_command_;
 
 protected:
-  std::string         motor_name_;
-  MiiPtr<class Joint> joint_handle_;
-  class MotorState*   motor_state_;
-  class MotorCommand* motor_cmd_;
-
-  std::atomic_bool    new_command_;
+  std::string         name_;
+  class MotorState*   state_;
+  class MotorCommand* cmd_;
 };
 
 } /* namespace middleware */

@@ -20,16 +20,21 @@ namespace agile_robot {
 class Master {
   SINGLETON_DECLARE(Master)
 public:
-  // After all of the hw_unit instance, call it.
-  bool init();
+  /*!
+   * @brief Initialize the master.
+   * @param mr     The read  frequency of master
+   * @param mw     The write frequency of master
+   * @param pr     The read  frequency of PropagateManager
+   * @param pw     The write frequency of PropagateManager
+   */
+  bool init(int mr = 10000, int mw = 10000, int pr = 10000, int pw = 10000);
   /**
    * @brief This method will starts a tick thread for deliver Packets
    * @return Return true if everything is right, or return false.
    */
   bool run();
-protected:
-  // @Deprecated Method, tick method
-  void tick();
+
+private:
   // read operator of every tick
   void tick_r();
   // write operator of every tick
@@ -44,6 +49,9 @@ protected:
 private:
   std::vector<Packet> queue_4_w_;
   std::vector<Packet> queue_4_r_;
+
+  std::chrono::microseconds      w_interval_;
+  std::chrono::microseconds      r_interval_;
 };
 
 } /* namespace middleware */

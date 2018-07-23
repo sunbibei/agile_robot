@@ -10,8 +10,18 @@
 #include "foundation/auto_instor.h"
 #include "foundation/thread/threadpool.h"
 
-CfgReader::Callback1 MiiApp::s_auto_inst_cb_
-  = std::bind(&MiiApp::auto_inst_cb, std::placeholders::_1, std::placeholders::_2);
+int MiiApp::s_N_priorities_ = 5;
+
+CfgReader::Callback1 MiiApp::s_auto_inst_cb_ = [](const std::string& __p, const std::string& __type) {
+  if (!AutoInstor::instance()->make_instance(__p, __type)) {
+    LOG_ERROR << "Create instance(" << __type << " " << __p << ") fail!";
+    return false;
+  }
+
+  LOG_INFO << "INST: " << __type << ": " << __p;
+  return true;
+};
+//  = std::bind(&MiiApp::auto_inst_cb, std::placeholders::_1, std::placeholders::_2);
 
 MiiApp::MiiApp() {
   ;
@@ -65,8 +75,29 @@ bool MiiApp::auto_inst_cb(const std::string& __p, const std::string& __type) {
 void MiiApp::auto_inst() {
   // All of the objects mark with "auto_inst" in the configure file
   // will be instanced here.
+//  LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";
+//  CfgReader::instance()->regAttrCb("auto_inst", s_auto_inst_cb_);
+//  LOG_DEBUG << "AutoInst has finished.";
+
+  auto cfg = CfgReader::instance();
   LOG_DEBUG << "Now, We are ready to auto_inst object in the configure file.";
-  CfgReader::instance()->regAttrCb("auto_inst", s_auto_inst_cb_);
+  std::vector<std::vector<std::string>> __obj_labels(s_N_priorities_);
+  cfg->regAttrCb("auto_inst",
+      [&](const std::string& _l, const std::string& _t) -> bool {
+    int priority = s_N_priorities_ - 1;
+    cfg->get_value(_l, "priority", priority);
+    __obj_labels[priority].push_back(_l);
+    return true;
+  });
+
+  for (const auto& level : __obj_labels) {
+    for (const auto& l : level) {
+      std::string t;
+      if (cfg->get_value(l, "auto_inst", t))
+        s_auto_inst_cb_(l, t); ///! make instance
+    }
+  }
+
   LOG_DEBUG << "AutoInst has finished.";
 }
 

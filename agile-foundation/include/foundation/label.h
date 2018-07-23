@@ -51,6 +51,11 @@ public:
   template<class _Hardware>
   static MiiPtr<_Hardware> getHardwareByName(const std::string&);
 
+  /*!
+   * @brief The interface for iterator the each object by the auto-inst
+   */
+  static void foreachHardware(std::function<void (LabelPtr)>);
+
   // For Debug
   static void printfEveryInstance() {
     size_t N_max_label = 0;

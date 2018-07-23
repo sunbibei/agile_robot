@@ -38,146 +38,127 @@ struct MotorCommand {
 };
 
 Motor::Motor()
-  : Label("motor"), joint_handle_(nullptr), motor_state_(nullptr),
-    motor_cmd_(nullptr), new_command_(false) {
+  : Label("motor"), state_(nullptr),
+    cmd_(nullptr),  new_command_(false) {
   ;
 }
 
 bool Motor::auto_init() {
-  auto cfg = CfgReader::instance();
-  std::string _x, jnt_tag;
-  Label::split_label(getLabel(), jnt_tag, _x);
-  joint_handle_ = Label::getHardwareByName<Joint>(jnt_tag);
-  if (nullptr == joint_handle_) {
-    LOG_ERROR << "Can't get the handle of joint in the " << getLabel();
-  } else {
-    joint_handle_->joint_motor_.reset(this);
-  }
+  state_ = new MotorState;
+  cmd_   = new MotorCommand(JointManager::instance()->getJointCommandMode());
 
-  motor_state_ = new MotorState;
-  motor_cmd_   = new MotorCommand(JointManager::instance()->getJointCommandMode());
+  auto cfg = CfgReader::instance();
+  cfg->get_value(getLabel(), "name", name_);
+
   std::vector<short> lims;
   cfg->get_value(getLabel(), "vel_limits", lims);
   if (2 != lims.size()) {
     LOG_WARNING << "You should fill the limits of the motor velocity.";
-    motor_cmd_->MIN_VEL = -5000;
-    motor_cmd_->MAX_VEL = 5000;
+    cmd_->MIN_VEL = -5000;
+    cmd_->MAX_VEL = 5000;
   } else {
-    motor_cmd_->MIN_VEL = lims[0];
-    motor_cmd_->MAX_VEL = lims[1];
+    cmd_->MIN_VEL = lims[0];
+    cmd_->MAX_VEL = lims[1];
   }
 
-  cfg->get_value(getLabel(), "name", motor_name_);
   return true;
 }
 
 Motor::~Motor() {
-  if (motor_state_) delete motor_state_;
-  if (motor_cmd_)   delete motor_cmd_;
-  motor_state_ = nullptr;
-  motor_cmd_   = nullptr;
+  if (state_) delete state_;
+  if (cmd_)   delete cmd_;
+  state_ = nullptr;
+  cmd_   = nullptr;
 }
 
 void Motor::updateMotorCommand(double v) {
   switch (cmd_mode()) {
   case JntCmdType::CMD_MOTOR_VEL:
-    motor_cmd_->command = boost::algorithm::clamp(v,
-                                  motor_cmd_->MIN_VEL,
-                                  motor_cmd_->MAX_VEL);
+    cmd_->command = boost::algorithm::clamp(v,
+                                  cmd_->MIN_VEL,
+                                  cmd_->MAX_VEL);
     // motor_cmd_->command = v;
     new_command_ = true;
     // LOG_INFO << "Motor[" << motor_name() << "]: " << v;
     break;
   default:
     LOG_ERROR << "What fucking joint command mode. The current mode is "
-      << motor_cmd_->mode << "!!!!";
+      << cmd_->mode << "!!!!";
     return;
   }
 }
 
 const std::string&  Motor::motor_name() const {
-  return motor_name_;
-}
-
-const std::string&  Motor::joint_name() const {
-  return (nullptr == joint_handle_) ? Label::null : joint_handle_->joint_name();
-}
-
-const JntType&    Motor::joint_type() const {
-  return (nullptr == joint_handle_) ? JntType::UNKNOWN_JNT : joint_handle_->joint_type();
-}
-
-const LegType&    Motor::leg_type()   const {
-  return (nullptr == joint_handle_) ? LegType::UNKNOWN_LEG : joint_handle_->leg_type();
+  return name_;
 }
 
 const JntCmdType& Motor::cmd_mode()   const {
-  return motor_cmd_->mode;
+  return cmd_->mode;
 }
 
 ///! About the state of motor
 const short  Motor::motor_position() const {
-  return motor_state_->position;
+  return state_->position;
 }
 
 const short& Motor::motor_position_const_ref() const {
-  return motor_state_->position;
+  return state_->position;
 }
 
 const short* Motor::motor_position_const_pointer() const {
-  return &motor_state_->position;
+  return &state_->position;
 }
 
 
 const short  Motor::motor_velocity() const {
-  return motor_state_->velocity;
+  return state_->velocity;
 }
 
 const short& Motor::motor_velocity_const_ref() const {
-  return motor_state_->velocity;
+  return state_->velocity;
 }
 
 const short* Motor::motor_velocity_const_pointer() const {
-  return &motor_state_->velocity;
+  return &state_->velocity;
 }
 
 
 const short  Motor::motor_torque() const {
-  return motor_state_->torque;
+  return state_->torque;
 }
 
 const short& Motor::motor_torque_const_ref() const {
-  return motor_state_->torque;
+  return state_->torque;
 }
 
 const short* Motor::motor_torque_const_pointer() const {
-  return &motor_state_->torque;
+  return &state_->torque;
 }
 
 
 ///! About the command of motor
 const short  Motor::motor_command() const {
-  return motor_cmd_->command;
+  return cmd_->command;
 }
 
 const short& Motor::motor_command_const_ref() const {
-  return motor_cmd_->command;
+  return cmd_->command;
 }
 
 const short* Motor::motor_command_const_pointer() const {
-  return &motor_cmd_->command;
+  return &cmd_->command;
 }
 
 void Motor::updateMotorPosition(short s) {
-  motor_state_->position = s;
+  state_->position = s;
 }
 
 void Motor::updateMotorVelocity(short s) {
-  motor_state_->velocity = s;
+  state_->velocity = s;
 }
 
 void Motor::updateMotorTorque(short s) {
-  motor_state_->torque   = s;
+  state_->torque   = s;
 }
 
 } /* namespace middleware */

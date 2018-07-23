@@ -59,16 +59,17 @@ MotorNode::~MotorNode() {
 
 bool MotorNode::auto_init() {
   if (!SWNode::auto_init()) return false;
+
   auto cfg = CfgReader::instance();
   cfg->get_value_fatal(getLabel(), "leg", leg_);
   cfg->get_value_fatal(getLabel(), "jnt", jnt_);
 
   joint_handle_ = JointManager::instance()->getJointHandle(leg_, jnt_);
-  if (!joint_handle_ || !joint_handle_->joint_motor())
+  if (!joint_handle_ || !joint_handle_->motor_handle())
     LOG_FATAL << "Can't get the joint '" << LEGTYPE2STR(leg_) << " - "
         << JNTTYPE2STR(jnt_) << "' pointer from JointManager, or the motor within joint.";
   ///! Add the instance of motor
-  motor_handle_  = joint_handle_->joint_motor();
+  motor_handle_  = joint_handle_->motor_handle();
 
   cfg->get_value_fatal(getLabel(), "cmd_interval", cmd_tick_interval_);
 

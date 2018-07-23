@@ -22,7 +22,6 @@ class JointManager: public internal::ResourceManager<Joint> {
 
   friend class Joint;
 public:
-  bool init();
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////        The Common Methods         //////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,7 +100,7 @@ protected:
   JntCmdType                              jnt_mode_;
 
 protected:
-  // virtual void add(Joint* _res) override;
+  virtual void add(Joint* _res) override;
 };
 
 } /* namespace middleware */

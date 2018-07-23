@@ -66,8 +66,6 @@ void MiiRobot::create_system_singleton() {
 }
 
 bool MiiRobot::init() {
-  JointManager::instance()->init();
-
   auto cfg = CfgReader::instance();
   ///! The default mode is the joint position.
   JntCmdType mode = JntCmdType::CMD_POS;
@@ -75,8 +73,16 @@ bool MiiRobot::init() {
   JointManager::instance()->setJointCommandMode(mode);
   LOG_DEBUG << "The mode of control is '" << JNTCMDTYPE2STR(mode) << "'.";
 
+  int mr = 10000, mw = 10000, pr = 10000, pw = 10000;
+  std::string _tag = Label::make_label(root_robot_, "master");
+  cfg->get_value(_tag, "r_freq", mr);
+  cfg->get_value(_tag, "w_freq", mw);
+
+  _tag = Label::make_label(root_robot_, "propas");
+  cfg->get_value(_tag, "r_freq", pr);
+  cfg->get_value(_tag, "w_freq", pw);
   ///! initialize the Master.
-  return Master::instance()->init();
+  return Master::instance()->init(mr, mw, pr, pw);
 }
 
 bool MiiRobot::run() {

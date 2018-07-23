@@ -67,6 +67,10 @@ void Label::split_label(std::string l, std::string& p, std::string& v) {
   }
 }
 
+void Label::foreachHardware(std::function<void (LabelPtr)> cb) {
+  for (auto& obj : s_label_table_) cb(obj.second);
+}
+
 bool Label::auto_init() { return true; }
 
 // } /* namespace middleware */

@@ -18,7 +18,8 @@
 #include "foundation/registry/registry2.h"
 #include "foundation/thread/threadpool.h"
 
-#include <rospack/rospack.h>
+#include "apps/internal/setup_env.h"
+
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32MultiArray.h>
@@ -27,61 +28,11 @@ using agile_robot::MiiRobot;
 using agile_robot::Joint;
 using agile_robot::JointManager;
 
-/*!
- * @brief Setup the env for the agile-system.
- *        Add the devel_lib_root:  the/path/to/devel/lib
- */
-void __setup_env() {
-  std::string pkg_name;
-  if (!ros::param::get("pkg_name", pkg_name)) {
-    printf("\033[0;31mNo such parameters with named pkg_name, using the default"
-        " value 'agile_apps'...\033[0m\n");
-    pkg_name = "agile_apps";
-  }
-
-  rospack::Rospack rp;
-  std::vector<std::string> search_path;
-  if(!rp.getSearchPathFromEnv(search_path)) {
-    printf("\033[0;31mCan't search the path from ENV...\033[0m\n");
-    exit(-1);
-  }
-  // We crawl here because profile (above) does its own special crawl.
-  rp.crawl(search_path, false);
-
-  std::string apps_root;
-  if (!rp.find(pkg_name, apps_root)) {
-    printf("\033[0;31mCan't find the named '%s' package...\033[0m\n", pkg_name.c_str());
-    exit(-1);
-  }
-
-  std::string pkgs_root = apps_root.substr(0, apps_root.rfind('/'));
-  std::string libs_root = pkgs_root.substr(0, pkgs_root.rfind('/'));
-  libs_root  = libs_root.substr(0, libs_root.rfind('/'));
-  libs_root += "/devel/lib";
-
-  ///! Setting the alias of paths
-  ros::param::set("apps_root", apps_root);
-  ros::param::set("pkgs_root", pkgs_root);
-  ros::param::set("libs_root", libs_root);
-
-  printf("\n");
-  printf("\033[1;36;43mENV: \n");
-  printf("    libs_root:  %s\n",        libs_root.c_str());
-  printf("    pkgs_root:  %s\n",        pkgs_root.c_str());
-  printf("    apps_root:  %s\033[0m\n", apps_root.c_str());
-  printf("\n");
-
-  bool verbose = true;
-  ros::param::get("~verbose", verbose);
-  LOG_ERROR << "VERBOSE: " << (verbose ? "true" : "false");
-  google::SetStderrLogging(verbose ? google::GLOG_INFO : google::GLOG_WARNING);
-}
-
 
 SINGLETON_IMPL(PdWrapper)
 
 PdWrapper::PdWrapper()
-  : MiiRobot(), root_wrapper_(""), alive_(true),
+  : MiiRobot(), nh_("~"), root_wrapper_(""), alive_(true),
     rt_interval_(1000/1000) {
   ///! Setup the root tag of Wrapper and Robot.
   if (!ros::param::get("~namespaces", param_ns_))
@@ -89,6 +40,7 @@ PdWrapper::PdWrapper()
         << "in the parameter server. Did you forget define this parameter.";
 
   std::string cfg_root;
+
   if (!ros::param::get(param_ns_ + "/prefix", cfg_root))
     LOG_FATAL << "RosWrapper can't find the 'prefix' parameter "
         << "in the parameter server. Did you forget define this parameter.";
@@ -96,7 +48,7 @@ PdWrapper::PdWrapper()
   root_wrapper_ = Label::make_label(cfg_root,      "wrapper");
   root_robot_   = Label::make_label(root_wrapper_, "robot");
   ///! Setup the ENV for our system
-  __setup_env();
+  internal::__setup_env();
 }
 
 PdWrapper::~PdWrapper() {
@@ -116,50 +68,7 @@ void PdWrapper::create_system_singleton() {
   //! class this method in the base class.
   MiiRobot::create_system_singleton();
 
-  std::string nss_str;
-  std::vector<std::string> nss;
-  // if (nh_.getParam("namespaces", nss)) {
-  if (!ros::param::get("~namespaces", nss_str)) {
-    LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  } else {
-    std::stringstream ss;
-    ss << nss_str;
-    std::string ns;
-    while (ss >> ns) nss.push_back(ns);
-  }
-
-  ///! For each namespace (agile_robot or agile_control) given in the bringup.launch
-  for (const auto& ns : nss) {
-    // LOG_INFO << "namespace: " << ns;
-    std::string path, alias;
-    std::vector<std::string> files;
-    ///! Get the alias of the configure of path.
-    if ( !ros::param::get(ns + "/configure/prefix", alias)
-      || !ros::param::get(ns + "/configure/file",   files)
-      || !ros::param::get(alias, path)) {
-      LOG_FATAL << "RosWapper can't find the '" << ns << "/configure/prefix "
-          << "(or file)' or '" << alias << "' parameter in the parameter "
-          << "server. Did you forget define this parameter.";
-    }
-
-    CfgReader::add_path(path);
-    for (const auto& cfg : files)
-      CfgReader::instance()->add_config(cfg);
-
-    if ( !ros::param::get(ns + "/library/prefix", alias)
-      || !ros::param::get(ns + "/library/file",   files)
-      || !ros::param::get(alias, path)) {
-      LOG_FATAL << "RosWapper can't find the '" << ns << "/library/prefix "
-          << "(or file)' or '" << alias << "' parameter in the parameter "
-          << "server. Did you forget define this parameter.";
-    }
-
-    ///! Got from ENV
-    AutoInstor::add_path(path);
-    for (const auto& lib : files)
-      AutoInstor::instance()->add_library(lib);
-  }
+  internal::__setup_sys();
 }
 
 //void PdWrapper::auto_inst() {
@@ -204,15 +113,18 @@ bool PdWrapper::init() {
   Label::printfEveryInstance();
 
   // registry the thread.
-  ThreadPool::instance()->add("rt_puber", &PdWrapper::publishRTMsg, this);
+  // ThreadPool::instance()->add("rt_puber", &PdWrapper::publishRTMsg, this);
+  ThreadPool::instance()->add("rt_puber", &internal::__pub_rt_msg,  alive_, rt_interval_);
   ThreadPool::instance()->add("control",  &PdWrapper::controlRobot, this);
   return true;
 }
 
+// TODO
 void PdWrapper::cbForControl(const std_msgs::StringConstPtr& msg) {
   LOG_INFO << msg->data;
 }
 
+// TODO
 void PdWrapper::controlRobot() {
   TICKER_INIT(std::chrono::microseconds);
   while (alive_ && ros::ok()) {
@@ -229,32 +141,6 @@ void PdWrapper::controlRobot() {
     TICKER_CONTROL(tick_interval_, std::chrono::microseconds);
   }
 }
-
-void PdWrapper::publishRTMsg() {
-  ros::Publisher jnt_puber
-      = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
-
-  TICKER_INIT(std::chrono::milliseconds);
-  while (alive_ && ros::ok()) {
-    if (jnt_puber.getNumSubscribers()) {
-      sensor_msgs::JointState msg;
-      JointManager::instance()->foreach([&msg](MiiPtr<Joint>& jnt){
-        msg.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
-        msg.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
-        msg.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
-        msg.name.push_back    (jnt->joint_name());
-      });
-      msg.header.stamp = ros::Time::now();
-
-      jnt_puber.publish(msg);
-    }
-
-    TICKER_CONTROL(rt_interval_, std::chrono::milliseconds);
-  }
-
-  alive_ = false;
-}
-
 
 #ifdef DEBUG_TOPIC
 void PdWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
@@ -320,3 +206,7 @@ void PdWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   LOG_INFO << "Debug Callback Completed!";
 }
 #endif
+
+#define WRAPPER PdWrapper
+#include "apps/internal/main.cpp"
+

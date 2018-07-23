@@ -60,7 +60,6 @@ set(CONTROL_FILES       ${SRC_ROOT}/control.cpp
 # )
 
 add_executable(pd_apps
-  ${SRC_ROOT}/pd.cpp
   ${SRC_APP}/pd_wrapper.cpp
 )
 
@@ -68,9 +67,9 @@ add_executable(pd_apps
 #   ${ENTRY_FILES}
 # )
 
-# add_executable(mii_robot
-#   ${ROBOT_FILES}
-# )
+add_executable(leg_robot
+  ${SRC_APP}/robot_wrapper.cpp
+)
 
 # add_executable(mii_control
 #   ${CONTROL_FILES}
@@ -103,10 +102,10 @@ target_link_libraries(pd_apps
 #   agile_foundation
 # )
 
-# target_link_libraries(mii_robot
-#   ${catkin_LIBRARIES}
-#   agile_driver_sys_robot
-# )
+target_link_libraries(leg_robot
+  ${catkin_LIBRARIES}
+  agile_driver_sys_robot
+)
 
 # target_link_libraries(mii_control
 #   ${catkin_LIBRARIES}
@@ -132,7 +131,7 @@ install(DIRECTORY include/
 
 install(TARGETS #mii_apps
                 #mii_launcher
-                #mii_robot
+                leg_robot
                 #mii_control
                 # ${PROJECT_NAME}_test_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

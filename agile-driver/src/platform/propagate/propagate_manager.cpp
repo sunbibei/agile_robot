@@ -40,13 +40,16 @@ PropagateManager::~PropagateManager() {
   }
 }
 
-bool PropagateManager::init() {
+bool PropagateManager::init(int r_freq, int w_freq) {
   // LOG_WARNING << "SIZE: " << res_list_.size();
   for (auto& cc : res_list_) {
     auto c = Label::getHardwareByName<Propagate>(cc->getLabel());
     // LOG_WARNING << "GOT: " << cc << " " << cc->getLabel();
     propa_list_by_bus_[c->bus_id_] = c;
   }
+
+  w_interval_ = std::chrono::microseconds((int)(1000000.0 / w_freq));
+  r_interval_ = std::chrono::microseconds((int)(1000000.0 / r_freq));
 
   bool all_fail = true;
   for (auto& c : propa_list_by_bus_) {
@@ -120,7 +123,7 @@ void PropagateManager::updateRead() {
     }
     MUTEX_UNLOCK(lock_4_recv_)
 
-    TICKER_CONTROL(200, std::chrono::microseconds);
+    TICKER_CONTROL(r_interval_, std::chrono::microseconds);
   }
 }
 
@@ -149,7 +152,7 @@ void PropagateManager::updateWrite() {
     }
     MUTEX_UNLOCK(lock_4_send_)
 
-    TICKER_CONTROL(200, std::chrono::microseconds);
+    TICKER_CONTROL(w_interval_, std::chrono::microseconds);
   }
 }
 
