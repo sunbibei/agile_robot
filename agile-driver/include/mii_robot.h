@@ -69,6 +69,7 @@ protected:
   /**
    * Given by subclass in the parameters list of the constructed function.
    * Tell MiiRobot what necessary parameters are found in @prefix_tag_.
+   * NOTE: This variable MUST BE initialize in the constructor of sub-class
    */
   std::string                     root_robot_;
 // class Master*                   master_;

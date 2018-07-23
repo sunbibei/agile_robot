@@ -37,10 +37,9 @@ PdWrapper::PdWrapper()
   ///! Setup the root tag of Wrapper and Robot.
   if (!ros::param::get("~namespaces", param_ns_))
     LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
+        << "in the ros parameter server. Did you forget define this parameter.";
 
   std::string cfg_root;
-
   if (!ros::param::get(param_ns_ + "/prefix", cfg_root))
     LOG_FATAL << "RosWrapper can't find the 'prefix' parameter "
         << "in the parameter server. Did you forget define this parameter.";
@@ -113,10 +112,34 @@ bool PdWrapper::init() {
   Label::printfEveryInstance();
 
   // registry the thread.
-  // ThreadPool::instance()->add("rt_puber", &PdWrapper::publishRTMsg, this);
-  ThreadPool::instance()->add("rt_puber", &internal::__pub_rt_msg,  alive_, rt_interval_);
+  ThreadPool::instance()->add("rt_puber", &PdWrapper::pub_rt_msg,   this);
   ThreadPool::instance()->add("control",  &PdWrapper::controlRobot, this);
   return true;
+}
+
+///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
+void PdWrapper::pub_rt_msg() {
+  ros::NodeHandle _nh;
+  ros::Publisher jnt_puber = _nh.advertise<sensor_msgs::JointState>("joint_states", 1);
+
+  TICKER_INIT(std::chrono::milliseconds);
+  while (alive_ && ros::ok()) {
+    if (jnt_puber.getNumSubscribers()) {
+      sensor_msgs::JointState msg;
+      agile_robot::JointManager::instance()->foreach([&msg](MiiPtr<Joint>& jnt){
+        msg.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
+        msg.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
+        msg.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
+        msg.name.push_back    (jnt->joint_name());
+      });
+      msg.header.stamp = ros::Time::now();
+
+      jnt_puber.publish(msg);
+    }
+
+    TICKER_CONTROL(rt_interval_, std::chrono::milliseconds);
+  }
+
 }
 
 // TODO

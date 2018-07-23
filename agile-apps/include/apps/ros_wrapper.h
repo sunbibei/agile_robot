@@ -30,15 +30,13 @@ using namespace agile_robot;
 using agile_control::MiiControl;
 
 class RosWrapper : public MiiRobot, public MiiControl {
-SINGLETON_DECLARE(RosWrapper, const std::string&, const std::string&)
+SINGLETON_DECLARE(RosWrapper)
 
 protected:
   virtual bool init() override;
   virtual void create_system_singleton() override;
 
 private:
-  ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
-  void publishRTMsg();
   /*!
    * @brief The callback for gait_topic.
    */
@@ -53,6 +51,8 @@ private:
 private:
   // The ROS handle
   ros::NodeHandle nh_;
+  std::string     param_ns_;
+  std::string     root_wrapper_;
   std::string     robot_root_;
   std::string     control_root_;
 

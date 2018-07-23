@@ -5,15 +5,18 @@
   <!-- include file="$(find agile_gazebo)/launch/upload_robot.urdf.launch" / -->
 
   <!-- FOR setup the env -->
-  <param name="pkg_name"       value="agile_apps" />
-  <rosparam command="load" file="$(find agile_apps)/config/yaml/leg_agile_robot.yaml" />
-  <rosparam command="load" file="$(find agile_apps)/config/yaml/leg_agile_control.yaml" />
+  <param name="pkg_name"   value="agile_apps" />
+  <rosparam command="load" file="$(find agile_apps)/config/yaml/leg_robot.yaml" />
+  <rosparam command="load" file="$(find agile_apps)/config/yaml/leg_control.yaml" />
 
   <!-- Load hardware interface -->
-  <node name="leg_apps" pkg="agile_apps" type="mii_apps" output="screen">
-    <param name="verbose"     value="$(arg verbose)"  />
-    <param name="robot_ns"    value="agile_robot"   />
-    <param name="control_ns"  value="agile_control" />
+  <node name="leg_launcher" pkg="agile_apps" type="leg_launcher" output="screen">
+    <param name="verbose"     value="$(arg verbose)" />
+    <param name="prefix"      value="apps" />
+    <param name="configure"   value="$(find agile_apps)/config/leg.cfg" />
+
+    <param name="robot_ns"    value="agile_robot"    />
+    <param name="control_ns"  value="agile_control"  />
   </node>
 
   <!-- Convert joint states to /tf tranforms -->

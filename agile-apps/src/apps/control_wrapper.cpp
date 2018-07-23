@@ -6,26 +6,31 @@
  */
 
 #include "apps/control_wrapper.h"
+#include "apps/internal/setup_env.h"
 
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instor.h"
 #include "foundation/thread/threadpool.h"
 
-SINGLETON_IMPL_NO_CREATE(ControlWrapper)
+SINGLETON_IMPL(ControlWrapper)
 
-ControlWrapper* ControlWrapper::create_instance(const std::string& __tag) {
-  if (nullptr != s_inst_) {
-    LOG_WARNING << "This method 'create_instance()' is called twice.";
-  } else {
-    s_inst_ = new ControlWrapper(Label::make_label(__tag, "wrapper"));
-  }
-  return s_inst_;
-}
+ControlWrapper::ControlWrapper()
+  : MiiControl(), alive_(true) {
+  ///! Setup the root tag of Wrapper and Robot.
+  if (!ros::param::get("~namespaces", param_ns_))
+    LOG_FATAL << "Wrapper can't find the 'namespaces' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
 
-ControlWrapper::ControlWrapper(const std::string& _prefix)
-  : MiiControl(Label::make_label(_prefix, "wrapper")), nh_("agile_control"),
-    root_tag_(_prefix), alive_(true) {
-  ; // Nothing to do here.
+  std::string cfg_root;
+  if (!ros::param::get(param_ns_ + "/prefix", cfg_root))
+    LOG_FATAL << "Wrapper can't find the 'prefix' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
+
+  root_wrapper_ = Label::make_label(cfg_root,      "wrapper");
+  root_control_ = Label::make_label(root_wrapper_, "control");
+
+  ///! Setup the ENV for our system
+  internal::__setup_env();
 }
 
 ControlWrapper::~ControlWrapper() {
@@ -63,33 +68,10 @@ bool ControlWrapper::init() {
 }
 
 void ControlWrapper::create_system_singleton() {
-  std::string prefix;
-  std::vector<std::string> cfgs;
-  if (!nh_.getParam("configure/prefix", prefix)
-      || !nh_.getParam("configure/file", cfgs)) {
-    LOG_FATAL << "RosWapper can't find the 'configure' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-
-  ros::param::get(prefix, prefix);
-  if (nullptr == CfgReader::create_instance())
-    LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
-  for (size_t i = 0; i < cfgs.size(); ++i)
-    CfgReader::instance()->add_config(prefix + "/" + cfgs[i]);
-
-  if (!nh_.getParam("library/prefix", prefix)
-      || !nh_.getParam("library/file", cfgs)) {
-    LOG_FATAL << "RosWapper can't find the 'library' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
-
-  ros::param::get(prefix, prefix);
-  if (nullptr == AutoInstor::create_instance())
-    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
-  for (size_t i = 0; i < cfgs.size(); ++i)
-    AutoInstor::instance()->add_library(prefix + "/" + cfgs[i]);
-
+  //! class this method in the base class.
   MiiControl::create_system_singleton();
+
+  internal::__setup_sys();
 }
 
 void ControlWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
@@ -104,3 +86,6 @@ void ControlWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   LOG_INFO << "Debug Callback Completed!";
 }
 #endif
+
+#define  WRAPPER ControlWrapper
+#include "apps/internal/main.cpp"

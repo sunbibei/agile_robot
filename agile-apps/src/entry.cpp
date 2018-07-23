@@ -21,6 +21,7 @@ static bool g_is_alive = true;
 void termial(int) { g_is_alive = false; }
 
 void __launch_app(const std::string& tag) {
+  printf("%s\n", tag.c_str());
   auto cfg = CfgReader::instance();
 
   bool enable = false;
@@ -112,13 +113,18 @@ void launcher() {
 
   printf("screen: %s\noutput: %s\n", screen.c_str(), output.c_str());
   ///! launch each process
+  printf("%s\n", root.c_str());
   cfg->foreachTag(root, __launch_app);
 }
 
 int main(int argc, char* argv[]) {
   // signal(SIGINT, termial);
+  google::InitGoogleLogging("agile_apps");
+  google::FlushLogFiles(google::GLOG_INFO);
+  FLAGS_colorlogtostderr = true;
+
   ros::init(argc, argv, "system_entry");
-  ros::NodeHandle nh("agile_apps");
+  ros::NodeHandle nh;
 
   // setup the ENV
   internal::__setup_env();

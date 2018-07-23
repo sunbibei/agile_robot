@@ -1,10 +1,10 @@
-agile_control:
+leg_control:
   prefix:     ctrl
   # the path of configure and library: $(rosparam ${prefix})/${file}
   configure:
     prefix: apps_root
     file:
-      - config/leg_gait.cfg
+      - config/leg_control.cfg
 
   library:
     prefix: libs_root

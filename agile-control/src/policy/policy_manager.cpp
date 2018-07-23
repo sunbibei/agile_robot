@@ -119,17 +119,38 @@ bool PolicyManager::query(const std::string& _n) {
 }
 
 void PolicyManager::print() {
-  if (_DEBUG_INFO_FLAG) {
-    LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
-    LOG_WARNING << "NAME\t\tLABEL\t\tADDR";
-    for (auto hw : res_list_) {
-      LOG_INFO << hw->gait_name_ << "\t" << hw->getLabel() << "\t" << hw;
-    }
-    LOG_WARNING << "-------------------------------------------------------------";
-    LOG_INFO << "The current running gait: " << (running_policy_ ? running_policy_->gait_name_ : "NULL");
-    LOG_INFO << "The current active  gait: " << (actived_policy_  ? actived_policy_->gait_name_  : "NULL");
-    LOG_WARNING << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+";
+  size_t N_max_name  = 0;
+  for (const auto& res : res_list_) {
+    if (N_max_name < res->name().size())
+      N_max_name = res->name().size();
   }
+
+  char format[128] = {0};
+//printf("No. NAME     ADDR             LABEL        \n");
+//printf("1   sl_test  0x55636bc68da0 ctrl.gait.walk \n");
+  printf("\n");
+  LOG_WARNING << "\nPolicy's table, size = " << res_list_.size()
+      << "\n-------------------------------------------------------------";
+  sprintf(format, "No. %%-%lds %%-18s LABEL\n", N_max_name);
+  printf( format, "NAME", "ADDR");
+
+  memset( format, 0x00, 128);
+  sprintf(format, "%%-3d %%-%lds %%p %%s\n", N_max_name);
+
+  int count = 0;
+  for (const auto& res : res_list_) {
+    printf(format, count++, res->name().c_str(), res, res->label_.c_str());
+  }
+  printf("-------------------------------------------------------------\n");
+  printf("The current running gait: %s\n",
+      (running_policy_ ? running_policy_->gait_name_.c_str() : "NULL"));
+  printf("The current active  gait: %s\n",
+      (actived_policy_ ? actived_policy_->gait_name_.c_str() : "NULL"));
+  printf("-------------------------------------------------------------\n");
+
+  LOG_WARNING;
+  printf("\n");
+
 }
 
 } /* namespace qr_control */

@@ -5,6 +5,7 @@
  *      Author: silence
  */
 #include "apps/ros_wrapper.h"
+#include "apps/internal/setup_env.h"
 
 #include "repository/motor.h"
 #include "repository/imu_sensor.h"
@@ -21,80 +22,27 @@
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32MultiArray.h>
 
-// #define MII_CTRL_THREAD ("mii_control")
-// #define RT_PUB_THREAD   ("rt_publisher")
 
-/*!
- * @brief Setup the env for the agile-system.
- *        Add the devel_lib_root:  the/path/to/devel/lib
- */
-void __setup_env() {
-  std::string pkg_name;
-  if (!ros::param::get("pkg_name", pkg_name)) {
-    printf("\033[0;31mNo such parameters with named pkg_name, using the default"
-        " value 'agile_apps'...\033[0m\n");
-    pkg_name = "agile_apps";
-  }
+SINGLETON_IMPL(RosWrapper)
 
-  rospack::Rospack rp;
-  std::vector<std::string> search_path;
-  if(!rp.getSearchPathFromEnv(search_path)) {
-    printf("\033[0;31mCan't search the path from ENV...\033[0m\n");
-    exit(-1);
-  }
-  // We crawl here because profile (above) does its own special crawl.
-  rp.crawl(search_path, false);
-
-  std::string apps_root;
-  if (!rp.find(pkg_name, apps_root)) {
-    printf("\033[0;31mCan't find the named '%s' package...\033[0m\n", pkg_name.c_str());
-    exit(-1);
-  }
-
-  std::string pkgs_root = apps_root.substr(0, apps_root.rfind('/'));
-  std::string libs_root = pkgs_root.substr(0, pkgs_root.rfind('/'));
-  libs_root  = libs_root.substr(0, libs_root.rfind('/'));
-  libs_root += "/devel/lib";
-
-  ///! Setting the alias of paths
-  ros::param::set("apps_root", apps_root);
-  ros::param::set("pkgs_root", pkgs_root);
-  ros::param::set("libs_root", libs_root);
-
-  printf("\033[1;36;43m\n");
-  printf("ENV: \n");
-  printf("    libs_root:  %s\n", libs_root.c_str());
-  printf("    pkgs_root:  %s\n", pkgs_root.c_str());
-  printf("    apps_root:  %s\n", apps_root.c_str());
-  printf("\033[0m\n");
-
-}
-
-SINGLETON_IMPL_NO_CREATE(RosWrapper)
-
-RosWrapper* RosWrapper::create_instance(const std::string& __tag1, const std::string& __tag2) {
-  if (nullptr != s_inst_) {
-    LOG_WARNING << "This method 'create_instance()' is called twice.";
-  } else {
-    s_inst_ = new RosWrapper(Label::make_label(__tag1, "wrapper"),
-        Label::make_label(__tag2, "wrapper"));
-  }
-  return s_inst_;
-}
-
-RosWrapper::RosWrapper(const std::string& _robot_tag, const std::string& _ctrl_tag)
-  : MiiRobot(Label::make_label(_robot_tag,  "robot")),
-    MiiControl(Label::make_label(_ctrl_tag, "control")),
-    robot_root_(_robot_tag), control_root_(_ctrl_tag),
+RosWrapper::RosWrapper()
+  : MiiRobot(), MiiControl(),
     alive_(true), rt_duration_(1000/1000) {
-  // LOG_DEBUG << "Enter the roswrapper construction";
-  // google::InitGoogleLogging("qr_driver");
-  // google::SetLogDestination(google::GLOG_INFO, "/path/to/log/INFO_");
-  // FLAGS_colorlogtostderr = true;
-  // google::FlushLogFiles(google::GLOG_INFO);
-  // LOG_DEBUG << "Leave the roswrapper construction";
-  __setup_env();
-  ; // Nothing to do here, all of variables initialize in the method @start()
+  ///! Setup the root tag of Wrapper and Robot.
+  if (!ros::param::get("~namespaces", param_ns_))
+    LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
+
+  std::string cfg_root;
+
+  if (!ros::param::get(param_ns_ + "/prefix", cfg_root))
+    LOG_FATAL << "RosWrapper can't find the 'prefix' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
+
+  root_wrapper_ = Label::make_label(cfg_root,      "wrapper");
+  root_robot_   = Label::make_label(root_wrapper_, "robot");
+  ///! Setup the ENV for our system
+  internal::__setup_env();
 }
 
 RosWrapper::~RosWrapper() {
@@ -185,7 +133,7 @@ bool RosWrapper::init() {
   gait_ctrl_sub_ = nh_.subscribe<std_msgs::String>(str, 1,
       &RosWrapper::gaitControlCb, this);
 
-  ThreadPool::instance()->add("rt_puber", &RosWrapper::publishRTMsg, this);
+  ThreadPool::instance()->add("rt_puber", &internal::__pub_rt_msg, alive_, rt_duration_);
 
 // For debug
 #ifdef DEBUG_TOPIC
@@ -194,167 +142,6 @@ bool RosWrapper::init() {
 #endif
 
   return true;
-}
-
-inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
-  to.name.clear();
-  to.position.clear();
-  to.velocity.clear();
-  to.effort.clear();
-  to.name.clear();
-  for (const auto& jnt : *from) {
-    to.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
-    to.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
-    to.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
-    to.name.push_back(jnt->joint_name());
-  }
-  to.header.stamp = ros::Time::now();
-}
-
-inline void __fill_motor_data(sensor_msgs::JointState& to, JointManager* from) {
-  to.name.clear();
-  to.position.clear();
-  to.velocity.clear();
-  to.effort.clear();
-  to.name.clear();
-  for (const auto& jnt : *from) {
-    to.position.push_back(jnt->joint_motor()->motor_position());
-    to.velocity.push_back(jnt->joint_motor()->motor_velocity());
-    to.effort.push_back(jnt->joint_motor()->motor_torque());
-    to.name.push_back(jnt->joint_motor()->motor_name());
-  }
-  to.header.stamp = ros::Time::now();
-}
-
-inline void __fill_imu_data(sensor_msgs::Imu& to, ImuSensor* from) {
-  to.orientation.x = from->orientation_const_pointer()[0];
-  to.orientation.y = from->orientation_const_pointer()[1];
-  to.orientation.z = from->orientation_const_pointer()[2];
-  to.orientation.w = from->orientation_const_pointer()[3];
-  for (size_t i = 0; i < to.orientation_covariance.size(); ++i)
-    to.orientation_covariance[i] = from->orientation_covariance_const_pointer()[i];
-
-  to.angular_velocity.x = from->angular_velocity_const_pointer()[0];
-  to.angular_velocity.y = from->angular_velocity_const_pointer()[1];
-  to.angular_velocity.z = from->angular_velocity_const_pointer()[2];
-  for (size_t i = 0; i < to.angular_velocity_covariance.size(); ++i)
-    to.angular_velocity_covariance[i] = from->angular_velocity_covariance_const_pointer()[i];
-
-  to.linear_acceleration.x = from->linear_acceleration_const_pointer()[0];
-  to.linear_acceleration.y = from->linear_acceleration_const_pointer()[1];
-  to.linear_acceleration.z = from->linear_acceleration_const_pointer()[2];
-  for (size_t i = 0; i < to.linear_acceleration_covariance.size(); ++i)
-    to.linear_acceleration_covariance[i] = from->linear_acceleration_covariance_const_pointer()[i];
-
-  to.header.stamp = ros::Time::now();
-}
-
-inline void __fill_force_data(std_msgs::Int32MultiArray& to, std::vector<ForceSensor*>& from) {
-  for (const LegType& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
-    // LOG_DEBUG << "enter: " << leg << " " << to.data.size() << " " << from.size();// << " " << from[leg];
-    to.data[leg] = (nullptr != from[leg]) ? from[leg]->force_data() : NAN;
-  }
-}
-
-inline void __fill_cmd_data(std_msgs::Float64MultiArray& __cmd_msg, Eigen::VectorXd** cmds) {
-  __cmd_msg.data.clear();
-  for (const auto& l : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
-    const auto& cmd = *(cmds[l]);
-    for (const auto& j : {JntType::KFE, JntType::HFE, JntType::HAA}) {
-      __cmd_msg.data.push_back(cmd(j));
-    }
-  }
-}
-
-void RosWrapper::publishRTMsg() {
-  ros::Publisher jnt_puber
-      = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
-  ros::Publisher motor_puber
-        = nh_.advertise<sensor_msgs::JointState>("motor_states", 1);
-  ros::Publisher imu_puber
-      = nh_.advertise<sensor_msgs::Imu>("imu", 1);
-  ros::Publisher force_puber
-      = nh_.advertise<std_msgs::Int32MultiArray>("foot_forces", 1);
-
-  // TODO
-  ros::Publisher hip_puber
-        = nh_.advertise<std_msgs::Float32>("hip_jnt", 1);
-
-  MiiPtr<Joint> hip = JointManager::instance()->getJointHandle(LegType::FL, JntType::HFE);
-
-// TODO Redesigned the Command publisher.
-//  ros::Publisher cmd_puber;
-//  if (!use_ros_control_)
-//    cmd_puber = nh_.advertise<std_msgs::Float64MultiArray>("/dragon/joint_commands", 10);
-
-  sensor_msgs::JointState     __jnt_msg;
-  sensor_msgs::JointState     __motor_msg;
-  sensor_msgs::Imu            __imu_msg;
-  std_msgs::Int32MultiArray   __f_msg;
-  std_msgs::Float64MultiArray __cmd_msg;
-
-  // TODO
-  std_msgs::Float32 __hip_msg;
-
-  __imu_msg.header.frame_id = "imu";
-
-  __f_msg.data.resize(4);
-  __f_msg.layout.data_offset = 0;
-  for (const std::string& l : {"fl", "fr", "hl", "hr"}) {
-    std_msgs::MultiArrayDimension dim;
-    dim.label = "foot_" + l;
-    dim.size  = 1;
-    dim.stride= 1;
-    __f_msg.layout.dim.push_back(dim);
-  }
-
-//  Eigen::VectorXd* _sub_cmd[LegType::N_LEGS];
-//  if (!use_ros_control_) {
-//    auto cfg = CfgReader::instance();
-//    MiiVector<MiiString> cmds;
-//    cfg->get_value(Label::make_label(root_tag_, "roswrapper"), "cmds", cmds);
-//    FOR_EACH_LEG(l) {
-//     _sub_cmd[l] = GET_COMMAND_NO_FLAG(cmds[l], Eigen::VectorXd*);
-//    }
-//  }
-
-  TICKER_INIT(std::chrono::milliseconds);
-
-  while (alive_ && ros::ok()) {
-    if (jnt_puber.getNumSubscribers()) {
-      __fill_jnt_data(__jnt_msg, JointManager::instance());
-      jnt_puber.publish(__jnt_msg);
-    }
-
-    if (motor_puber.getNumSubscribers()) {
-      __fill_motor_data(__motor_msg, JointManager::instance());
-      motor_puber.publish(__motor_msg);
-    }
-
-//    if (imu_puber.getNumSubscribers()) {
-//      __fill_imu_data(__imu_msg, imu_sensor_);
-//      imu_puber.publish(__imu_msg);
-//    }
-//
-//    if (force_puber.getNumSubscribers()) {
-//      __fill_force_data(__f_msg, td_list_by_type_);
-//      force_puber.publish(__f_msg);
-//    }
-
-//    if (hip_puber.getNumSubscribers()) {
-//      __hip_msg.data = hip->joint_position();
-//      hip_puber.publish(__hip_msg);
-//    }
-
-//    if (!use_ros_control_ && cmd_puber.getNumSubscribers()) {
-//      __fill_cmd_data(__cmd_msg, _sub_cmd);
-//      cmd_puber.publish(__cmd_msg);
-//    }
-
-    TICKER_CONTROL(rt_duration_, std::chrono::milliseconds);
-  }
-
-  alive_ = false;
 }
 
 void RosWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {

@@ -8,12 +8,13 @@
 #ifndef INCLUDE_APPS_INTERNAL_SETUP_ENV_H_
 #define INCLUDE_APPS_INTERNAL_SETUP_ENV_H_
 
+#include <thread>
 #include <ros/ros.h>
 #include <rospack/rospack.h>
 #include <sensor_msgs/JointState.h>
 
 #include "foundation/utf.h"
-#include "repository/joint_manager.h"
+#include "foundation/auto_instor.h"
 
 namespace internal {
 
@@ -120,31 +121,6 @@ void __setup_sys() {
     for (const auto& lib : files)
       AutoInstor::instance()->add_library(lib);
   }
-}
-
-///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
-void __pub_rt_msg(const bool& alive, std::chrono::milliseconds rt_interval) {
-  ros::NodeHandle _nh;
-  ros::Publisher jnt_puber = _nh.advertise<sensor_msgs::JointState>("joint_states", 1);
-
-  TICKER_INIT(std::chrono::milliseconds);
-  while (alive && ros::ok()) {
-    if (jnt_puber.getNumSubscribers()) {
-      sensor_msgs::JointState msg;
-      agile_robot::JointManager::instance()->foreach([&msg](MiiPtr<Joint>& jnt){
-        msg.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
-        msg.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
-        msg.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
-        msg.name.push_back    (jnt->joint_name());
-      });
-      msg.header.stamp = ros::Time::now();
-
-      jnt_puber.publish(msg);
-    }
-
-    TICKER_CONTROL(rt_interval, std::chrono::milliseconds);
-  }
-
 }
 
 } /* namespace internal */

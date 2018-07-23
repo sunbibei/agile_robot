@@ -29,7 +29,7 @@ protected:
    * @brief Constructed function.
    * @param _tag        Every necessary parameters will be found in this __tag
    */
-  MiiControl(const std::string& __tag);
+  MiiControl();
   /*!
    * @brief STEP 2:
    *        Create the all of singleton in our system, this method will be
@@ -70,7 +70,8 @@ protected:
   virtual void tick();
 
 protected:
-  std::string          prefix_tag_;
+  ///! NOTE: This variable MUST BE initialize in the constructor of sub-class
+  std::string          root_control_;
   class PolicyManager* policy_manager_;
 
   bool                      alive_;

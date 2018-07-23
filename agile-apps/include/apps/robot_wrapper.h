@@ -57,6 +57,9 @@ protected:
   virtual bool init() override;
 
 private:
+  ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
+  void pub_rt_msg();
+
   // Just for test
 #ifdef DEBUG_TOPIC
   void cbForDebug(const std_msgs::Float32ConstPtr&);

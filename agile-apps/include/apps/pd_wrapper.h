@@ -34,6 +34,9 @@ protected:
   virtual void create_system_singleton() override;
 
 private:
+  ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
+  void pub_rt_msg();
+
   ///! TODO The thread of control.
   void controlRobot();
 

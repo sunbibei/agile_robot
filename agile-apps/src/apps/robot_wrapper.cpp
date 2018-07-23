@@ -28,12 +28,12 @@ RobotWrapper::RobotWrapper()
   : MiiRobot(), root_wrapper_(""), alive_(true), rt_duration_(1000/50) {
   ///! Setup the root tag of Wrapper and Robot.
   if (!ros::param::get("~namespaces", param_ns_))
-    LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
+    LOG_FATAL << "Wrapper can't find the 'namespaces' parameter "
         << "in the parameter server. Did you forget define this parameter.";
 
   std::string cfg_root;
   if (!ros::param::get(param_ns_ + "/prefix", cfg_root))
-    LOG_FATAL << "RosWrapper can't find the 'prefix' parameter "
+    LOG_FATAL << "Wrapper can't find the 'prefix' parameter "
         << "in the parameter server. Did you forget define this parameter.";
 
   root_wrapper_ = Label::make_label(cfg_root,      "wrapper");
@@ -69,7 +69,7 @@ bool RobotWrapper::init() {
     rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 
   // registry the thread
-  ThreadPool::instance()->add("rt-pub", &internal::__pub_rt_msg, alive_, rt_duration_);
+  ThreadPool::instance()->add("rt-pub", &RobotWrapper::pub_rt_msg, this);
 
 // For debug
 #ifdef DEBUG_TOPIC
@@ -78,6 +78,31 @@ bool RobotWrapper::init() {
 #endif
 
   return true;
+}
+
+///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
+void RobotWrapper::pub_rt_msg() {
+  ros::NodeHandle _nh;
+  ros::Publisher jnt_puber = _nh.advertise<sensor_msgs::JointState>("joint_states", 1);
+
+  TICKER_INIT(std::chrono::milliseconds);
+  while (alive_ && ros::ok()) {
+    if (jnt_puber.getNumSubscribers()) {
+      sensor_msgs::JointState msg;
+      agile_robot::JointManager::instance()->foreach([&msg](MiiPtr<Joint>& jnt){
+        msg.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
+        msg.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
+        msg.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
+        msg.name.push_back    (jnt->joint_name());
+      });
+      msg.header.stamp = ros::Time::now();
+
+      jnt_puber.publish(msg);
+    }
+
+    TICKER_CONTROL(rt_duration_, std::chrono::milliseconds);
+  }
+
 }
 
 #ifdef DEBUG_TOPIC

@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="verbose"         value="true"       />
 
   <!-- FOR setup the env -->
-  <param name="debug"          value="True"               />
-  <param name="apps_root"      value="$(find agile_apps)" />
-  <param name="libs_root"      value="/home/bibei/Workspaces/agile_ws/devel/lib" />
-  <param name="pkgs_root"      value="/home/bibei/Workspaces/agile_ws/src/agile_robot" />
-  <rosparam command="load"     file="$(find agile_apps)/config/yaml/leg_agile_control.yaml" />
+  <param    name="pkg_name"   value="agile_apps" />
+  <rosparam command="load"    file="$(find agile_apps)/config/yaml/leg_control.yaml" />
  
   <!-- Load hardware interface -->
-  <node name="agile_control" pkg="agile_apps" type="mii_control" output="screen" />
+  <node name="leg_control" pkg="agile_apps" type="leg_control" output="screen" >
+    <param name="verbose"     value="$(arg verbose)"  />
+    <param name="namespaces"  value="leg_control"     />
+  </node>
 
 </launch>
 

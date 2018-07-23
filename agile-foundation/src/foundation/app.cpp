@@ -18,7 +18,7 @@ CfgReader::Callback1 MiiApp::s_auto_inst_cb_ = [](const std::string& __p, const 
     return false;
   }
 
-  LOG_INFO << "INST: " << __type << ": " << __p;
+  // LOG_INFO << "INST: " << __type << ": " << __p;
   return true;
 };
 //  = std::bind(&MiiApp::auto_inst_cb, std::placeholders::_1, std::placeholders::_2);

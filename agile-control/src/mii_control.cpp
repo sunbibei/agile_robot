@@ -17,8 +17,8 @@
 
 namespace agile_control {
 
-MiiControl::MiiControl(const std::string& _prefix)
-  : prefix_tag_(_prefix), policy_manager_(nullptr),
+MiiControl::MiiControl()
+  : root_control_(""), policy_manager_(nullptr),
     alive_(true), tick_interval_(1) {
   ; // Nothing to do here.
 }
@@ -54,7 +54,7 @@ bool MiiControl::init() {
   auto cfg = CfgReader::instance();
 
   double hz = 1000;
-  cfg->get_value(prefix_tag_, "frequency", hz);
+  cfg->get_value(root_control_, "frequency", hz);
   tick_interval_ = std::chrono::milliseconds(int(1000/hz));
   LOG_WARNING << "MII-CONTROL: " << hz << "Hz";
 
@@ -62,7 +62,7 @@ bool MiiControl::init() {
   policy_manager_->init();
 
   std::string policy;
-  if (cfg->get_value(Label::make_label(prefix_tag_, "gait"), "activate", policy))
+  if (cfg->get_value(Label::make_label(root_control_, "gait"), "activate", policy))
     activate(policy);
 
   // registry the thread

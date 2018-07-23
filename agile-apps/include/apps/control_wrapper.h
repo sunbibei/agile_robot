@@ -19,7 +19,7 @@
 using namespace agile_control;
 
 class ControlWrapper: public MiiControl {
-  SINGLETON_DECLARE(ControlWrapper, const std::string&)
+  SINGLETON_DECLARE(ControlWrapper)
 
 protected:
   virtual bool init() override;
@@ -39,7 +39,9 @@ protected:
 private:
   // The ROS handle
   ros::NodeHandle nh_;
-  std::string     root_tag_;
+  std::string     param_ns_;
+  std::string     root_wrapper_;
+
   ros::Subscriber gait_ctrl_sub_;
   bool alive_;
 };
