@@ -1,0 +1,9 @@
+leg:
+  prefix:     apps
+  # the path of configure and library: $(rosparam ${prefix})/${file}
+  configure:
+    prefix: apps_root
+    file:
+      - config/leg.cfg
+  
+

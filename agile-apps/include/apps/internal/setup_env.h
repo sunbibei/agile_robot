@@ -53,10 +53,16 @@ void __setup_env() {
   libs_root  = libs_root.substr(0, libs_root.rfind('/'));
   libs_root += "/devel/lib";
 
-  ///! Setting the alias of paths
-  ros::param::set("apps_root", apps_root);
-  ros::param::set("pkgs_root", pkgs_root);
-  ros::param::set("libs_root", libs_root);
+  ///! Setting the alias of paths, The parameter in the ROS PARAMETER SERVER
+  ///! is shared over each process, so we only need to set once.
+  if (!ros::param::has("apps_root"))
+    ros::param::set("apps_root", apps_root);
+
+  if (!ros::param::has("pkgs_root"))
+    ros::param::set("pkgs_root", pkgs_root);
+
+  if (!ros::param::has("libs_root"))
+    ros::param::set("libs_root", libs_root);
 
   printf("\n");
   printf("\033[1;36;43mENV: \n");
@@ -71,7 +77,7 @@ void __setup_env() {
   google::SetStderrLogging(verbose ? google::GLOG_INFO : google::GLOG_WARNING);
 }
 
-void __setup_sys() {
+void __setup_sys(const std::string& ns) {
 //  std::string nss_str;
 //  std::vector<std::string> nss;
 //  // if (nh_.getParam("namespaces", nss)) {
@@ -84,11 +90,11 @@ void __setup_sys() {
 //    std::string ns;
 //    while (ss >> ns) nss.push_back(ns);
 //  }
-  std::string ns;
-  if (!ros::param::get("~namespaces", ns)) {
-    LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
-  }
+//  std::string ns;
+//  if (!ros::param::get("~namespaces", ns)) {
+//    LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
+//        << "in the parameter server. Did you forget define this parameter.";
+//  }
   ///! For each namespace (agile_robot or agile_control) given in the bringup.launch
   // for (const auto& ns : nss) {
   if (!ns.empty()) {
@@ -99,27 +105,26 @@ void __setup_sys() {
     if ( !ros::param::get(ns + "/configure/prefix", alias)
       || !ros::param::get(ns + "/configure/file",   files)
       || !ros::param::get(alias, path)) {
-      LOG_FATAL << "RosWapper can't find the '" << ns << "/configure/prefix "
+      LOG_WARNING << "RosWapper can't find the '" << ns << "/configure/prefix "
           << "(or file)' or '" << alias << "' parameter in the parameter "
           << "server. Did you forget define this parameter.";
+    } else {
+      CfgReader::add_path(path);
+      for (const auto& cfg : files)
+        CfgReader::instance()->add_config(cfg);
     }
-
-    CfgReader::add_path(path);
-    for (const auto& cfg : files)
-      CfgReader::instance()->add_config(cfg);
 
     if ( !ros::param::get(ns + "/library/prefix", alias)
       || !ros::param::get(ns + "/library/file",   files)
       || !ros::param::get(alias, path)) {
-      LOG_FATAL << "RosWapper can't find the '" << ns << "/library/prefix "
+      LOG_WARNING << "RosWapper can't find the '" << ns << "/library/prefix "
           << "(or file)' or '" << alias << "' parameter in the parameter "
           << "server. Did you forget define this parameter.";
+    } else {
+      AutoInstor::add_path(path);
+      for (const auto& lib : files)
+        AutoInstor::instance()->add_library(lib);
     }
-
-    ///! Got from ENV
-    AutoInstor::add_path(path);
-    for (const auto& lib : files)
-      AutoInstor::instance()->add_library(lib);
   }
 }
 

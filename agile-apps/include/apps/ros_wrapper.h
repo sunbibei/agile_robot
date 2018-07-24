@@ -37,6 +37,8 @@ protected:
   virtual void create_system_singleton() override;
 
 private:
+  ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
+  void pub_rt_msg();
   /*!
    * @brief The callback for gait_topic.
    */
@@ -51,10 +53,14 @@ private:
 private:
   // The ROS handle
   ros::NodeHandle nh_;
-  std::string     param_ns_;
-  std::string     root_wrapper_;
-  std::string     robot_root_;
-  std::string     control_root_;
+  typedef enum {
+    APP_ROBOT = 0,
+    APP_CONTROL = 1,
+    N_APPTYPE
+  } AppType;
+
+  std::string     param_nss_[N_APPTYPE];
+  std::string     root_wrapper_[N_APPTYPE];
 
   bool            alive_;
   ros::Subscriber gait_ctrl_sub_;

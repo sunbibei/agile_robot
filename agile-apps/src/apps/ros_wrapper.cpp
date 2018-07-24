@@ -1,5 +1,5 @@
 /*
- * qr_ros_wrapper.cpp
+ * ros_wrapper.cpp
  *
  *  Created on: Dec 5, 2016
  *      Author: silence
@@ -29,84 +29,54 @@ RosWrapper::RosWrapper()
   : MiiRobot(), MiiControl(),
     alive_(true), rt_duration_(1000/1000) {
   ///! Setup the root tag of Wrapper and Robot.
-  if (!ros::param::get("~namespaces", param_ns_))
+  std::string nss_str;
+  std::vector<std::string> nss;
+  if (!ros::param::get("~namespaces", nss_str)) {
     LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
         << "in the parameter server. Did you forget define this parameter.";
+  }
 
-  std::string cfg_root;
+  std::stringstream ss;
+  ss << nss_str;
+  for (int i = APP_ROBOT; i < N_APPTYPE; ++i) {
+    if (!(ss >> param_nss_[i]))
+      LOG_FATAL << "You should be filled " << N_APPTYPE << "'s namespaces.";
+    const auto& ns = param_nss_[i];
 
-  if (!ros::param::get(param_ns_ + "/prefix", cfg_root))
-    LOG_FATAL << "RosWrapper can't find the 'prefix' parameter "
-        << "in the parameter server. Did you forget define this parameter.";
+    std::string cfg_root;
+    if (!ros::param::get(ns + "/prefix", cfg_root))
+      LOG_FATAL << "RosWrapper can't find the 'prefix' parameter "
+          << "in the parameter server. Did you forget define this parameter.";
 
-  root_wrapper_ = Label::make_label(cfg_root,      "wrapper");
-  root_robot_   = Label::make_label(root_wrapper_, "robot");
+    root_wrapper_[i] = Label::make_label(cfg_root,   "wrapper");
+  }
+
+  ///! Initialize the MiiRobot::root_robot_
+  root_robot_   = Label::make_label(root_wrapper_[APP_ROBOT],   "robot");
+  ///! Initialize the MiiControl::root_control_
+  root_control_ = Label::make_label(root_wrapper_[APP_CONTROL], "control");
+
   ///! Setup the ENV for our system
   internal::__setup_env();
 }
 
 RosWrapper::~RosWrapper() {
   alive_ = false;
-  // agile_control::MiiControl::instance()->destroy_instance();
+  // AutoInstor and CfgReader will destroy in the base class(MiiApp).
   // AutoInstor::destroy_instance();
-  CfgReader::destroy_instance();
+  // CfgReader::destroy_instance();
 }
 
 void RosWrapper::create_system_singleton() {
-  if (nullptr == CfgReader::create_instance())
-    LOG_FATAL << "Create the singleton 'CfgReader' has failed.";
-  if (nullptr == AutoInstor::create_instance())
-    LOG_FATAL << "Create the singleton 'AutoInstor' has failed.";
-
-  ///! For each namespace (agile_robot or agile_control) given in the bringup.launch
-  for (const auto& pns : {"~robot_ns", "~control_ns"}) {
-    std::string ns, path, alias;
-    std::vector<std::string> files;
-    if (!ros::param::get(pns, ns)) {
-      LOG_FATAL << "RosWapper can't find the '" << pns << "' parameter "
-          << "in the parameter server. Did you forget define this parameter.";
-    }
-
-    ///! Get the alias of the configure of path.
-    if ( !ros::param::get(ns + "/configure/prefix", alias)
-      || !ros::param::get(ns + "/configure/file",   files)
-      || !ros::param::get(alias, path)) {
-      LOG_FATAL << "RosWapper can't find the '" << ns << "/configure/prefix "
-          << "(or file)' or '" << alias << "' parameter in the parameter "
-          << "server. Did you forget define this parameter.";
-    }
-
-    CfgReader::add_path(path);
-    for (const auto& cfg : files)
-      CfgReader::instance()->add_config(cfg);
-
-    if ( !ros::param::get(ns + "/library/prefix", alias)
-      || !ros::param::get(ns + "/library/file",   files)
-      || !ros::param::get(alias, path)) {
-      LOG_FATAL << "RosWapper can't find the '" << ns << "/library/prefix "
-          << "(or file)' or '" << alias << "' parameter in the parameter "
-          << "server. Did you forget define this parameter.";
-    }
-
-    ///! Got from ENV
-    AutoInstor::add_path(path);
-    for (const auto& lib : files)
-      AutoInstor::instance()->add_library(lib);
-  }
-
-  MiiRobot::create_system_singleton();
+  //! class this method in the base class.
+  MiiRobot  ::create_system_singleton();
   MiiControl::create_system_singleton();
+
+  for (const auto& ns : param_nss_)
+    internal::__setup_sys(ns);
 }
 
-//void RosWrapper::auto_inst() {
-//  MiiApp::auto_inst();
-//}
-
 bool RosWrapper::init() {
-  bool verbose = false;
-  ros::param::get("~verbose", verbose);
-  google::SetStderrLogging(verbose ? google::GLOG_INFO : google::GLOG_WARNING);
-
   if (!MiiRobot::init())
     LOG_FATAL << "Robot initializes fail!";
   LOG_INFO << "MiiRobot   initialization has completed.";
@@ -115,16 +85,13 @@ bool RosWrapper::init() {
     LOG_FATAL << "Launched the mii-control has completed.";
   LOG_INFO << "MiiControl initialization has completed.";
 
-  std::string ns;
-  ros::param::get("~robot_ns", ns);
   double frequency = 50.0;
-  ros::param::get(ns + "/rt_frequency", frequency);
+  ros::param::get(param_nss_[APP_ROBOT] + "/rt_frequency", frequency);
   if (frequency > 0)
     rt_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 
-  ros::param::get("~control_ns", ns);
   std::string str;
-  if (!ros::param::get(ns + "/gait_topic", str)) {
+  if (!ros::param::get(param_nss_[APP_CONTROL] + "/gait_topic", str)) {
   // if (!ros::param::get("~gait_topic", str)) {
     LOG_INFO << "No 'gait_topic' parameter, using the default name of topic"
         << " -- gait_control";
@@ -133,7 +100,7 @@ bool RosWrapper::init() {
   gait_ctrl_sub_ = nh_.subscribe<std_msgs::String>(str, 1,
       &RosWrapper::gaitControlCb, this);
 
-  ThreadPool::instance()->add("rt_puber", &internal::__pub_rt_msg, alive_, rt_duration_);
+  ThreadPool::instance()->add("rt_puber", &RosWrapper::pub_rt_msg, this);
 
 // For debug
 #ifdef DEBUG_TOPIC
@@ -142,6 +109,31 @@ bool RosWrapper::init() {
 #endif
 
   return true;
+}
+
+///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
+void RosWrapper::pub_rt_msg() {
+  ros::NodeHandle _nh;
+  ros::Publisher jnt_puber = _nh.advertise<sensor_msgs::JointState>("joint_states", 1);
+
+  TICKER_INIT(std::chrono::milliseconds);
+  while (alive_ && ros::ok()) {
+    if (jnt_puber.getNumSubscribers()) {
+      sensor_msgs::JointState msg;
+      agile_robot::JointManager::instance()->foreach([&msg](MiiPtr<Joint>& jnt){
+        msg.position.push_back(((int) (jnt->joint_position()*1000000))/1000000.0);
+        msg.velocity.push_back(((int) (jnt->joint_velocity()*1000000))/1000000.0);
+        msg.effort.push_back  (((int) (jnt->joint_torque()  *1000000))/1000000.0);
+        msg.name.push_back            (jnt->joint_name());
+      });
+      msg.header.stamp = ros::Time::now();
+
+      jnt_puber.publish(msg);
+    }
+
+    TICKER_CONTROL(rt_duration_, std::chrono::milliseconds);
+  }
+
 }
 
 void RosWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
@@ -215,3 +207,6 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
   LOG_INFO << "Debug Callback Completed!";
 }
 #endif
+
+#define WRAPPER RosWrapper
+#include "apps/internal/main.cpp"

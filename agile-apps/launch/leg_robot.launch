@@ -8,8 +8,8 @@
  
   <!-- Load hardware interface -->
   <node name="leg_robot" pkg="agile_apps" type="leg_robot" output="screen" >
-    <param name="verbose"     value="$(arg verbose)"  />
-    <param name="namespaces"  value="leg_robot"       />
+    <param name="verbose"     value="$(arg verbose)" />
+    <param name="namespaces"  value="leg_robot"      />
   </node>
 
 </launch>

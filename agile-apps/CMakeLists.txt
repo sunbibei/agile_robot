@@ -37,33 +37,19 @@ include_directories(
 
 set(SRC_ROOT            src)
 # set(SRC_EXAMPLES        examples/src)
-
 set(SRC_APP             ${SRC_ROOT}/apps)
 
-set(ENTRY_FILES         ${SRC_ROOT}/entry.cpp
-)
-
-# Files define.
-set(ROBOT_FILES         ${SRC_ROOT}/robot.cpp
-                        ${SRC_APP}/robot_wrapper.cpp
-)
-
-# Files define.
-set(CONTROL_FILES       ${SRC_ROOT}/control.cpp
-                        ${SRC_APP}/control_wrapper.cpp
-)
-
 ## Declare a C++ executable
-# add_executable(leg_apps
-#   ${SRC_APP}/ros_wrapper.cpp
-# )
+add_executable(leg_apps
+  ${SRC_APP}/ros_wrapper.cpp
+)
 
 add_executable(pd_apps
   ${SRC_APP}/pd_wrapper.cpp
 )
 
 add_executable(leg_launcher
-  ${SRC_ROOT}/entry.cpp
+  ${SRC_ROOT}/launcher.cpp
 )
 
 add_executable(leg_robot
@@ -83,12 +69,12 @@ add_executable(registry_monitor
 )
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(leg_apps
-#   ${catkin_LIBRARIES}
-#   agile_foundation
-#   agile_driver_sys_robot
-#   agile_control_framwork
-# )
+target_link_libraries(leg_apps
+  ${catkin_LIBRARIES}
+  agile_foundation
+  agile_driver_sys_robot
+  agile_control_framwork
+)
 
 target_link_libraries(pd_apps
   ${catkin_LIBRARIES}
@@ -128,7 +114,8 @@ target_link_libraries(registry_monitor
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS #leg_apps
+install(TARGETS pd_apps
+                leg_apps
                 leg_launcher
                 leg_robot
                 leg_control

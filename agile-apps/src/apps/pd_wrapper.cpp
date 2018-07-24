@@ -58,7 +58,7 @@ PdWrapper::~PdWrapper() {
   jnt_rgt_wing_ = nullptr;
   jnt_cog_      = nullptr;
   jnt_pitch_    = nullptr;
-  // AutoInstor will destroy in the base class(MiiApp).
+  // AutoInstor and CfgReader will destroy in the base class(MiiApp).
   // AutoInstor::destroy_instance();
   // CfgReader::destroy_instance();
 }
@@ -67,7 +67,7 @@ void PdWrapper::create_system_singleton() {
   //! class this method in the base class.
   MiiRobot::create_system_singleton();
 
-  internal::__setup_sys();
+  internal::__setup_sys(param_ns_);
 }
 
 //void PdWrapper::auto_inst() {

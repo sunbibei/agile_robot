@@ -21,7 +21,7 @@ static bool g_is_alive = true;
 void termial(int) { g_is_alive = false; }
 
 void __launch_app(const std::string& tag) {
-  printf("%s\n", tag.c_str());
+  // printf("%s\n", tag.c_str());
   auto cfg = CfgReader::instance();
 
   bool enable = false;
@@ -81,7 +81,7 @@ void __launch_app(const std::string& tag) {
     int status = 0;
     wait(&status);
 
-    printf("\033[1;31;43mThe %s exited!\033[0m\n", tag.c_str());
+    printf("\033[1;31;43mThe %-21s exited!\033[0m\n", tag.c_str());
     exit(-1);
   }
   ///! In the main process, returned immediately.
@@ -89,22 +89,20 @@ void __launch_app(const std::string& tag) {
 }
 
 void launcher() {
+  std::string param_ns;
+  if (!ros::param::get("~namespaces", param_ns))
+    LOG_FATAL << "PdWrapper can't find the 'namespaces' parameter "
+        << "in the parameter server. Did you forget define this parameter.";
   auto cfg = CfgReader::create_instance();
   if (nullptr == cfg) {
     printf("\033[0;31mCreate the CfgReader fail!\033[0m\n");
     exit(-1);
   }
-
-  std::string cfg_file;
-  if (!ros::param::get("~configure", cfg_file)) {
-    printf("\033[0;31mNo parameter with named configure or prefix!\033[0m\n");
-    exit(-1);
-  }
-  CfgReader::instance()->add_config(cfg_file);
+  internal::__setup_sys(param_ns);
 
   std::string prefix = "";
-  ros::param::get("~prefix", prefix);
-  std::string root = Label::make_label(prefix, "launcher");
+  ros::param::get(param_ns + "/prefix", prefix);
+  std::string root = Label::make_label( prefix, "launcher");
 
   std::string screen;
   cfg->get_value(root, "screen", screen);
@@ -128,6 +126,7 @@ int main(int argc, char* argv[]) {
 
   // setup the ENV
   internal::__setup_env();
+
   // launch the each APPS
   launcher();
 
@@ -141,7 +140,7 @@ int main(int argc, char* argv[]) {
 
   // destroy the CfgReader.
   CfgReader::destroy_instance();
-  printf("\033[1;31;43mThe apps exited!\033[0m\n");
+  printf("\033[1;31;43mThe %-21s exited!\033[0m\n", "apps");
   return 0;
 }
 

@@ -54,7 +54,7 @@ void RobotWrapper::create_system_singleton() {
   //! class this method in the base class.
   MiiRobot::create_system_singleton();
 
-  internal::__setup_sys();
+  internal::__setup_sys(param_ns_);
 }
 
 bool RobotWrapper::init() {

@@ -71,7 +71,7 @@ void ControlWrapper::create_system_singleton() {
   //! class this method in the base class.
   MiiControl::create_system_singleton();
 
-  internal::__setup_sys();
+  internal::__setup_sys(param_ns_);
 }
 
 void ControlWrapper::gaitControlCb(const std_msgs::String::ConstPtr& msg) {
