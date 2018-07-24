@@ -21,7 +21,7 @@
 
 #define N_INIT_BUF (1024*1024)
 #define N_SNYC     (1024)
-#define N_MAX_NAME (31)
+#define N_MAX_NAME (32)
 
 ///! cancel the namespaces
 // namespace agile_robot {
@@ -46,10 +46,6 @@
 //  ( agile_robot::Registry::instance()->command< _type >(_n) )
 */
 
-typedef boost::variant<const short*, const int*, const double*,
-    const Eigen::VectorXi*, const Eigen::VectorXd*,
-    const Eigen::MatrixXi*, const Eigen::MatrixXd*> ResType2;
-
 /*!
  * @brief \class Registry2, support the data exchange under Multi-process.
  */
@@ -60,14 +56,31 @@ class Registry2 {
 public:
   /*!
    * @brief register a resource into the registry2.
-   *        Note, The name of resource must be unique, or it will be replaced.
+   *        Note, The name of resource must be unique, or it will be ignored.
    *        The resource must be a reference to the actual value, The registry
    *        thread will be visit the reference.
    */
-  bool publish(const std::string&, ResType2);
+  template<typename _T>
+  bool publish(const std::string&, const _T*);
+  ////////////////// Template Specialization
+  bool publish(const std::string&, const Eigen::VectorXd*);
+  bool publish(const std::string&, const Eigen::VectorXi*);
+  bool publish(const std::string&, const Eigen::MatrixXd*);
+  bool publish(const std::string&, const Eigen::MatrixXi*);
 
-  ///! The boost static assert fail! so we need split into two methods.
-  bool subscribe(const std::string&, ResType2);
+  /*!
+   * @brief subscribe a resource from the registry2. The name of resource maybe
+   *        not contains in the registry.
+   *        NOTE: The resource MUST BE malloced before, If this resource is not
+   *        publish by others, it will reserve memory with the given size.
+   */
+  template<typename _T>
+  bool subscribe(const std::string&, _T*);
+  ////////////////// Template Specialization
+  bool subscribe(const std::string&, Eigen::VectorXd*);
+  bool subscribe(const std::string&, Eigen::VectorXi*);
+  bool subscribe(const std::string&, Eigen::MatrixXd*);
+  bool subscribe(const std::string&, Eigen::MatrixXi*);
 
 public:
   ///! print the all of registry.
@@ -76,14 +89,11 @@ public:
 protected:
   void support();
 
+private:
+  bool pub_helper(const std::string&, const void*, size_t, const std::string&);
+  bool sub_helper(const std::string&,       void*, size_t, const std::string&);
   ///! called when try to obtain the resource or the constructor.
   void syncRegInfo();
-  ///! insert a reg info into the buffer(NO PUBLISHER).
-  void insertRegInfo(std::map<std::string, class __ResStu*>&,
-      const std::string&, ResType2&);
-
-  ///! Add a new publisher
-  class __ResStu* addPuber(const std::string&, ResType2&, class __RegInfo*);
 
 protected:
   ///! The buffer for the all of data.
@@ -93,13 +103,27 @@ protected:
   ///! For thread safety
   std::mutex lock_;
   ///! The list of resources or command
-  std::map<std::string, class __ResStu*>  pub_origin_;
-  std::map<std::string, class __ResStu*>  sub_origin_;
-  std::list<class __RegInfo*> reg_infos_;
+  std::map<std::string, class __PubResStu*>  pub_origin_;
+  std::map<std::string, class __SubResStu*>  sub_origin_;
+  std::list<class __RegInfo*>             reg_infos_;
+
   ///! Whether is the thread alive.
   bool thread_alive_;
 };
 
 // } /* namespace middleware */
+
+///////////////////////////////////////////////////////////////////////////////
+////////////        The implementation of template methods         ////////////
+///////////////////////////////////////////////////////////////////////////////
+template<typename _T>
+bool Registry2::publish(const std::string& _n, const _T* ptr) {
+  return pub_helper(_n, ptr, sizeof(_T), typeid(_T).name());
+}
+
+template<typename _T>
+bool Registry2::subscribe(const std::string& _n, _T* ptr) {
+  return sub_helper(_n, ptr, sizeof(_T), typeid(_T).name());
+}
 
 #endif /* INCLUDE_REPOSITORY_REGISTRY_H_ */

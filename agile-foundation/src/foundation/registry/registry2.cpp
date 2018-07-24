@@ -12,89 +12,34 @@
 #include <chrono>
 #include <iostream>
 
+#define N_MAX_TNAME     (15)
+#define OCCUPY_FLAG     (0x88)
+
 ///! cancel the namespaces
 // namespace agile_robot {
-
-///! The id of type, easy to swap in shared memory.
-enum DataType : char {
-  DT_UNKONWN,
-  DT_SHORT,
-  DT_INT,
-  DT_DOUBLE,
-  DT_VEC_I,
-  DT_VEC_D,
-  DT_MAT_I,
-  DT_MAT_D,
-};
 
 ///! The information of registry, The structure must not be malloc by NEW,
 ///! and it is at the header of shared memory.
 struct __RegInfo {
-  DataType data_type;
+  char     occupy;
+  char     data_type[N_MAX_TNAME];
   char     data_name[N_MAX_NAME];
+
   size_t   n_res; // in byte
   char     addr[0];
 };
 
 ///! The information of resource, it is difference in the different process.
 ///! The @addr is the head address of the content of handle.
-struct __ResStu {
-  ResType2   handle;
-  void*      addr;
-  __RegInfo* reg_info;
+struct __PubResStu {
+  const void* addr;
+  __RegInfo*  reg_info;
 };
 
-///! The tool function.
-bool __get_res(std::map<std::string, __ResStu*>& res,
-    const std::string& _n, ResType2& vars) {
-  // LOG_INFO << "RES: " << (res.end() == res.find(_n));
-  if (res.end() != res.find(_n)) {
-    vars = res[_n]->handle;
-    return true;
-  }
-
-  return false;
-}
-
-///! The tool function.
-void __parseResType(const ResType2& res, DataType& type, size_t& size, void*& addr) {
-  if ( typeid(const short*) == res.type() ) {
-    type = DataType::DT_SHORT;
-    size = sizeof(short);
-    addr = (void* ) boost::get<const short*>(res);
-  } else if (typeid(const int*) == res.type()) {
-    type = DataType::DT_INT;
-    size = sizeof(int);
-    addr = (void* ) boost::get<const int*>(res);
-  } else if (typeid(const double*) == res.type()) {
-    type = DataType::DT_DOUBLE;
-    size = sizeof(double);
-    addr = (void* ) boost::get<const double*>(res);
-  } else if (typeid(const Eigen::VectorXi*) == res.type()) {
-    type = DataType::DT_VEC_I;
-    auto _res = boost::get<const Eigen::VectorXi*>(res);
-    size = _res->size() * sizeof(int);
-    addr = (void* ) _res->data();
-  } else if (typeid(const Eigen::VectorXd*) == res.type()) {
-    type = DataType::DT_VEC_D;
-    auto _res = boost::get<const Eigen::VectorXd*>(res);
-    size = _res->size() * sizeof(double);
-    addr = (void* ) _res->data();
-  } else if (typeid(const Eigen::MatrixXd*) == res.type()) {
-    type = DataType::DT_MAT_D;
-    auto _res = boost::get<const Eigen::MatrixXd*>(res);
-    size = _res->size() * sizeof(double);
-    addr = (void* ) _res->data();
-  } else if (typeid(const Eigen::MatrixXi*) == res.type()) {
-    type = DataType::DT_MAT_I;
-    auto _res = boost::get<const Eigen::MatrixXi*>(res);
-    size = _res->size() * sizeof(int);
-    addr = (void* ) _res->data();
-  } else {
-    type = DataType::DT_UNKONWN;
-    size = 0;
-  }
-}
+struct __SubResStu {
+  void*       addr;
+  __RegInfo*  reg_info;
+};
 
 SINGLETON_IMPL(Registry2)
 
@@ -113,6 +58,7 @@ Registry2::Registry2()
   shm_buffer_ = (char* )shm_manager->get_addr_from_shm(RegDataName);
   buff_top_   = shm_buffer_;
 
+  ///! sync the reg_info
   syncRegInfo();
 
   ///! Add the register support thread.
@@ -122,13 +68,20 @@ Registry2::Registry2()
 
 Registry2::~Registry2() {
   thread_alive_ = false;
+
+  for (auto& pub : pub_origin_) {
+    delete pub.second;
+    pub.second = nullptr;
+  }
+  pub_origin_.clear();
 }
 
 void Registry2::syncRegInfo() {
   lock_.lock(); // For thread safety
 
   __RegInfo* info = (__RegInfo*) buff_top_;
-  while (DataType::DT_UNKONWN != info->data_type && info->n_res > 0) {
+  while (OCCUPY_FLAG == info->occupy) {
+    LOG_ERROR << info->n_res;
     // record the reg_info
     reg_infos_.push_back(info);
 
@@ -139,7 +92,23 @@ void Registry2::syncRegInfo() {
   lock_.unlock();
 }
 
-bool Registry2::publish(const std::string& _n, ResType2 _handle) {
+bool Registry2::publish(const std::string& _n, const Eigen::VectorXd* ptr) {
+  return pub_helper(_n, ptr->data(), ptr->size()*sizeof(double), "vectorxd");
+}
+
+bool Registry2::publish(const std::string& _n, const Eigen::VectorXi* ptr) {
+  return pub_helper(_n, ptr->data(), ptr->size()*sizeof(int), "vectorxi");
+}
+
+bool Registry2::publish(const std::string& _n, const Eigen::MatrixXd* ptr) {
+  return pub_helper(_n, ptr->data(), ptr->size()*sizeof(double), "matrixxd");
+}
+
+bool Registry2::publish(const std::string& _n, const Eigen::MatrixXi* ptr) {
+  return pub_helper(_n, ptr->data(), ptr->size()*sizeof(int), "matrixxi");
+}
+
+bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size, const std::string& _tn) {
   if (pub_origin_.end() != pub_origin_.find(_n)) {
     LOG_WARNING << "The named resource '" << _n << "' has registered in the resource table.";
     return true;
@@ -150,30 +119,8 @@ bool Registry2::publish(const std::string& _n, ResType2 _handle) {
         << _n << " is fail!";
     return false;
   }
+  LOG_ERROR << _n << ": " << size << ", " << _tn << ", " << addr;
 
-  insertRegInfo(pub_origin_, _n, _handle);
-  return true;
-}
-
-bool Registry2::subscribe(const std::string& _n, ResType2 _handle) {
-  if ( _n.size() >= N_MAX_NAME ) {
-    LOG_ERROR << "The max name of resource or command is " << N_MAX_NAME
-        << ", Registry the resource or command with named "
-        << _n << " is fail!";
-    return false;
-  }
-
-  if (sub_origin_.end() == sub_origin_.find(_n)) {
-    insertRegInfo(sub_origin_, _n, _handle);
-  } else {
-    _handle = sub_origin_[_n]->handle;
-  }
-
-  return true;
-}
-
-void Registry2::insertRegInfo(std::map<std::string, class __ResStu*>& _o,
-    const std::string& _n, ResType2& _h) {
   // update the buff_top_;
   syncRegInfo();
 
@@ -185,47 +132,159 @@ void Registry2::insertRegInfo(std::map<std::string, class __ResStu*>& _o,
     }
   }
 
-  __ResStu* res = addPuber(_n, _h, info);
-  if (nullptr == res) {
-    LOG_ERROR << "The information of registry does not match!";
-    return;
-  }
-
-  _o[_n] = res;
-}
-
-__ResStu* Registry2::addPuber(const std::string& _n, ResType2& _h, __RegInfo* _i) {
-  DataType type = DataType::DT_UNKONWN;
-  size_t   size = 0;
-  void*    addr = nullptr;
-  __parseResType(_h, type, size, addr);
-
-  if (nullptr == _i) {
+  std::string tn = _tn.substr(0, std::min(_tn.size(), (size_t)(N_MAX_TNAME - 1)));
+  LOG_ERROR << "tname: " << tn;
+  if (nullptr == info) {
     lock_.lock();
-    _i = (__RegInfo*) buff_top_;
-    memcpy(_i->data_name, _n.c_str(), _n.size());
-    _i->data_name[_n.size()] = '\0';
-    _i->data_type = type;
-    _i->n_res     = size;
+    info = (__RegInfo*) buff_top_;
+    memset(info, 0x00, (sizeof(__RegInfo) + size));
+    memcpy(info->data_type, tn.c_str(), tn.size());
+    memcpy(info->data_name, _n.c_str(), _n.size());
+    info->n_res  = size;
+    info->occupy = OCCUPY_FLAG;
     ///! Add into the registry list.
-    reg_infos_.push_back(_i);
+    reg_infos_.push_back(info);
     // update the new top of buffer with the specify data.
-    buff_top_ += (sizeof(__RegInfo) + _i->n_res);
-    ((__RegInfo*) buff_top_)->data_type = DataType::DT_UNKONWN;
-    ((__RegInfo*) buff_top_)->n_res     = 0;
+    buff_top_ += (sizeof(__RegInfo) + info->n_res);
 
     lock_.unlock();
   }
-  if (type != _i->data_type || size != _i->n_res)
-    return nullptr;
 
-  __ResStu* res = new __ResStu;
-  res->handle   = _h;
-  res->addr     = addr;
-  res->reg_info = _i;
+  if (0 != tn.compare(info->data_type) || size != info->n_res)
+    return false;
 
-  return res;
+  __PubResStu* res = new __PubResStu;
+  res->addr        = addr;
+  res->reg_info    = info;
+
+  pub_origin_[_n] = res;
+  return true;
 }
+
+bool Registry2::subscribe(const std::string& _n, Eigen::VectorXd* ptr) {
+  return sub_helper(_n, ptr->data(), ptr->size()*sizeof(double), "vectorxd");
+}
+
+bool Registry2::subscribe(const std::string& _n, Eigen::VectorXi* ptr) {
+  return sub_helper(_n, ptr->data(), ptr->size()*sizeof(int), "vectorxi");
+}
+
+bool Registry2::subscribe(const std::string& _n, Eigen::MatrixXd* ptr) {
+  return sub_helper(_n, ptr->data(), ptr->size()*sizeof(double), "matrixxd");
+}
+
+bool Registry2::subscribe(const std::string& _n, Eigen::MatrixXi* ptr) {
+  return sub_helper(_n, ptr->data(), ptr->size()*sizeof(int), "matrixxi");
+}
+
+bool Registry2::sub_helper(const std::string& _n, void* addr, size_t size, const std::string& _tn) {
+  if ( _n.size() >= N_MAX_NAME ) {
+    LOG_ERROR << "The max name of resource or command is " << N_MAX_NAME
+        << ", Registry the resource or command with named "
+        << _n << " is fail!";
+    return false;
+  }
+
+  LOG_ERROR << _n << ": " << size << ", " << _tn << ", " << addr;
+
+  LOG_ERROR << "1";
+  // update the buff_top_;
+  syncRegInfo();
+  LOG_ERROR << "2";
+  __RegInfo* info = nullptr;
+  for ( const auto& _i : reg_infos_) {
+    if (0 == strcmp(_i->data_name, _n.c_str())) {
+      info = _i;
+      break;
+    }
+  }
+
+  LOG_ERROR << "3";
+  std::string tn = _tn.substr(0, std::min(_tn.size(), (size_t)(N_MAX_TNAME - 1)));
+  if (nullptr == info) {
+    lock_.lock();
+    info = (__RegInfo*) buff_top_;
+    memset(info, 0x00, (sizeof(__RegInfo) + size));
+    memcpy(info->data_type, tn.c_str(), tn.size());
+    memcpy(info->data_name, _n.c_str(), _n.size());
+    info->n_res  = size;
+    info->occupy = OCCUPY_FLAG;
+
+    ///! Add into the registry list.
+    reg_infos_.push_back(info);
+    // update the new top of buffer with the specify data.
+    buff_top_ += (sizeof(__RegInfo) + info->n_res);
+    ((__RegInfo*) buff_top_)->n_res = -1;
+    LOG_ERROR << "4";
+    lock_.unlock();
+  }
+
+  if (0 != tn.compare(info->data_type) || size != info->n_res)
+    return false;
+
+  __SubResStu* res = new __SubResStu;
+  res->addr        = addr;
+  res->reg_info    = info;
+
+  sub_origin_[_n] = res;
+  LOG_ERROR << "5";
+  return true;
+}
+
+//void Registry2::insertRegInfo(std::map<std::string, class __ResStu2*>& _o,
+//    const std::string& _n, ResType2& _h) {
+//  // update the buff_top_;
+//  syncRegInfo();
+//
+//  __RegInfo2* info = nullptr;
+//  for ( const auto& _i : reg_infos2_) {
+//    if (0 == strcmp(_i->data_name, _n.c_str())) {
+//      info = _i;
+//      break;
+//    }
+//  }
+//
+//  __ResStu2* res = addPuber(_n, _h, info);
+//  if (nullptr == res) {
+//    LOG_ERROR << "The information of registry does not match!";
+//    return;
+//  }
+//
+//  _o[_n] = res;
+//}
+//
+//__ResStu2* Registry2::addPuber(const std::string& _n, ResType2& _h, __RegInfo2* _i) {
+//  DataType type = DataType::DT_UNKONWN;
+//  size_t   size = 0;
+//  void*    addr = nullptr;
+//  __parseResType(_h, type, size, addr);
+//
+//  if (nullptr == _i) {
+//    lock_.lock();
+//    _i = (__RegInfo2*) buff_top_;
+//    memcpy(_i->data_name, _n.c_str(), _n.size());
+//    _i->data_name[_n.size()] = '\0';
+//    _i->data_type = type;
+//    _i->n_res     = size;
+//    ///! Add into the registry list.
+//    reg_infos2_.push_back(_i);
+//    // update the new top of buffer with the specify data.
+//    buff_top_ += (sizeof(__RegInfo2) + _i->n_res);
+//    ((__RegInfo2*) buff_top_)->data_type = DataType::DT_UNKONWN;
+//    ((__RegInfo2*) buff_top_)->n_res     = 0;
+//
+//    lock_.unlock();
+//  }
+//  if (type != _i->data_type || size != _i->n_res)
+//    return nullptr;
+//
+//  __ResStu2* res = new __ResStu2;
+//  res->handle   = _h;
+//  res->addr     = addr;
+//  res->reg_info = _i;
+//
+//  return res;
+//}
 
 void Registry2::support() {
   TICKER_INIT(std::chrono::microseconds);
@@ -249,22 +308,6 @@ void Registry2::support() {
 
 }
 
-std::string __getTypeName(const ResType2& t) {
-  if (typeid(const short*) == t.type()) {
-    return "short   ";
-  } else if (typeid(const int*) == t.type()) {
-    return "int     ";
-  } else if (typeid(const double*) == t.type()) {
-    return "double  ";
-  } else if (typeid(const Eigen::VectorXi*) == t.type()) {
-    return "vectorXi";
-  } else if (typeid(const Eigen::VectorXd*) == t.type()) {
-    return "vectorXd";
-  } else {
-    return t.type().name();
-  }
-}
-
 ///! print the all of registry.
 void Registry2::print() {
   syncRegInfo();
@@ -274,13 +317,13 @@ void Registry2::print() {
   if (!pub_origin_.empty()) {
     printf("The list of PUBLISH in this process\n");
     printf("-------------------------------------------\n");
-    printf("COUNT   TYPE      ADDR   NAME\n");
- // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
+    printf("COUNT       TYPE         ADDR           NAME\n");
+ // printf("    0 aaaaaaaaaaaaaaaa 0x7fc53c2af028ab test-res-d\n");
     int count = 0;
     for (const auto& l : pub_origin_) {
       ++count;
-      printf("%5d %8s %8p %-31s\n", count,
-          __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
+      printf("%5d %16s %16p %-31s\n", count,
+          l.second->reg_info->data_type, l.second, l.first.c_str());
     }
     printf("___________________________________________\n");
   }
@@ -288,13 +331,13 @@ void Registry2::print() {
   if (!sub_origin_.empty()) {
     printf("The list of SUBSCRIBE in this process\n");
     printf("-------------------------------------------\n");
-    printf("COUNT   TYPE      ADDR   NAME\n");
- // printf("    0 vectorXd 0x1c65f10 test-res-d\n");
+    printf("COUNT       TYPE         ADDR           NAME\n");
+ // printf("    0 aaaaaaaaaaaaaaaa 0x7fc53c2af028ab test-res-d\n");
     int count = 0;
     for (const auto& l : sub_origin_) {
       ++count;
-      printf("%5d %8s %8p %-31s\n", count,
-          __getTypeName(l.second->handle).c_str(), l.second, l.first.c_str());
+      printf("%5d %16s %16p %-31s\n", count,
+          l.second->reg_info->data_type, l.second, l.first.c_str());
     }
     printf("___________________________________________\n");
   }
@@ -302,12 +345,12 @@ void Registry2::print() {
   if (!reg_infos_.empty()) {
     printf("The list of REGISTRY INFO in this process\n");
     printf("-------------------------------------------\n");
-    printf("COUNT TYPE SIZE       ADDR     NAME\n");
-  //printf("    1 0000 0000 0x7fc53c2af028 nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\n");
+    printf("COUNT         TYPE     SIZE   ADDR           NAME\n");
+  //printf("    1 aaaaaaaaaaaaaaaa 0000 0x7fc53c2af028   nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\n");
     int count = 0;
     for (const auto& i : reg_infos_) {
       ++count;
-      printf("%5d %4d %4ld %p %-31s\n", count, i->data_type, i->n_res, i->addr, i->data_name);
+      printf("%5d %16s %4ld %16p %-31s\n", count, i->data_type, i->n_res, i->addr, i->data_name);
     }
     printf("___________________________________________\n");
   }

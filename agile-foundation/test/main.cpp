@@ -31,7 +31,7 @@ void __auto_inst(const std::string& __p, const std::string& __type) {
   }*/
 }
 
-int main() {
+int main1() {
   // Just for test
   // auto auto_inst = AutoInstor::create_instance("/home/bibei/Workspaces/qr_ws/devel/lib/libqr_control_repository.so");
 /*  if (nullptr == auto_inst) {

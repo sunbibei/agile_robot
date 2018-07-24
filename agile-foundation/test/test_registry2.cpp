@@ -11,6 +11,7 @@
 
 #include <Eigen/Dense>
 #include <iostream>
+#include <typeinfo>
 #include <chrono>
 
 // using namespace agile_robot;
@@ -18,13 +19,17 @@
 #define PUB
 //#define SUB
 
-int main1(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   google::InitGoogleLogging("test-registry2");
   google::FlushLogFiles(google::GLOG_INFO);
   FLAGS_colorlogtostderr = true;
   google::SetStderrLogging(google::GLOG_INFO);
 
   if ( nullptr == ThreadPool::create_instance()) {
+    std::cout << "ERROR Create ThreadPool" << std::endl;
+    return -1;
+  }
+  if ( nullptr == SharedMem::create_instance()) {
     std::cout << "ERROR Create ThreadPool" << std::endl;
     return -1;
   }
@@ -106,8 +111,8 @@ int main1(int argc, char* argv[]) {
     mat_i += mat_i_delta;
 #endif
 
-    LOG_WARNING << "\n" << mat_d;
-    LOG_ERROR << "\n" << mat_i;
+    LOG_WARNING << "test-mat-d:\n" << mat_d;
+    LOG_ERROR << "test-mat-i:\n" << mat_i;
 //    LOG_INFO << "test-vec-d:";
 //    for (int i = 0; i < vec_d.size(); ++i) {
 //      printf("%6.02f ", vec_d(i));

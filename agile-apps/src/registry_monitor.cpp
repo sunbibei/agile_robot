@@ -30,10 +30,10 @@ public:
   void print() {
     ///! update the list of registry.
     reg_->syncRegInfo();
-    if (n_last_reg_ != reg_->reg_infos_.size()) {
+    if (n_last_reg_ != reg_->reg_infos2_.size()) {
       reg_->print();
 
-      n_last_reg_ = reg_->reg_infos_.size();
+      n_last_reg_ = reg_->reg_infos2_.size();
     }
   }
 
