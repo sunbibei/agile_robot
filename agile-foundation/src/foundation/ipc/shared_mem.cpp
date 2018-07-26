@@ -79,7 +79,10 @@ bool SharedMem::create_shm(const std::string& _n, size_t _s) {
 
   key_map_.insert(std::make_pair(_n, _key));
   void* addr = get_addr_from_shm(_n);
-  if (is_create) memset(addr, 0x00, _s);
+  if (is_create) {
+    LOG_INFO << "memset";
+    memset(addr, 0x00, _s);
+  }
   return true;
 }
 

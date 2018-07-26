@@ -40,6 +40,19 @@ bool __init_key_map() {
   return true;
 }
 
+int  __get_all_channel(IpcType type, std::vector<std::string>& _ns) {
+  auto _addr = shmat(shmget(KEY_MAP_OF_KEY, 0, 0), NULL, 0);
+  if (nullptr == _addr) return -1;
+  _PrivateKeyMap* _key_map = (_PrivateKeyMap*) _addr;
+
+  for (size_t offset = 0; offset < MAX_SHM_SIZE; ++offset) {
+    if (type == _key_map[offset].type || type == IpcType::N_IPC) {
+      _ns.push_back(_key_map[offset].name);
+    }
+  }
+
+}
+
 bool __add_key_map(const std::string& _n, key_t _key, int _id, IpcType _type) {
   auto _addr = shmat(shmget(KEY_MAP_OF_KEY, 0, 0), NULL, 0);
   if (nullptr == _addr) return false;

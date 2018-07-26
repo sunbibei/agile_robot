@@ -15,7 +15,7 @@
 namespace internal {
 
 const size_t MAX_NAME_SIZE = 32;
-const size_t MAX_SHM_SIZE  = 16;
+const size_t MAX_SHM_SIZE  = 32;
 
 enum IpcType {
   UNKNOWN_IPC = -1,
@@ -36,6 +36,7 @@ const key_t       KEY_MAP_OF_KEY = 0x2000;
 const std::string SYNC_IDENTIFY  = "SYNC";
 
 bool __init_key_map();
+int  __get_all_channel(IpcType type, std::vector<std::string>& _ns);
 bool __add_key_map(const std::string& _n, key_t _key, int _id, IpcType _type);
 /*!
  * If no such @_n name of IPC or not exist 'SYNC', return -1.
