@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="verbose"         value="true"       />
+  <arg name="verbose"         default="true"     />
   
   <!-- FOR setup the env -->
   <param    name="pkg_name"   value="agile_apps" />
