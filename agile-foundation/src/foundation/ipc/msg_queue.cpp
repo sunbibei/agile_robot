@@ -81,7 +81,7 @@ bool MsgQueue::write_to_msgq(const std::string& _n, MsgBase* _msg, size_t _s) {
   ///! No subscriber, false transmission.
   if (__get_count_key_map(_n) <= 1) return true;
 
-  _msg->timestamp = std::chrono::time_point_cast<std::chrono::milliseconds>(
+  _msg->timestamp = std::chrono::time_point_cast<std::chrono::microseconds>(
       std::chrono::system_clock::now()).time_since_epoch().count();
   return (msgsnd(_msgq_id, _msg, _s, IPC_NOWAIT) >= 0);
 }

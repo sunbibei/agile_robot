@@ -52,8 +52,9 @@ class Registry2 {
   friend class Registry2Monitor;
 
 /*!
- *  The 1st style for communication between multi-process. Process A send
- *  some data into the shared memory, Process B read this data.
+ *  The 1st style for communication between multi-process. The 1st style SUPPORT
+ *  that multi-publisher or multi-subscriber.
+ *  Process A send some data into the shared memory, Process B read this data.
  *  You(Publisher) should MUST BE give a pointer point to anywhere you save
  *  data. We should read this data in each tick, and then write into the shared
  *  memory on the Process A. Process B will read the data from shared memory
@@ -89,8 +90,10 @@ public:
   bool subscribe(const std::string&, Eigen::MatrixXi*);
 
 /*!
- *  The 2nd style for communication between multi-process, NOTE that this style
- *  is INAPPROPRIATE to exchange great data between different process.
+ *  The 2nd style is designed for communication between TWO different process,
+ *  of course, it is can running between more than two process normally, BUT
+ *  the any message got by process A, this message CAN NOT got by the other process.
+ *  NOTE that this style is INAPPROPRIATE to exchange great data between two process.
  */
 public:
   /*!
@@ -147,8 +150,8 @@ protected:
   ///! For thread safety
   std::mutex lock_;
   ///! The list of resources or command using the 1st style
-  std::map<std::string, class __PubResStu*>  pub_origin_;
-  std::map<std::string, class __SubResStu*>  sub_origin_;
+  std::map<std::string, class __PubResStu1*> pub1_origin_;
+  std::map<std::string, class __SubResStu1*> sub1_origin_;
 
   ///! The list of resources or command using the 2nd style
   std::map<std::string, class __PubResStu2*> pub2_origin_;

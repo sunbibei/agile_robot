@@ -13,6 +13,8 @@
 #include "foundation/label.h"
 #include "foundation/cfg_reader.h"
 #include "foundation/auto_instor.h"
+#include "foundation/ipc/msg_queue.h"
+#include "foundation/ipc/shared_mem.h"
 #include "foundation/thread/threadpool.h"
 #include "foundation/registry/registry.h"
 #include "foundation/registry/registry2.h"
@@ -31,11 +33,11 @@ MiiRobot::MiiRobot()
 }
 
 MiiRobot::~MiiRobot() {
-  Registry::destroy_instance();
-  Registry2::destroy_instance();
-  SharedMem::destroy_instance();
+  Registry    ::destroy_instance();
+  Registry2   ::destroy_instance();
+  SharedMem   ::destroy_instance();
   JointManager::destroy_instance();
-  Master::destroy_instance();
+  Master      ::destroy_instance();
 
   // destroy the auto_instancor.
   // AutoInstor::destroy_instance();
@@ -54,6 +56,9 @@ void MiiRobot::create_system_singleton() {
 
   if (nullptr == SharedMem::create_instance())
     LOG_FATAL << "Create the singleton 'SharedMem' has failed.";
+
+  if (nullptr == MsgQueue::create_instance())
+    LOG_FATAL << "Create the singleton 'MsgQueue' has failed.";
 
   if (nullptr == Registry::create_instance())
     LOG_FATAL << "Create the singleton 'Registry' has failed.";

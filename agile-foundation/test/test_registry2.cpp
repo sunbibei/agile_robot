@@ -112,6 +112,12 @@ int main(int argc, char* argv[]) {
     vec_d += delta;
     flag_vec_d.store(true);
 
+    LOG_INFO << "test-vec-d:";
+    for (int i = 0; i < vec_d.size(); ++i) {
+      printf("%6.02f ", vec_d(i));
+    }
+    printf("\n");
+
     res_d += 0.001;
     mat_d += mat_d_delta;
 #endif
@@ -156,7 +162,7 @@ int main(int argc, char* argv[]) {
       registry->print();
     }
 
-    TICKER_CONTROL(500, std::chrono::milliseconds);
+    TICKER_CONTROL(1, std::chrono::milliseconds);
   }
 
   Registry2::destroy_instance();

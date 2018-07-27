@@ -22,6 +22,8 @@
 #define STYLE_1ST      ((char)0x01)
 ///! The 2nd style
 #define STYLE_2ND      ((char)0x02)
+///! The id of the 2nd style
+#define MSG_ID_2ND     ((char)0x02)
 
 ///! cancel the namespaces
 // namespace agile_robot {
@@ -40,12 +42,12 @@ struct __RegInfo {
 
 ///! The information of resource, it is difference in the different process.
 ///! The @addr is the head address of the content of handle.
-struct __PubResStu {
+struct __PubResStu1 {
   const void* addr;
   __RegInfo*  reg_info;
 };
 
-struct __SubResStu {
+struct __SubResStu1 {
   void*       addr;
   __RegInfo*  reg_info;
 };
@@ -107,11 +109,11 @@ Registry2::Registry2()
 Registry2::~Registry2() {
   thread_alive_ = false;
 
-  for (auto& pub : pub_origin_) {
+  for (auto& pub : pub1_origin_) {
     delete pub.second;
     pub.second = nullptr;
   }
-  pub_origin_.clear();
+  pub1_origin_.clear();
 }
 
 void Registry2::syncRegInfo() {
@@ -195,7 +197,7 @@ bool Registry2::subscribe(const std::string& _n, Eigen::MatrixXi* ptr, std::atom
 }
 
 bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size, const std::string& _tn) {
-  if (pub_origin_.end() != pub_origin_.find(_n)) {
+  if (pub1_origin_.end() != pub1_origin_.find(_n)) {
     LOG_WARNING << "The named resource '" << _n << "' has registered in the resource table.";
     return true;
   }
@@ -205,8 +207,6 @@ bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size,
         << _n << " is fail!";
     return false;
   }
-  // LOG_ERROR << _n << ": " << size << ", " << _tn << ", " << addr;
-
   // update the buff_top_;
   syncRegInfo();
 
@@ -240,11 +240,11 @@ bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size,
       || size != info->n_res || STYLE_1ST != info->comm_type )
     return false;
 
-  __PubResStu* res = new __PubResStu;
+  __PubResStu1* res = new __PubResStu1;
   res->addr        = addr;
   res->reg_info    = info;
 
-  pub_origin_[_n] = res;
+  pub1_origin_[_n] = res;
   return true;
 }
 
@@ -288,11 +288,11 @@ bool Registry2::sub_helper(const std::string& _n, void* addr, size_t size, const
       || size != info->n_res || STYLE_1ST != info->comm_type )
     return false;
 
-  __SubResStu* res = new __SubResStu;
+  __SubResStu1* res = new __SubResStu1;
   res->addr        = addr;
   res->reg_info    = info;
 
-  sub_origin_[_n]  = res;
+  sub1_origin_[_n]  = res;
   return true;
 }
 
@@ -351,6 +351,7 @@ bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size,
   res->addr         = addr;
   res->reg_info     = info;
   res->msg          = (__PubMsg*) malloc(sizeof(__PubMsg) + res->n_res);
+  res->msg->msg_id  = MSG_ID_2ND;
 
   if (!msgqs_->create_msgq(_n)) {
     LOG_ERROR << "Create the MsgQueue fail with the given name[" << _n << "]";
@@ -408,6 +409,7 @@ bool Registry2::sub_helper(const std::string& _n, void* addr, size_t size,
   res->n_res        = size;
   res->reg_info     = info;
   res->msg          = (__SubMsg*) malloc(sizeof(__SubMsg) + res->n_res);
+  res->msg->msg_id  = MSG_ID_2ND;
 
   if (!msgqs_->create_msgq(_n)) {
     LOG_ERROR << "Create the MsgQueue fail with the given name[" << _n << "]";
@@ -423,13 +425,13 @@ void Registry2::support() {
 
   thread_alive_ = true;
   while (thread_alive_) {
-    for (const auto& pair : pub_origin_) {
+    for (const auto& pair : pub1_origin_) {
       auto res = pair.second;
       if (nullptr != res->addr)
         memcpy(res->reg_info->addr, res->addr, res->reg_info->n_res);
     }
 
-    for (const auto& pair : sub_origin_) {
+    for (const auto& pair : sub1_origin_) {
       auto res = pair.second;
       if (nullptr != res->addr)
         memcpy(res->addr, res->reg_info->addr, res->reg_info->n_res);
@@ -451,7 +453,10 @@ void Registry2::support() {
       auto res = pair.second;
       if (msgqs_->read_from_msgq(pair.first, res->msg, res->n_res + sizeof(__PubMsg))) {
         memcpy(res->addr, res->msg->addr, res->n_res);
-        LOG_ERROR << "ENTER";
+
+        int64_t timestamp = std::chrono::time_point_cast<std::chrono::microseconds>(
+            std::chrono::system_clock::now()).time_since_epoch().count();
+        LOG_ERROR << "LAPES: " << (timestamp - res->msg->timestamp);
         /// change the flag.
         res->flag->store(true);
       }
@@ -468,13 +473,13 @@ void Registry2::print() {
 
   printf("\n");
   LOG_WARNING;
-  if (!pub_origin_.empty()) {
+  if (!pub1_origin_.empty()) {
     printf("The list of PUBLISH in 1st style\n");
     printf("-------------------------------------------\n");
     printf("COUNT       TYPE             ADDR       NAME\n");
  // printf("    0 aaaaaaaaaaaaaaaa 0x7fc53c2af028ab test-res-d\n");
     int count = 0;
-    for (const auto& l : pub_origin_) {
+    for (const auto& l : pub1_origin_) {
       ++count;
       printf("%5d %16s %16p %-31s\n", count,
           l.second->reg_info->data_type, l.second, l.first.c_str());
@@ -482,13 +487,13 @@ void Registry2::print() {
     printf("___________________________________________\n");
   }
 
-  if (!sub_origin_.empty()) {
+  if (!sub1_origin_.empty()) {
     printf("The list of SUBSCRIBE in 1st style\n");
     printf("-------------------------------------------\n");
     printf("COUNT       TYPE             ADDR       NAME\n");
  // printf("    0 aaaaaaaaaaaaaaaa 0x7fc53c2af028ab test-res-d\n");
     int count = 0;
-    for (const auto& l : sub_origin_) {
+    for (const auto& l : sub1_origin_) {
       ++count;
       printf("%5d %16s %16p %-31s\n", count,
           l.second->reg_info->data_type, l.second, l.first.c_str());

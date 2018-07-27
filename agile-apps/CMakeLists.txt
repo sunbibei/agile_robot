@@ -64,9 +64,9 @@ add_executable(ipc_clear
   ${SRC_ROOT}/ipc_clear.cpp
 )
 
-add_executable(registry_monitor
-  ${SRC_ROOT}/registry_monitor.cpp
-)
+# add_executable(registry_monitor
+#   ${SRC_ROOT}/registry_monitor.cpp
+# )
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(leg_apps
@@ -102,10 +102,10 @@ target_link_libraries(ipc_clear
   agile_foundation
 )
 
-target_link_libraries(registry_monitor
-  ${catkin_LIBRARIES}
-  agile_foundation
-)
+# target_link_libraries(registry_monitor
+#   ${catkin_LIBRARIES}
+#   agile_foundation
+# )
 
 #############
 ## Install ##
