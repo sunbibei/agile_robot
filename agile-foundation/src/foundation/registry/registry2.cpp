@@ -99,7 +99,7 @@ Registry2::Registry2()
   buff_top_   = shm_buffer_;
 
   ///! sync the reg_info
-  syncRegInfo();
+  __syncRegInfo();
 
   ///! Add the register support thread.
   if (nullptr != ThreadPool::instance())
@@ -116,7 +116,7 @@ Registry2::~Registry2() {
   pub1_origin_.clear();
 }
 
-void Registry2::syncRegInfo() {
+void Registry2::__syncRegInfo() {
   lock_.lock(); // For thread safety
 
   __RegInfo* info = (__RegInfo*) buff_top_;
@@ -196,19 +196,16 @@ bool Registry2::subscribe(const std::string& _n, Eigen::MatrixXi* ptr, std::atom
   return sub_helper(_n, ptr->data(), ptr->size()*sizeof(int), "matrixxi", flag);
 }
 
-bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size, const std::string& _tn) {
-  if (pub1_origin_.end() != pub1_origin_.find(_n)) {
-    LOG_WARNING << "The named resource '" << _n << "' has registered in the resource table.";
-    return true;
-  }
+__RegInfo* Registry2::__checkRegInfo(const std::string& _n,
+    size_t size, char style, const std::string& _tn) {
   if ( _n.size() >= N_MAX_NAME ) {
     LOG_ERROR << "The max name of resource or command is " << N_MAX_NAME
         << ", Registry the resource or command with named "
         << _n << " is fail!";
-    return false;
+    return nullptr;
   }
   // update the buff_top_;
-  syncRegInfo();
+  __syncRegInfo();
 
   __RegInfo* info = nullptr;
   for ( const auto& _i : reg_infos_) {
@@ -222,12 +219,13 @@ bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size,
   if (nullptr == info) {
     lock_.lock();
     info = (__RegInfo*) buff_top_;
-    memset(info, 0x00, (sizeof(__RegInfo) + size));
+    // memset(info, 0x00, (sizeof(__RegInfo) + size));
+    info->occupy    = OCCUPY_FLAG;
+    info->n_res     = size;
+    info->comm_type = style;
     memcpy(info->data_type, tn.c_str(), tn.size());
     memcpy(info->data_name, _n.c_str(), _n.size());
-    info->n_res     = size;
-    info->occupy    = OCCUPY_FLAG;
-    info->comm_type = STYLE_1ST;
+
     ///! Add into the registry list.
     reg_infos_.push_back(info);
     // update the new top of buffer with the specify data.
@@ -236,9 +234,19 @@ bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size,
     lock_.unlock();
   }
 
-  if( (0 != tn.compare(info->data_type))
-      || size != info->n_res || STYLE_1ST != info->comm_type )
-    return false;
+  if ((0 != tn.compare(info->data_type)) || (style != info->comm_type)
+      || ((STYLE_1ST == style) && (size != info->n_res)))
+    return nullptr;
+
+  return info;
+}
+
+bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size, const std::string& _tn) {
+  if (pub1_origin_.end() != pub1_origin_.find(_n)) {
+    LOG_WARNING << "The named resource '" << _n << "' has registered in the resource table.";
+    return true;
+  }
+  auto info = __checkRegInfo(_n, size, STYLE_1ST, _tn);
 
   __PubResStu1* res = new __PubResStu1;
   res->addr        = addr;
@@ -249,44 +257,7 @@ bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size,
 }
 
 bool Registry2::sub_helper(const std::string& _n, void* addr, size_t size, const std::string& _tn) {
-  if ( _n.size() >= N_MAX_NAME ) {
-    LOG_ERROR << "The max name of resource or command is " << N_MAX_NAME
-        << ", Registry the resource or command with named "
-        << _n << " is fail!";
-    return false;
-  }
-  // update the buff_top_;
-  syncRegInfo();
-
-  __RegInfo* info = nullptr;
-  for ( const auto& _i : reg_infos_) {
-    if (0 == strcmp(_i->data_name, _n.c_str())) {
-      info = _i;
-      break;
-    }
-  }
-
-  std::string tn = _tn.substr(0, std::min(_tn.size(), (size_t)(N_MAX_TNAME - 1)));
-  if (nullptr == info) {
-    lock_.lock();
-    info = (__RegInfo*) buff_top_;
-    memset(info, 0x00, (sizeof(__RegInfo) + size));
-    memcpy(info->data_type, tn.c_str(), tn.size());
-    memcpy(info->data_name, _n.c_str(), _n.size());
-    info->n_res     = size;
-    info->occupy    = OCCUPY_FLAG;
-    info->comm_type = STYLE_1ST;
-    ///! Add into the registry list.
-    reg_infos_.push_back(info);
-    // update the new top of buffer with the specify data.
-    buff_top_ += (sizeof(__RegInfo) + info->n_res);
-    ((__RegInfo*) buff_top_)->n_res = -1;
-    lock_.unlock();
-  }
-
-  if( (0 != tn.compare(info->data_type))
-      || size != info->n_res || STYLE_1ST != info->comm_type )
-    return false;
+  auto info = __checkRegInfo(_n, size, STYLE_1ST, _tn);
 
   __SubResStu1* res = new __SubResStu1;
   res->addr        = addr;
@@ -311,7 +282,7 @@ bool Registry2::pub_helper(const std::string& _n, const void* addr, size_t size,
 
   LOG_ERROR << "1";
   // update the buff_top_;
-  syncRegInfo();
+  __syncRegInfo();
 
   __RegInfo* info = nullptr;
   for ( const auto& _i : reg_infos_) {
@@ -373,7 +344,7 @@ bool Registry2::sub_helper(const std::string& _n, void* addr, size_t size,
   }
 
   // update the buff_top_;
-  syncRegInfo();
+  __syncRegInfo();
 
   __RegInfo* info = nullptr;
   for ( const auto& _i : reg_infos_) {
@@ -469,7 +440,7 @@ void Registry2::support() {
 
 ///! print the all of registry.
 void Registry2::print() {
-  syncRegInfo();
+  __syncRegInfo();
 
   printf("\n");
   LOG_WARNING;

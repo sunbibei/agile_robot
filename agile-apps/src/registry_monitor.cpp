@@ -29,7 +29,7 @@ public:
 public:
   void print() {
     ///! update the list of registry.
-    reg_->syncRegInfo();
+    reg_->__syncRegInfo();
     if (n_last_reg_ != reg_->reg_infos2_.size()) {
       reg_->print();
 

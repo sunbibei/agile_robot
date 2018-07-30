@@ -69,6 +69,8 @@ public:
    */
   template<typename _T>
   bool publish(const std::string&, const _T*);
+  template<typename _T>
+  bool publish(const std::string&, const std::vector<_T>*);
   ////////////////// Template Specialization
   bool publish(const std::string&, const Eigen::VectorXd*);
   bool publish(const std::string&, const Eigen::VectorXi*);
@@ -83,6 +85,8 @@ public:
    */
   template<typename _T>
   bool subscribe(const std::string&, _T*);
+  template<typename _T>
+  bool subscribe(const std::string&, std::vector<_T>*);
   ////////////////// Template Specialization
   bool subscribe(const std::string&, Eigen::VectorXd*);
   bool subscribe(const std::string&, Eigen::VectorXi*);
@@ -106,6 +110,8 @@ public:
    */
   template<typename _T>
   bool publish(const std::string&, const _T*, std::atomic_bool*);
+  template<typename _T>
+  bool publish(const std::string&, const std::vector<_T>*, std::atomic_bool*);
   ////////////////// Template Specialization
   bool publish(const std::string&, const Eigen::VectorXd*, std::atomic_bool*);
   bool publish(const std::string&, const Eigen::VectorXi*, std::atomic_bool*);
@@ -120,6 +126,8 @@ public:
    */
   template<typename _T>
   bool subscribe(const std::string&, _T*, std::atomic_bool*);
+  template<typename _T>
+  bool subscribe(const std::string&, std::vector<_T>*, std::atomic_bool*);
   ////////////////// Template Specialization
   bool subscribe(const std::string&, Eigen::VectorXd*, std::atomic_bool*);
   bool subscribe(const std::string&, Eigen::VectorXi*, std::atomic_bool*);
@@ -139,8 +147,12 @@ private:
 
   bool pub_helper(const std::string&, const void*, size_t, const std::string&, std::atomic_bool*);
   bool sub_helper(const std::string&,       void*, size_t, const std::string&, std::atomic_bool*);
+
+private:
+  __RegInfo* __checkRegInfo(const std::string&, size_t, char, const std::string&);
+
   ///! called when try to obtain the resource or the constructor.
-  void syncRegInfo();
+  void __syncRegInfo();
 
 protected:
   ///! The buffer for the all of data.
@@ -175,8 +187,18 @@ bool Registry2::publish(const std::string& _n, const _T* ptr) {
 }
 
 template<typename _T>
+bool Registry2::publish(const std::string& _n, const std::vector<_T>* ptr) {
+  return pub_helper(_n, ptr->data(), ptr->size()*sizeof(_T), typeid(std::vector<_T>).name());
+}
+
+template<typename _T>
 bool Registry2::publish(const std::string& _n, const _T* ptr, std::atomic_bool* flag) {
   return pub_helper(_n, ptr, sizeof(_T), typeid(_T).name(), flag);
+}
+
+template<typename _T>
+bool Registry2::publish(const std::string& _n, const std::vector<_T>* ptr, std::atomic_bool* flag) {
+  return pub_helper(_n, ptr->data(), ptr->size()*sizeof(_T), typeid(std::vector<_T>).name(), flag);
 }
 
 template<typename _T>
@@ -185,8 +207,18 @@ bool Registry2::subscribe(const std::string& _n, _T* ptr) {
 }
 
 template<typename _T>
+bool Registry2::subscribe(const std::string& _n, std::vector<_T>* ptr) {
+  return sub_helper(_n, ptr->data(), ptr->size()*sizeof(_T), typeid(std::vector<_T>).name());
+}
+
+template<typename _T>
 bool Registry2::subscribe(const std::string& _n, _T* ptr, std::atomic_bool* flag) {
   return sub_helper(_n, ptr, sizeof(_T), typeid(_T).name(), flag);
+}
+
+template<typename _T>
+bool Registry2::subscribe(const std::string& _n, std::vector<_T>* ptr, std::atomic_bool* flag) {
+  return sub_helper(_n, ptr->data(), ptr->size()*sizeof(_T), typeid(std::vector<_T>).name(), flag);
 }
 
 #endif /* INCLUDE_REPOSITORY_REGISTRY_H_ */
