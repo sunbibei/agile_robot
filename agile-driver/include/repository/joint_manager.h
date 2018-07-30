@@ -49,6 +49,8 @@ public:
 
   // get the JntDataType data
   double operator()(LegType, JntType, JntDataType);
+  // get the joint handle.
+  MiiPtr<Joint> operator()(LegType, JntType);
 
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////        The Advanced Interfaces        ////////////////////
