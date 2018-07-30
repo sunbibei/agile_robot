@@ -133,10 +133,10 @@ bool __sub_count_key_map(const std::string& _n) {
   for (size_t offset = 0; offset < MAX_SHM_SIZE; ++offset) {
     if (0 == _n.compare(_key_map[offset].name)) {
       --_key_map[offset].count;
-      LOG_DEBUG << "The count of '" << _n << "' is " << _key_map[offset].count;
+      // LOG_DEBUG << "The count of '" << _n << "' is " << _key_map[offset].count;
 
       if (0 == _key_map[offset].count) {
-        LOG_DEBUG << "remove the shared memory -> '" << _n << "'";
+        // LOG_DEBUG << "remove the shared memory -> '" << _n << "'";
         if (-1 != _key_map[offset].id) {
           if (IPC_SHM == _key_map[offset].type)
             shmctl(_key_map[offset].id, IPC_RMID, NULL);

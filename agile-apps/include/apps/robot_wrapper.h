@@ -13,6 +13,7 @@
 #include <std_msgs/Float64MultiArray.h>
 
 #include <chrono>
+#include <Eigen/Dense>
 #include <boost/scoped_ptr.hpp>
 
 #include "mii_robot.h"
@@ -56,7 +57,13 @@ protected:
    */
   virtual bool init() override;
 
+  ///! FOR SUPPORTING REGISTRY
+  void reg_robot_states();
+
 private:
+  ///! support the registry
+  void support_registry();
+
   ///! This method publish the real-time message, e.g. "/joint_states", "imu", "foot_force"
   void pub_rt_msg();
 
@@ -74,6 +81,8 @@ private:
 
   bool alive_;
   std::chrono::milliseconds  rt_duration_;
+
+  class __RegsStu*  regs_stu_;
 };
 
 #endif /* INCLUDE_QR_ROS_WRAPPER_H_ */

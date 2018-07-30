@@ -15,6 +15,8 @@
 #include <chrono>
 #include <iostream>
 
+bool g_s_alive = true;
+
 #define N_MAX_TNAME     (14)
 #define OCCUPY_FLAG     ((char)0x88)
 
@@ -84,8 +86,8 @@ const std::string RegDataName = "registry2-data";
 const std::string SyncName    = "registry2-sync";
 const char VALID_FLAG         = 0x88;
 Registry2::Registry2()
-  : shm_buffer_(nullptr), buff_top_(nullptr),
-    thread_alive_(true) {
+  : shm_buffer_(nullptr), buff_top_(nullptr)/*,
+    thread_alive_(true)*/ {
   if (nullptr == SharedMem::instance())
     LOG_FATAL << "YOU NEED CREATE THE instance of SharedMem firstly!";
   if (nullptr == MsgQueue::instance())
@@ -107,13 +109,42 @@ Registry2::Registry2()
 }
 
 Registry2::~Registry2() {
-  thread_alive_ = false;
+  // thread_alive_.store(false);
+  g_s_alive = false;
 
   for (auto& pub : pub1_origin_) {
     delete pub.second;
     pub.second = nullptr;
   }
   pub1_origin_.clear();
+
+  for (auto& sub : sub1_origin_) {
+    delete sub.second;
+    sub.second = nullptr;
+  }
+  sub1_origin_.clear();
+
+  for (auto& pub : pub2_origin_) {
+    msgqs_->destroy_msgq(pub.first);
+
+    free(pub.second->msg);
+    pub.second->msg = nullptr;
+
+    delete pub.second;
+    pub.second = nullptr;
+  }
+  pub2_origin_.clear();
+
+  for (auto& sub : sub2_origin_) {
+    msgqs_->destroy_msgq(sub.first);
+
+    free(sub.second->msg);
+    sub.second->msg = nullptr;
+
+    delete sub.second;
+    sub.second = nullptr;
+  }
+  sub2_origin_.clear();
 }
 
 void Registry2::__syncRegInfo() {
@@ -392,10 +423,10 @@ bool Registry2::sub_helper(const std::string& _n, void* addr, size_t size,
 }
 
 void Registry2::support() {
+
   TICKER_INIT(std::chrono::microseconds);
 
-  thread_alive_ = true;
-  while (thread_alive_) {
+  while (g_s_alive) {
     for (const auto& pair : pub1_origin_) {
       auto res = pair.second;
       if (nullptr != res->addr)
@@ -433,9 +464,8 @@ void Registry2::support() {
       }
     }
 
-    TICKER_CONTROL(100, std::chrono::microseconds);
+    TICKER_CONTROL(10000, std::chrono::microseconds);
   }
-
 }
 
 ///! print the all of registry.

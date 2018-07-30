@@ -29,7 +29,8 @@ MiiApp::MiiApp() {
 
 MiiApp::~MiiApp() {
   ThreadPool::destroy_instance();
-  CfgReader::destroy_instance();
+  CfgReader ::destroy_instance();
+
   AutoInstor::destroy_instance();
 }
 

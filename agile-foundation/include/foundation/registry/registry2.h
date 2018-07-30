@@ -173,7 +173,7 @@ protected:
   ///! Record the all of resource or command.
   std::list<class __RegInfo*>                reg_infos_;
   ///! Whether is the thread alive.
-  bool thread_alive_;
+  // std::atomic_bool thread_alive_;
 };
 
 // } /* namespace middleware */
