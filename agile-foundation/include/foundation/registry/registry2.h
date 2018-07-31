@@ -149,7 +149,7 @@ private:
   bool sub_helper(const std::string&,       void*, size_t, const std::string&, std::atomic_bool*);
 
 private:
-  __RegInfo* __checkRegInfo(const std::string&, size_t, char, const std::string&);
+  class __RegInfo* __checkRegInfo(const std::string&, size_t, char, const std::string&);
 
   ///! called when try to obtain the resource or the constructor.
   void __syncRegInfo();

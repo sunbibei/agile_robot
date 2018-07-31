@@ -19,23 +19,23 @@
 ///! cancel the namespaces
 // namespace agile_robot {
 
-#define REG_RESOURCE(_n, _var)  \
-  ( Registry::instance()->registerResource((_n), (_var)) )
-
-#define REG_COMMAND(_n, _var, _flag)   \
-  ( Registry::instance()->registerCommand ((_n), (_var), (_flag)) )
-
-#define REG_COMMAND_NO_FLAG(_n, _var)   \
-  ( Registry::instance()->registerCommand ((_n), (_var)) )
-
-#define GET_RESOURCE(_n, _type) \
-  ( Registry::instance()->resource< _type >(_n) )
-
-#define GET_COMMAND(_n, _flag, _type) \
-  ( Registry::instance()->command< _type >(_n, _flag) )
-
-#define GET_COMMAND_NO_FLAG(_n, _type) \
-  ( Registry::instance()->command< _type >(_n) )
+//#define REG_RESOURCE(_n, _var)  \
+//  ( Registry::instance()->registerResource((_n), (_var)) )
+//
+//#define REG_COMMAND(_n, _var, _flag)   \
+//  ( Registry::instance()->registerCommand ((_n), (_var), (_flag)) )
+//
+//#define REG_COMMAND_NO_FLAG(_n, _var)   \
+//  ( Registry::instance()->registerCommand ((_n), (_var)) )
+//
+//#define GET_RESOURCE(_n, _type) \
+//  ( Registry::instance()->resource< _type >(_n) )
+//
+//#define GET_COMMAND(_n, _flag, _type) \
+//  ( Registry::instance()->command< _type >(_n, _flag) )
+//
+//#define GET_COMMAND_NO_FLAG(_n, _type) \
+//  ( Registry::instance()->command< _type >(_n) )
 
 typedef boost::variant<const short*, const int*, const double*,
     const Eigen::VectorXi*, const Eigen::MatrixXi*,
@@ -49,14 +49,14 @@ class Registry {
   SINGLETON_DECLARE(Registry)
 
 public:
-  bool registerResource(const std::string&, ResType);
-  bool registerCommand (const std::string&, CmdType, std::atomic_bool** flag = nullptr);
+  bool publish(const std::string&, ResType);
+  bool publish(const std::string&, CmdType, std::atomic_bool** flag = nullptr);
 
   ///! The boost static assert fail! so we need split into two methods.
   template<typename _DataType>
-  _DataType resource(const std::string&);
+  _DataType subscribe(const std::string&);
   template<typename _DataType>
-  _DataType command(const std::string&, std::atomic_bool** flag = nullptr);
+  _DataType subscribe(const std::string&, std::atomic_bool** flag = nullptr);
 
 public:
   ///! Query the given name whether register in the registry.
@@ -82,7 +82,7 @@ protected:
 ////////////        The implementation of template methods         ////////////
 ///////////////////////////////////////////////////////////////////////////////
 template <typename _DataType>
-_DataType Registry::resource(const std::string& _res_name) {
+_DataType Registry::subscribe(const std::string& _res_name) {
   if (res_origin_.end() == res_origin_.find(_res_name)) {
     return _DataType(nullptr);
   }
@@ -93,7 +93,7 @@ _DataType Registry::resource(const std::string& _res_name) {
 }
 
 template <typename _DataType>
-_DataType Registry::command(const std::string& _res_name, std::atomic_bool** flag) {
+_DataType Registry::subscribe(const std::string& _res_name, std::atomic_bool** flag) {
   if (cmd_origin_.end() == cmd_origin_.find(_res_name)) {
     return _DataType(nullptr);
   }

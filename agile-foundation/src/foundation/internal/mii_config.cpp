@@ -397,10 +397,13 @@ void MiiConfig::parse_helper(TiXmlDocument* doc, TiXmlDocument* root,
   std::function<void(TiXmlElement*)>
   cb = std::bind(&MiiConfig::init_path,      this, doc, std::placeholders::_1);
   regTagCb(doc, PATH,      cb);
+
   cb = std::bind(&MiiConfig::init_include,   this, doc, std::placeholders::_1);
   regTagCb(doc, INCLUDE,   cb);
+
   cb = std::bind(&MiiConfig::init_property,  this, doc, std::placeholders::_1);
   regTagCb(doc, PROPERTY,  cb);
+  
   cb = std::bind(&MiiConfig::init_protoType, this, doc, std::placeholders::_1);
   regTagCb(doc, PROTOTYPE, cb);
 

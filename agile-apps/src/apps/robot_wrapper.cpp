@@ -72,7 +72,10 @@ RobotWrapper::RobotWrapper()
 }
 
 RobotWrapper::~RobotWrapper() {
-  alive_ = false;
+  alive_    = false;
+
+  delete regs_stu_;
+  regs_stu_ = nullptr;
   // agile_control::MiiControl::instance()->destroy_instance();
   // AutoInstor::destroy_instance();
   // CfgReader::destroy_instance();
@@ -142,15 +145,15 @@ void RobotWrapper::reg_robot_states() {
         if (cfg->get_value(_p, "enable", regs_stu_->reg_legs[leg]) && regs_stu_->reg_legs[leg]
             && cfg->get_value(_p, "type", type)  && cfg->get_value(_p, "name", name)) {
           ///! register the position
-          if (0 == type.compare("data_pos")) {
+          if (0 == type.compare("position")) {
             regs_stu_->joint_positions[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
             reg->publish(name, regs_stu_->joint_positions [leg]);
             ///! register the velocities
-          } else if (0 == type.compare("data_vel")) {
+          } else if (0 == type.compare("velocity")) {
             regs_stu_->joint_velocities[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
             reg->publish(name, regs_stu_->joint_velocities [leg]);
             ///! register the torques
-          } else if (0 == type.compare("data_tor")) {
+          } else if (0 == type.compare("torque")) {
             regs_stu_->joint_torques[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
             reg->publish(name, regs_stu_->joint_torques [leg]);
             ///! register the tdlo sensor
@@ -185,6 +188,62 @@ void RobotWrapper::reg_robot_states() {
       });
     });
   } else { ///! The others mean using the registry.
+    regs_stu_->reg_type = REG_1;
+    cfg->foreachTag(label, [&](const std::string& _bs) {
+      LegType leg = LegType::UNKNOWN_LEG;
+      if (!cfg->get_value(_bs, "leg", leg) || (LegType::UNKNOWN_LEG == leg)) {
+        LOG_ERROR << "wrong format of " << _bs << ", because NO attr named 'leg'";
+        return;
+      }
+
+      std::string type, name;
+      auto reg = Registry2::instance();
+      cfg->foreachTag(_bs, [&](const std::string& _p) {
+        if (cfg->get_value(_p, "enable", regs_stu_->reg_legs[leg]) && regs_stu_->reg_legs[leg]
+            && cfg->get_value(_p, "type", type)  && cfg->get_value(_p, "name", name)) {
+          ///! register the position
+          if (0 == type.compare("position")) {
+            regs_stu_->joint_positions[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
+            reg->publish(name, regs_stu_->joint_positions [leg]);
+            ///! register the velocities
+          } else if (0 == type.compare("velocity")) {
+            regs_stu_->joint_velocities[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
+            reg->publish(name, regs_stu_->joint_velocities [leg]);
+            ///! register the torques
+          } else if (0 == type.compare("torque")) {
+            regs_stu_->joint_torques[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
+            reg->publish(name, regs_stu_->joint_torques [leg]);
+            ///! register the tdlo sensor
+          } else if (0 == type.compare("data_tdlo")) {
+            std::string l;
+            cfg->get_value(_p, "label", l);
+            auto td = Label::getHardwareByName<ForceSensor>(l);
+            if (nullptr == td) {
+              LOG_ERROR << "Can't find the TDLO sensor from Label's System using"
+                  << " the given label '" << l << "'";
+              return;
+            }
+            reg->publish(name, td->force_data_const_pointer());
+            ///! register the joint command
+          } else if (0 == type.compare("command")) {
+            regs_stu_->joint_command_flags[leg] = new std::atomic_bool(false);
+            regs_stu_->joint_commands[leg] = new Eigen::VectorXd((int)JntType::N_JNTS);
+            reg->subscribe(name, regs_stu_->joint_commands[leg], regs_stu_->joint_command_flags[leg]);
+            ///! register the joint limit
+          } else if (0 == type.compare("limit")) {
+            regs_stu_->joint_limitss[leg] = new Eigen::MatrixXd((int)JntType::N_JNTS, 2);
+            jnts->foreach(leg, [&](MiiPtr<Joint>& jnt) {
+              regs_stu_->joint_limitss[leg]->row((int)jnt->joint_type())
+                  << jnt->joint_position_min(), jnt->joint_position_max();
+            });
+            reg->publish(name, regs_stu_->joint_limitss[leg]);
+          } else {
+            ; // Nothing to do here.
+          }
+        }
+        // ;
+      });
+    });
 //    cfg->foreachTag(label, [&](const std::string& _p) {
 //      bool enable = true;
 //      std::string type, name;
